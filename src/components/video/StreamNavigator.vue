@@ -4,6 +4,11 @@
 
       <!-- left buttons -->
       <v-flex lg5 text-xs-right class="pa-0 ma-0 pt-1">
+        <!-- <v-select
+          :items="expandOptions"
+          segmented
+          style="width: 100px"
+        /> -->
         <v-btn small class="pa-0 ma-0"
           v-if="canExpandStart"
           @click="expandDuration(-60*30)"
@@ -47,9 +52,10 @@
           <v-icon dark v-if="Math.floor(videoTime) >= dvrDuration">replay</v-icon>
           <v-icon dark v-else >play_arrow</v-icon>
         </v-btn>
-        <v-btn fab color="secondary"
+        <v-btn fab color="secondary" class="pa-0 ma-0"
           v-else
-          @click="playing = false"  :disabled="!playerSources.length"
+          @click="playing = false"
+          :disabled="!playerSources.length"
         >
           <v-icon dark>pause</v-icon>
         </v-btn>
@@ -78,12 +84,11 @@
       </v-flex>
     </v-layout>
 
-    <v-layout row wrap justify-right>
-      <v-flex lg6 text-xs-center md12>
-        <div 
+    <v-layout row wrap>
+      <v-flex lg6 md12 text-xs-center style="cursor: pointer; width:680px;">
+        <div
           v-if="playerSources.length"
           @click="playing = !playing"
-          style="cursor: pointer; min-height:390px"
         >
           <video-player
             ref="player"
@@ -91,7 +96,8 @@
             brand="html5"
             :autoplay="true"
             :controls="true"
-            height="390px"
+            width="100%"
+            height="auto"
             @time="videoTimeUpdated"
             @play="playing = true"
             @pause="playing = false"
@@ -163,19 +169,24 @@ export default {
       seconds: 0,
       playing: false,
       videoTime: 0,
-      playerStartPosition: 0
+      playerStartPosition: 0,
+      expandOptions: [
+        { text: '1 seg', value: '1' },
+        { text: '5 seg', value: '5' },
+        { text: '10 seg', value: '10' }
+      ]
     }
   },
 
   computed: {
     ...mapState([
       'dvrStart',
-      'dvrDuration',
       'dvrStoreDetails'
     ]),
     ...mapGetters([
       'recordingUrl',
-      'dvrAvailableMax'
+      'dvrAvailableMax',
+      'dvrDuration'
     ]),
 
     playerSources () {
@@ -236,8 +247,7 @@ export default {
       if (this.videoTime) {
         const video = this.$refs.player && this.$refs.player.$refs.player
         if (video) {
-          // console.log(video.currentTime)
-          return (Math.ceil(video.currentTime) + 1 >= Math.floor(this.dvrDuration)) && moment(this.dvrStart).add(this.dvrDuration, 'seconds').isBefore(this.dvrAvailableMax)
+          return (Math.ceil(video.currentTime) + 5 >= Math.floor(this.dvrDuration))
         }
       }
     }

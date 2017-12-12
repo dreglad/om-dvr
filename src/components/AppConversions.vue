@@ -2,18 +2,59 @@
   <v-layout>
     <v-flex lg12>
       <v-data-table
-        :items="conversions"
+        :items="currentConversions"
         :headers="headers"
+        :pagination.sync="pagination"
       >
         <template slot="items" slot-scope="props">
-          <td>{{ props.item.state | converisonStatus }}</td>
-          <td v-if="props.item.state == 'SUCCESSFUL'"><a :href="props.item.fileUrl">{{ props.item.fileUrl }}</a></td>
+          <td v-if="props.item.status == 'STARTED'">
+            <v-progress-circular
+              :size="30"
+              :width="6"
+              :value="props.item.progress * 100"
+              color="blue"
+            />
+          </td>
+          <td v-else>{{ props.item.status | converisonStatus }}</td>
+          <td v-if="props.item.state == 'SUCCESS'"><a :href="props.item.url">{{ props.item.url }}</a></td>
           <td v-else>...</td>
-          <td>{{ props.item.humanFileSize }}</td>
-          <td>{{ props.item.humanFileDuration }}</td>
-          <td>{{ props.item.humanDuration }}</td>
-          <td>{{ props.item.start }}</td>
-          <td>{{ props.item.end }}</td>
+          <td>{{ props.item.created_at.format('YYYY-MM-DD HH:mm:ss') }}</td>
+          <td>{{ props.item.duration.format('HH:mm:ss') }}</td>
+          <td>{{ props.item.start.format() }}</td>
+          <td>
+            <v-tooltip left>
+              <v-btn fab small flat
+                slot="activator"
+                @click="setDvr(props.items)"
+              >
+                <v-icon>av_timer</v-icon>
+              </v-btn>
+              <span>Ver en la grabadora</span>
+            </v-tooltip>
+
+            <v-tooltip top>
+              <v-btn fab small flat
+                slot="activator"
+                :adisabled="props.item.status !== 'SUCCESS'"
+                :href="props.item.url"
+              >
+                <v-icon>file_download</v-icon>
+              </v-btn>
+              <span>Link de descarga</span>
+            </v-tooltip>
+
+            <v-tooltip right>
+              <v-btn fab small flat
+                slot="activator"
+                :adisabled="props.item.status === 'STARTED'"
+                @click="removeConversion(props.item)"
+              >
+                <v-icon>delete</v-icon>
+              </v-btn>
+              <span v-if="props.item.status == 'PENDING'">Cancelar conversión</span>
+              <span v-else">Eliminar conversión"</span>
+            </v-tooltip>
+          </td>
         </template>
       </v-data-table>
     </v-flex>
@@ -21,23 +62,24 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex'
-import multimediaApi from '@/api/multimedia'
-import humanize from 'humanize'
-import Moment from 'moment'
-import { extendMoment } from 'moment-range'
-const moment = extendMoment(Moment)
-require('moment-duration-format')
+import { mapActions, mapGetters } from 'vuex'
+// import _ from 'lodash'
+// import humanize from 'humanize'
 
 export default {
   name: 'AppConversions',
 
   data () {
     return {
+      pagination: {
+        rowsPerPage: 25,
+        sortBy: 'created_at',
+        descending: true
+      },
       headers: [
         {
           text: 'Estado',
-          value: 'state',
+          value: 'status',
           align: 'left'
         },
         {
@@ -46,27 +88,22 @@ export default {
           align: 'left'
         },
         {
-          text: 'Tamaño',
+          text: 'Creado en',
+          value: 'created_at',
           align: 'left'
         },
         {
           text: 'Duración',
-          value: 'fileDuration',
-          align: 'left'
-        },
-        {
-          text: 'Tiempo de procesamiento',
           value: 'duration',
           align: 'left'
         },
         {
           text: 'Inicio',
-          value: 'startTime',
+          value: 'start',
           align: 'left'
         },
         {
-          text: 'Final',
-          value: 'endTime',
+          text: 'Acciones',
           align: 'left'
         }
       ]
@@ -74,42 +111,48 @@ export default {
   },
 
   computed: {
-    conversions () {
-      return this.$store.state.conversions.map((conv) => {
-        const convStatus = conv.conversionStatusList[0]
-        return {
-          ...conv,
-          ...convStatus,
-          fileUrl: multimediaApi.getConversionUrl(convStatus),
-          humanFileSize: humanize.filesize(convStatus.fileSize),
-          humanFileDuration: moment.duration(convStatus.fileDuration, 'milliseconds').format(),
-          humanDuration: moment.duration(convStatus.duration, 'milliseconds').format(),
-          start: moment.utc(convStatus.startTime),
-          end: moment.utc(convStatus.endTime)
-        }
-      })
-    }
+    ...mapGetters([
+      'currentConversions'
+    ])
   },
 
   methods: {
     ...mapActions([
-      'requestDvrStores'
+      'requestConversions',
+      'removeConversion'
     ]),
-    conversionUrl (value) {
-      return multimediaApi.getConversionUrl(value)
+
+    setDvr (conv) {
     }
   },
 
-  created () {
-    this.requestDvrStores()
+  mounted () {
+    this.requestConversions().then(() => {
+      this.$store.commit('RESET_SEEN_CONVERSIONS')
+      this.intervalId = setInterval(() => {
+        this.requestConversions().then(() => {
+          this.$store.commit('RESET_SEEN_CONVERSIONS')
+        })
+      }, 3000)
+    })
+  },
+
+  activated () {
+    console.log('aaaaaaaa')
+  },
+
+  beforeDestroy () {
+    clearInterval(this.intervalId)
   },
 
   filters: {
     converisonStatus (value) {
       switch (value) {
-        case 'SUCCESSFUL': return 'Exitoso'
-        case 'RUNNING': return 'En progreso'
-        case 'ERROR': return 'Error'
+        case 'PENDING': return 'Pendiente'
+        case 'QUEUED': return 'En cola'
+        case 'SUCCESS': return 'Exitoso'
+        case 'STARTED': return 'En progreso'
+        case 'FAILURE': return 'Error'
         default: return ''
       }
     }

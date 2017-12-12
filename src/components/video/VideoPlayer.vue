@@ -6,7 +6,7 @@
       :controls="!!controls"
       :poster="poster"
       :autoplay="autoplay"
-      :style="{ width: width, height: height }"
+      :style="{ width: width, height: height, maxHeight: '85vh' }"
       :class="classObject"
       @timeupdate="(e) => { $emit('time', e.target.currentTime ) }"
       @playing="() => { $emit('playing') }"
@@ -27,6 +27,7 @@
       ref="playerWrapper"
       :style="{ width: width, height: height }"
     ></div>
+    <canvas id="buffered_c" height="15" class="videoCentered" onclick="buffered_seek(event);"></canvas><br><br>
   </div>
 </template>
 

@@ -15,16 +15,9 @@
     >
       <v-icon>add</v-icon>
     </v-btn>
-    <v-dialog
-      v-model="dialog"
-      width="800px"
-    >
+    <v-dialog v-model="dialog" width="500px">
       <v-card>
-        <v-card-title
-          class="grey lighten-4 py-4 title"
-        >
-          Convertir video
-        </v-card-title>
+        <v-card-title class="py-4 title">Convertir video</v-card-title>
         <v-container grid-list-sm class="pa-4">
           <v-layout row wrap>
             <v-flex xs12 align-center justify-space-between>
@@ -74,7 +67,7 @@
           <!-- <v-btn flat color="primary">Guardar para después</v-btn> -->
           <v-spacer></v-spacer>
           <v-btn flat color="primary" @click="dialog = false">Cancelar</v-btn>
-          <v-btn flat @click="requestConversion">Convertir</v-btn>
+          <v-btn flat @click="doRequestConversion">Convertir</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -85,7 +78,6 @@
 import StreamNavigator from './video/StreamNavigator'
 import moment from 'moment'
 import { mapGetters, mapActions, mapState } from 'vuex'
-// require('moment/src/locale/es.js')
 moment.locale('es')
 
 export default {
@@ -118,30 +110,35 @@ export default {
 
   computed: {
     ...mapState([
-      'dvrStart'
+      'dvrStart',
+      'dvrStores'
     ]),
     ...mapGetters([
       'streams',
-      'dvrStores',
       'recordingUrl'
     ])
   },
 
   methods: {
     ...mapActions([
-      'requestDvrStores'
+      'requestDvrStores',
+      'requestStores',
+      'requestConversion'
     ]),
 
-    requestConversion () {
-      this.$store.dispatch('requestConversion', { name: this.name })
+    doRequestConversion () {
+      this.requestConversion({ name: this.name })
       .then(() => {
         this.dialog = false
+        this.$store.dispatch('requestConversions')
       })
     }
   },
 
   mounted () {
-    this.requestDvrStores(this.$route.params.stream)
+    // this.requestDvrStores(this.$route.params.stream)
+    // this.requestStreams()
+
     const ESC_KEY = 27
     document.addEventListener('keyup', (e) => {
       if (this.dialog && e.keyCode === ESC_KEY) {

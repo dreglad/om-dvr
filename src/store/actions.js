@@ -1,4 +1,5 @@
 /* Actions */
+import backend from '@/api/backend'
 import wowzaApi from '@/api/wowza'
 import slugify from 'slugify'
 import Moment from 'moment'
@@ -7,48 +8,65 @@ const moment = extendMoment(Moment)
 
 export default {
 
-  requestDvrStores ({ commit, state, getters, dispatch }, defaultStream) {
-    wowzaApi.getStores(({ stores, conversions }) => {
-      commit('RECEIVE_DVRSTORES', stores)
-      commit('RECEIVE_CONVERSIONS', conversions)
-      // select first stream if none selected
-      if (state.stream == null && getters.streams.length) {
-        dispatch('selectStream', defaultStream || getters.streams[0])
+  requestStreams ({ commit, state, dispatch }, defaultStream) {
+    return backend.getStreams(streams => {
+      commit('RECEIVE_STREAMS', streams)
+      // select default stream if none selected
+      if (state.stream == null && streams.length) {
+        dispatch('selectStream', defaultStream || state.streams[0])
       }
     })
   },
 
+  requestStreamDetails ({ commit }, stream) {
+    return backend.getStreamDetails(stream, details => {
+      const data = details['provider_data']
+      commit('RECEIVE_DVRSTORES', data['stores'])
+      commit('RECEIVE_DVRSTORE_DETAILS', data['current_store_details'])
+      commit('SET_CURRENT_STORENAME', data['current_store_details'].dvrStoreName)
+    })
+  },
+
+  // requestDvrStores ({ commit, state, getters, dispatch }, defaultStream) {
+  //   wowzaApi.getStores(({ stores, conversions }) => {
+  //     commit('RECEIVE_DVRSTORES', stores)
+  //     commit('RECEIVE_CONVERSIONS', conversions)
+  //     // select first stream if none selected
+  //     if (state.stream == null && getters.streams.length) {
+  //       dispatch('selectStream', defaultStream || getters.streams[0])
+  //     }
+  //   })
+  // },
+
   selectStream ({ commit, state, getters, dispatch }, stream) {
     commit('RESET_DVRSORE_DETAILS')
     commit('SET_DVRSTART', null)
-    commit('SELECT_STREAM', stream)
-
-    // state.dvrStores[stream].slice(0, 6)
-    // .map(dvrStore => dispatch('getDvrStoreDetails', dvrStore))
-    state.dvrStores[stream]
-    .map(dvrStore => () => dispatch('getDvrStoreDetails', dvrStore))
-    .reduce((curr, next) => curr.then(next), Promise.resolve())
-  },
-
-  updateLastStore ({ commit, state, getters, dispatch }) {
-    if (state.stream) {
-      dispatch('getDvrStoreDetails', state.dvrStores[state.stream][0])
-    }
+    commit('SET_STREAMID', stream.id)
+    dispatch('requestStreamDetails', stream).then(() => {
+      if (!state.dvrStart) {
+        let start = moment(getters.dvrAvailableMax).subtract(getters.dvrDuration, 'seconds')
+        if (start.isBefore(getters.dvrAvailableMin)) {
+          start = moment(getters.dvrAvailableMin)
+        }
+        commit('SET_DVRSTART', start)
+      }
+    })
+    /*
+    const dvrStores = state.dvrStores[stream]
+    dvrStores.slice(0, state.userSettings.onlyLeadingStore ? 1 : dvrStores.length)
+    .map(dvrStore => dispatch('getDvrStoreDetails', dvrStore))
+    */
+    // state.dvrStores[stream]
+    // .map(dvrStore => () => dispatch('getDvrStoreDetails', dvrStore))
+    // .reduce((curr, next) => curr.then(next), Promise.resolve())
   },
 
   getDvrStoreDetails ({ commit, state, getters }, dvrStore) {
     return wowzaApi.getStoreDetails(dvrStore, details => {
       commit('RECEIVE_DVRSTORE_DETAILS', { dvrStore, details })
-      if (!state.dvrStart) {
-        let start = moment(getters.dvrAvailableMax).subtract(state.dvrDuration, 'seconds')
-        if (start.isBefore(getters.dvrAvailableMin)) {
-          start = moment(getters.dvrAvailableMin)
-        }
-        commit('SET_DVRSTART', start)
-        // if (moment(start).add(state.dvrDuration, 'seconds').isAfter(getters.dvrAvailableMax)) {
-        //   commit('SET_DVRDURATION', moment(getters.dvrAvailableMax).diff(start, 'seconds'))
-        // }
-      }
+      // if (moment(start).add(getters.dvrDuration, 'seconds').isAfter(getters.dvrAvailableMax)) {
+      //   commit('SET_DVRDURATION', moment(getters.dvrAvailableMax).diff(start, 'seconds'))
+      // }
     })
   },
 
@@ -59,26 +77,47 @@ export default {
     } else {
       commit('SET_DVRDURATION', moment(getters.dvrAvailableMax).diff(state.dvrStart, 'seconds'))
     }
-    console.log(state.dvrDuration, 'last')
   },
 
   setDvrStart ({ commit, state, getters }, start) {
     commit('SET_DVRSTART', start)
-    if (getters.dvrAvailableMax.isBefore(moment(state.dvrStart).add(state.dvrDuration, 'seconds'))) {
-      console.log('maxxx')
+    if (getters.dvrAvailableMax.isBefore(moment(state.dvrStart).add(getters.dvrDuration, 'seconds'))) {
       commit('SET_DVRDURATION', Math.abs(moment(getters.dvrAvailableMax).diff(state.dvrStart, 'seconds')))
     }
   },
 
-  requestConversion ({ commit, state, getters }, options) {
+  requestWowzaConversion ({ commit, state, getters }, options) {
     return wowzaApi.doConversionRequest({
       store: getters.dvrStoreDetails.dvrStoreName,
       start: state.dvrStart.format('x'),
-      duration: Math.round(state.dvrDuration * 1000),
+      duration: Math.round(getters.dvrDuration * 1000),
       filename: slugify(options.name) + '.mp4'
     }, result => {
       console.log(result)
     })
+  },
+
+  requestConversions ({ commit, getters }, options) {
+    if (getters.selectedStream) {
+      return backend.requestConversions(getters.selectedStream, conversions => {
+        commit('RECEIVE_CONVERSIONS', conversions)
+      })
+    }
+  },
+
+  requestConversion ({ commit, state, getters }, options) {
+    return backend.requestConversion({
+      stream: getters.selectedStream,
+      store: getters.selectedStoreDetails.dvrStoreName,
+      start: state.dvrStart,
+      duration: getters.dvrDuration
+    }, result => {
+      console.log(result)
+    })
+  },
+
+  removeConversion ({ dispatch }, conv) {
+    return backend.removeConversion(conv, () => dispatch('requestConversions'))
   }
 
 }

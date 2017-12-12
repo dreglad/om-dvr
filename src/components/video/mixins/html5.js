@@ -12,7 +12,9 @@ export default {
         maxBufferLength: 30 * 60,
         maxBufferSize: 300000,
         maxBufferHole: 0.6,
-        maxFragLookUpTolerance: 0.6
+        maxFragLookUpTolerance: 0.6,
+        abrBandWidthFactor: 1.2,
+        abrBandWidthUpFactor: 1.0
       })
     }
   },
@@ -57,6 +59,7 @@ export default {
         console.log('Pos: ', this.startPosition)
         this.hls.media.currentTime = this.startPosition
         // if (!this.paused) {
+        // this.hls.currentLevel = 1
         this.hls.startLoad(this.startPosition)
         // }
         this.startPosition = 0

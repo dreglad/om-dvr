@@ -1,27 +1,42 @@
 /* Getters */
 import WowzaApi from '@/api/wowza'
 import _ from 'lodash'
+import urljoin from 'url-join'
 import Moment from 'moment'
 import { extendMoment } from 'moment-range'
 const moment = extendMoment(Moment)
+require('moment-duration-format')
 
 export default {
 
-  dvrStores (state) {
-    return state.dvrStores
+  dvrDuration (state) {
+    return state.dvrDuration || state.userSettings.defaultDvrDuration
   },
 
-  streams (state) {
-    return Object.keys(state.dvrStores)
+  isCurrentStore (state, getters) {
+    if (state.currentStoreName) {
+      return getters.selectedStoreDetails === state.currentStoreName
+    }
   },
 
-  stream (state) {
-    return state.stream
+  selectedStream (state) {
+    const streamId = state.streamId || state.userSettings.defaultStream
+    if (streamId) {
+      return state.streams.find(stream => stream.id === streamId)
+    }
   },
 
-  liveUrl (state) {
-    if (state.stream) {
-      return WowzaApi.getPlaylistUrl(state.stream)
+  // inLastStore (state) {
+  //   if (state.stream) {
+  //     state.stores[state.stream]
+  //   }
+  // },
+
+  liveUrl (state, getters) {
+    if (getters.selectedStream) {
+      const meta = getters.selectedStream.metadata
+      const streamName = `smil:${meta.wseStream}.smil`
+      return urljoin(meta.wseStreamingUrl, meta.wseApplication, streamName, 'playlist.m3u8')
     }
   },
 
@@ -33,23 +48,45 @@ export default {
     return moment(Math.max(..._.values(state.dvrStoreDetails).map(store => store.utcRange.end)))
   },
 
-  dvrStoreDetails (state, getters) {
+  selectedStoreDetails (state, getters) {
     return Object.values(state.dvrStoreDetails).find(store => {
       return store.utcRange.contains(moment(state.dvrStart))
     })
   },
 
-  dvrPlaylistUrl (state, getters) {
-    WowzaApi.getPlaylistUrl(state.stream, { params: {} })
-  },
+  // dvrPlaylistUrl (state, getters) {
+  //   if (getters.selectedStream) {
+  //     WowzaApi.getPlaylistUrl({
+  //       stream: getters.selectedStream,
+  //       store: getters.selectedStoreDetails,
+  //       currentStoreNAme: state.currentStoreName
+  //     })
+  //   }
+  // },
 
   recordingUrl (state, getters) {
-    const dvrStore = getters.dvrStoreDetails
-    if (dvrStore) {
-      return WowzaApi.getPlaylistUrl(dvrStore.dvrStoreName, {
-        params: {
-          wowzadvrplayliststart: moment.utc(state.dvrStart).format('YYYYMMDDHHmmss'),
-          wowzadvrplaylistduration: Math.round((state.dvrDuration) * 1000)
+    if (getters.selectedStoreDetails) {
+      return WowzaApi.getPlaylistUrl({
+        stream: getters.selectedStream,
+        store: getters.selectedStoreDetails,
+        currentStoreName: state.currentStoreName,
+        start: state.dvrStart,
+        duration: getters.dvrDuration
+      })
+    }
+  },
+
+  currentConversions (state, getters) {
+    if (state.conversions) {
+      return state.conversions.map(conv => {
+        return {
+          ...conv,
+          created_at: moment(conv.created_at),
+          start: moment(conv.start),
+          duration: moment.duration(conv.duration),
+          url: urljoin(getters.selectedStream.metadata.wseVodUrl, conv.id + '.mp4')
+          // humanDuration: moment.duration(conv.duration, 'milliseconds').format(),
+          // filesize: humanize.filesize(convStatus.fileSize),
         }
       })
     }

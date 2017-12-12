@@ -1,7 +1,8 @@
 import axios from 'axios'
 import _ from 'lodash'
-import Moment from 'moment'
 import querystring from 'querystring'
+import urljoin from 'url-join'
+import Moment from 'moment'
 import { extendMoment } from 'moment-range'
 const moment = extendMoment(Moment)
 
@@ -52,7 +53,6 @@ export default {
     return axios.get(`${dvrstoresBase}/${store}`).then(({ data }) => {
       const store = data.DvrConverterStore
       if ((store.utcEnd - store.utcStart) > 0) {
-        store.utcRange = moment.range(moment.utc(store.utcStart, 'x'), moment.utc(store.utcEnd))
         cb(store)
       }
     })
@@ -82,19 +82,30 @@ export default {
     .catch(e => error(e))
   },
 
-  getPlaylistUrl (stream, { ngrp = '_all', params = {} } = {}) {
+  pgetPlaylistUrl (stream, { ngrp = '_all', params = {} } = {}) {
     let qs = Object.keys(params).map(k => `${encodeURIComponent(k)}=${encodeURIComponent(params[k])}`).join('&')
     if (params.wowzadvrplayliststart) {
       qs = 'DVR&' + qs
-      return `${streamingBase}/${_conf.application}/smil:telesur-satmex6.stream.smil/playlist.m3u8` + (qs ? `?${qs}` : '')
       // return `${streamingBase}/${_conf.application}/ngrp:${stream}${ngrp}/playlist.m3u8` + (qs ? `?${qs}` : '')
-      // if (stream.indexOf('english') === -1) {
-      // return `${streamingBase}/${_conf.application}/smil:telesur-satmex6.stream.smil/playlist.m3u8` + (qs ? `?${qs}` : '')
-      // } else {
-      //   return `${streamingBase}/${_conf.application}/smil:telesur-english-venesat.stream.smil/playlist.m3u8` + (qs ? `?${qs}` : '')
-      // }
+      if (stream.indexOf('english') === -1) {
+        return `${streamingBase}/${_conf.application}/smil:telesur-satmex6.stream.smil/playlist.m3u8` + (qs ? `?${qs}` : '')
+      } else {
+        return `${streamingBase}/${_conf.application}/smil:telesur-english-venesat.stream.smil/playlist.m3u8` + (qs ? `?${qs}` : '')
+      }
     } else {
       return `${streamingBase}/${_conf.application}/ngrp:${stream}${ngrp}/playlist.m3u8` + (qs ? `?${qs}` : '')
     }
+  },
+
+  getPlaylistUrl ({ stream, store, currentStoreName, start, duration }) {
+    const streamName = (store.dvrStoreName === currentStoreName)
+      ? `smil:${stream.metadata.wseStream}.smil` : store.dvrStoreName
+    const url = urljoin(
+      stream.metadata.wseStreamingUrl, stream.metadata.wseApplication, streamName, 'playlist.m3u8')
+    const qs = querystring.stringify({
+      wowzadvrplayliststart: moment.utc(start).format('YYYYMMDDHHmmss'),
+      wowzadvrplaylistduration: Math.round(duration * 1000)
+    })
+    return url + '?DVR&' + qs
   }
 }

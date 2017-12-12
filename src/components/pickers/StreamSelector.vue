@@ -1,11 +1,14 @@
 <template>
-  <div style="width: 350px">
+  <div style="min-width: 240px">
   <v-select
     v-if="streams"
-    label="Stream"
+    label="Transmisión"
     :items="streams"
-    v-model="selectedStream"
+    item-text="name"
+    item-value="id"
+    v-model="stream"
     prepend-icon="videocam"
+    light
     solo
   />
   <v-progress-circular v-else indeterminate />
@@ -19,25 +22,32 @@ export default {
   name: 'StreamSelector',
 
   computed: {
-    ...mapGetters([
+    ...mapState([
       'streams'
     ]),
-    ...mapState([
-      'stream'
+
+    ...mapGetters([
+      'selectedStream'
     ]),
-    selectedStream: {
+
+    stream: {
       get () {
-        return this.stream
+        return this.selectedStream
       },
       set (value) {
-        this.selectStream(value)
+        this.selectStream(this.streams.find(stream => stream.id === value))
       }
     }
   },
 
+  created () {
+    this.requestStreams().then(() => this.$store.dispatch('requestConversions'))
+  },
+
   methods: {
     ...mapActions([
-      'selectStream'
+      'selectStream',
+      'requestStreams'
     ])
   }
 }

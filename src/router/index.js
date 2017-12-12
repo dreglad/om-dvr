@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import AppConversions from '@/components/AppConversions'
+import AppSupport from '@/components/AppSupport'
 import AppRecorder from '@/components/AppRecorder'
 import AppLive from '@/components/AppLive'
 
@@ -32,13 +33,13 @@ export default new Router({
       component: AppLive
     },
     {
-      path: '/distribution',
-      name: 'Distribution',
-      component: AppConversions
+      path: '/support',
+      name: 'Support',
+      component: AppSupport
     },
     {
       path: '/',
-      redirect: { name: 'Recorder' }
+      redirect: { name: 'Live' }
     }
   ]
 })

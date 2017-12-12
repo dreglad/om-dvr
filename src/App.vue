@@ -1,10 +1,12 @@
 <template>
-  <v-app id="app" light>
+  <v-app id="app" dark>
     <v-navigation-drawer
-      v-model="drawer"
-      app
+      :mini-variant="mini"
+      width="200"
       fixed
       clipped
+      dark
+      app
     >
       <v-list>
         <v-list-tile
@@ -12,55 +14,69 @@
           :key="item.route"
           :to="{ name: item.route }"
           :exact="item.exact"
+          :ripple="!mini"
         >
-          <v-list-tile-action>
-            <v-icon>{{ item.icon }}</v-icon>
-          </v-list-tile-action>
+          <v-tooltip right :disabled="!mini">
+            <v-list-tile-action slot="activator">
+              <v-badge v-if="item.route === 'Conversions' && newConversions" left>
+                <span slot="badge">{{ newConversions }}</span>
+                <v-icon>{{ item.icon }}</v-icon>
+              </v-badge>
+              <v-icon v-else>{{ item.icon }}</v-icon>
+            </v-list-tile-action>
+            <span>{{ item.title }}</span>
+          </v-tooltip>
+          
           <v-list-tile-content>
             <v-list-tile-title>{{ item.title || item.route }}</v-list-tile-title>
           </v-list-tile-content>
         </v-list-tile>
       </v-list>
     </v-navigation-drawer>
-    <v-toolbar app clipped-left fixed>
+    <v-toolbar
+      color="light-blue accent-4"
+      dark
+      clipped-left
+      fixed
+      app
+    >
       <v-toolbar-title class="ml-0 pl-3">
-        <v-toolbar-side-icon @click.stop="drawer = !drawer" />
+        <v-toolbar-side-icon @click.stop="mini = !mini" />
+        <v-btn icon large class="ml-3">
+          <v-avatar size="32px" tile>
+            <img src="./assets/logo.png" alt="OpenMultimedia">
+          </v-avatar>
+        </v-btn>
         <span class="hidden-xs-only">Open Multimedia</span>
       </v-toolbar-title>
       <v-spacer />
+      <StreamSelector />
+      <UserSettings />
       <!-- <v-toolbar-items> -->
-      <stream-selector />
       <!-- </v-toolbar-items> -->
-      <v-btn icon large>
-        <v-avatar size="32px" tile>
-          <img
-            src="./assets/logo.png"
-            alt="OpenMultimedia"
-          >
-        </v-avatar>
-      </v-btn>
     </v-toolbar>
-    <v-content>
-      <v-container fluid full-height>
+    <v-content light>
+      <v-container fluid fill-height>
         <!-- <keep-alive> -->
         <router-view>
-          <v-container fluid></v-container>
         </router-view>
         <!-- </keep-alive> -->
       </v-container>
     </v-content>
-    <v-footer app></v-footer>
+    <!-- <v-footer app></v-footer> -->
   </v-app>
 </template>
 
 <script>
 import StreamSelector from '@/components/pickers/StreamSelector'
+import UserSettings from '@/components/pickers/UserSettings'
+import _ from 'lodash'
 
 export default {
   name: 'app',
   data () {
     return {
-      drawer: false,
+      mini: true,
       menu: [
         {
           route: 'Live',
@@ -75,17 +91,32 @@ export default {
         {
           route: 'Conversions',
           title: 'Conversiones',
+          icon: 'fiber_smart_record'
+        },
+        {
+          route: 'Support',
+          title: 'Videos',
           icon: 'subscriptions'
         },
         {
-          route: 'Distribution',
-          title: 'Distribución',
-          icon: 'device_hub'
+          route: 'Support',
+          title: 'Soporte',
+          icon: 'live_help'
         }
       ]
     }
   },
-  components: { StreamSelector }
+
+  computed: {
+    newConversions () {
+      return _.difference(this.$store.state.conversions.map(conv => conv.id), this.$store.state.seenConversions).length
+    }
+  },
+
+  mounted () {
+  },
+
+  components: { StreamSelector, UserSettings }
 }
 </script>
 
