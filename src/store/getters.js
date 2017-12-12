@@ -81,10 +81,11 @@ export default {
       return state.conversions.map(conv => {
         return {
           ...conv,
-          created_at: moment(conv.created_at),
-          start: moment(conv.start),
+          created_at: moment(conv.created_at).local(),
+          start: moment(conv.start).local(),
           duration: moment.duration(conv.duration),
-          url: urljoin(getters.selectedStream.metadata.wseVodUrl, conv.id + '.mp4')
+          url: urljoin(getters.selectedStream.metadata.wseVodUrl, conv.id + '.mp4'),
+          end: moment(conv.end).local()
           // humanDuration: moment.duration(conv.duration, 'milliseconds').format(),
           // filesize: humanize.filesize(convStatus.fileSize),
         }
