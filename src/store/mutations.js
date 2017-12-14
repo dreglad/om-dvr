@@ -47,6 +47,10 @@ export default {
     state.userSettings.onlyLeadingStore = !!value
   },
 
+  SET_PREVIOUS_STREAMID (state, streamId) {
+    state.previousStreamId = streamId
+  },
+
   SET_USERSETTINGS_DEFAULTDVRDURATION (state, value) {
     state.userSettings.defaultDvrDuration = value
   },
@@ -56,7 +60,15 @@ export default {
   },
 
   RESET_SEEN_CONVERSIONS (state) {
-    state.seenConversions = state.conversions.map(conv => conv.id)
+    Vue.set(state.seenConversions, state.streamId, state.conversions.map(conv => conv.id))
+  },
+
+  RESET_CONVERSIONS (state) {
+    state.conversions = []
+  },
+
+  SET_USERSETTINGS_MINIMENU (state, value) {
+    state.userSettings.miniMenu = !!value
   }
 
 }

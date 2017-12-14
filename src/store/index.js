@@ -8,15 +8,20 @@ import createPersistedState from 'vuex-persistedstate'
 Vue.use(Vuex)
 
 const debug = process.env.NODE_ENV !== 'production'
+
+const version = '0.1.3'
 const persistedState = createPersistedState({
+  key: 'dvr-2',
   paths: [
     'userSettings',
-    'seenConversions'
+    'seenConversions',
+    'previousStreamId'
   ]
 })
 
 const state = {
   // Remote data
+
   streams: [],
   dvrStores: {},
   dvrStoreDetails: {},
@@ -27,9 +32,6 @@ const state = {
   streamId: null,
   dvrStart: null,
   dvrDuration: null,
-
-  // Transient
-  seenConversions: [],
 
   // Persistent
   userSettings: {
@@ -42,8 +44,12 @@ const state = {
     defaultDvrDuration: 60 * 30,
     defaultPosition: 'start', // 'start', 'end' or time in seconds
     hlsLevel: 'auto', // 'auto', or level
-    defaultPage: 'Live'
-  }
+    defaultPage: 'Live',
+    miniMenu: false
+  },
+  seenConversions: {},
+  previousStreamId: null,
+  version: version
 }
 
 export default new Vuex.Store({

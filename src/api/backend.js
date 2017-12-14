@@ -31,9 +31,16 @@ export default {
   },
 
   requestConversions (stream, cb) {
-    return axios.get(urljoin(apiBase, 'conversions/'), { stream: stream.id })
+    return axios.get(urljoin(apiBase, 'conversions/'), {
+      params: { stream: stream.id }
+    })
     .then(({ data }) => { cb(data) })
     .catch(e => error(e))
+  },
+
+  getThumbnailUrl (stream, time) {
+    const fileName = `${stream.metadata.wseStream}_${Math.ceil(moment(time).format('X'))}.jpg`
+    return urljoin(stream.metadata.wseVodUrl, 'thumbnails', fileName)
   },
 
   requestConversion ({ stream, store, start, duration, metadata = {} }, cb) {

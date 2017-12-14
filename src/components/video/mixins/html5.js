@@ -13,15 +13,15 @@ export default {
         maxBufferSize: 300000,
         maxBufferHole: 0.6,
         maxFragLookUpTolerance: 0.6,
-        abrBandWidthFactor: 1.2,
-        abrBandWidthUpFactor: 1.0
+        abrBandWidthFactor: 0.9,
+        abrBandWidthUpFactor: 0.8
       })
     }
   },
 
   watch: {
     hlsSource (source) {
-      console.log('Watched hlsSource, re-attaching new source')
+      // console.log('Watched hlsSource, re-attaching new source')
       const media = this.hls.media
       if (media) {
         this.hls.detachMedia()
@@ -36,27 +36,27 @@ export default {
         return this.hls.media.currentTime
       },
       set (val) {
-        console.log('setting CT: ', val)
+        // console.log('setting CT: ', val)
         this.hls.media.currentTime = val
       }
     }
   },
 
   beforeDestroy () {
-    console.log('DESTROYING HLS')
+    // console.log('DESTROYING HLS')
     this.hls && this.hls.destroy()
   },
 
   methods: {
     setupListeners () {
       this.hls.on(window.Hls.Events.MEDIA_ATTACHED, () => {
-        console.log('MEDIA_ATTACHED')
+        // console.log('MEDIA_ATTACHED')
         this.hls.loadSource(this.hlsSource.src)
       })
 
       this.hls.on(window.Hls.Events.MANIFEST_PARSED, (event, data) => {
-        console.log('MENIFEST_PASSED')
-        console.log('Pos: ', this.startPosition)
+        // console.log('MENIFEST_PASSED')
+        // console.log('Pos: ', this.startPosition)
         this.hls.media.currentTime = this.startPosition
         // if (!this.paused) {
         // this.hls.currentLevel = 1

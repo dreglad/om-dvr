@@ -7,32 +7,33 @@
         :pagination.sync="pagination"
       >
         <template slot="items" slot-scope="props">
-          <td v-if="props.item.status == 'STARTED'">
-            <v-progress-circular
-              :size="60"
-              :width="10"
+          <td v-if="props.item.status == 'STARTED' || props.item.status == 'SUCCESS'">
+            <v-progress-circular :size="50" :width="3" class="ma-2"
               :value="props.item.progress * 100"
-              color="blue"
-              class="ma-1"
-            ><span>{{ Math.ceil(props.item.progress * 100 )}}%</span></v-progress-circular>
+              :color="progressColor(props.item)"
+            >
+              <!-- <span v-if="props.item.progress < 1">{{ Math.max(1, Math.ceil(props.item.progress * 100 )) }}%</span> -->
+              <span><v-icon :color="progressColor(props.item)">{{ progressIcon(props.item) }}</v-icon></span>
+            </v-progress-circular>
           </td>
           <td v-else>{{ props.item.status | converisonStatus }}</td>
           <!-- <td>{{ props.item.created_at.format('lll') }}</td> -->
+          <td>
+            <!-- <v-layout row justify-left align-center> -->
+              <img :height="68" class="pa-2" style="vertical-align:middle;"
+                :style="{ opacity: props.item.progress < 1 ? 0.6 : 1 }"
+                :src="getThumbnail(props.item, 0)" />
+              <!-- <v-flex xs1 ><v-icon>forward_arrow</v-icon></v-flex> -->
+              <img :height="68" class="pa-2" style="vertical-align:middle;"
+                :style="{ opacity: props.item.progress < 1 ? 0.6 : 1 }"
+                :src="getThumbnail(props.item, props.item.progress)" />
+            <!-- </v-layout> -->
+          </td>
           <td>{{ props.item.start.format('dddd D [de] MMM [de] YYYY') }}</td>
           <td>{{ props.item.start.format('HH:mm:ss') }}</td>
           <td>{{ props.item.end.format('HH:mm:ss') }}</td>
           <td>{{ props.item.duration.format('HH:mm:ss', { trim: false }) }}</td>
           <td>
-            <v-tooltip left v-if="false">
-              <v-btn fab flat
-                slot="activator"
-                @click="setDvr(props.items)"
-              >
-                <v-icon large>av_timer</v-icon>
-              </v-btn>
-              <span>Ver en la grabadora</span>
-            </v-tooltip>
-
             <v-tooltip top>
               <v-btn fab flat
                 slot="activator"
@@ -45,13 +46,24 @@
               <span>Link de descarga</span>
             </v-tooltip>
 
+            <v-tooltip left>
+              <v-btn fab flat
+                slot="activator"
+                @click="setDvr(props.item)"
+              >
+                <v-icon large>av_timer</v-icon>
+              </v-btn>
+              <span>Ver en la grabadora</span>
+            </v-tooltip>
+
             <v-tooltip right>
               <v-btn fab flat
                 slot="activator"
                 :disabled="props.item.status === 'STARTED'"
                 @click="removeConversion(props.item)"
               >
-                <v-icon large>delete</v-icon>
+                <v-icon v-if="props.item.status == 'PENDING'" large>cancel</v-icon>
+                <v-icon v-else large>delete</v-icon>
               </v-btn>
               <span v-if="props.item.status == 'PENDING'">Cancelar conversión</span>
               <span v-else>Eliminar conversión</span>
@@ -65,6 +77,9 @@
 
 <script>
 import { mapActions, mapGetters } from 'vuex'
+import backend from '@/api/backend'
+import moment from 'moment'
+
 // import _ from 'lodash'
 // import humanize from 'humanize'
 
@@ -85,12 +100,16 @@ export default {
           align: 'left'
         },
         {
-          text: 'Fecha inicio',
+          text: 'Miniaturas',
+          align: 'left'
+        },
+        {
+          text: 'Fecha',
           value: 'start',
           align: 'left'
         },
         {
-          text: 'Hora inicio',
+          text: 'Hora inicial',
           value: 'start',
           align: 'left'
         },
@@ -115,7 +134,8 @@ export default {
 
   computed: {
     ...mapGetters([
-      'currentConversions'
+      'currentConversions',
+      'selectedStream'
     ])
   },
 
@@ -125,7 +145,49 @@ export default {
       'removeConversion'
     ]),
 
+    getThumbnail (conv, timeProportion) {
+      timeProportion = timeProportion || 0
+      let time = moment(conv.start).add(conv.duration.asSeconds() * timeProportion, 'seconds')
+      if (timeProportion === 0) {
+        time += 1
+      } else if (timeProportion >= 1) {
+        time -= 1
+      }
+      return backend.getThumbnailUrl(this.selectedStream, time)
+    },
+
+    progressColor (conv) {
+      switch (conv.status) {
+        case 'STARTED':
+          return 'blue'
+        case 'SUCCESS':
+          return 'green'
+        case 'FAILURE':
+          return 'deep-orange'
+        case 'PENDING':
+        case 'QUEUED':
+          return 'amber'
+      }
+    },
+
+    progressIcon (conv) {
+      switch (conv.status) {
+        case 'STARTED':
+          return 'build'
+        case 'SUCCESS':
+          return 'check'
+        case 'FAILURE':
+          return 'report_problem'
+        case 'PENDING':
+        case 'QUEUED':
+          return 'access_alarm'
+      }
+    },
+
     setDvr (conv) {
+      this.$store.commit('SET_DVRDURATION', conv.duration)
+      this.$store.commit('SET_DVRSTART', conv.start)
+      this.$router.push({ name: 'Recorder' })
     }
   },
 
@@ -136,7 +198,7 @@ export default {
         this.requestConversions().then(() => {
           this.$store.commit('RESET_SEEN_CONVERSIONS')
         })
-      }, 3000)
+      }, 1000)
     })
   },
 

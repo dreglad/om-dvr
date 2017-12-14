@@ -45,7 +45,7 @@
             </v-list-tile-action>
             <v-list-tile-title>Ventana inicial</v-list-tile-title>
           </v-list-tile>
-          <v-list-tile>
+          <!-- <v-list-tile>
             <v-list-tile-action>
               <v-select
                 :items="defaultPageOptions"
@@ -53,7 +53,7 @@
               />
             </v-list-tile-action>
             <v-list-tile-title>Página inicial</v-list-tile-title>
-          </v-list-tile>
+          </v-list-tile> -->
         </v-list>
         <!-- <v-card-actions>
           <v-spacer></v-spacer>

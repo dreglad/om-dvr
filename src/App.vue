@@ -1,7 +1,7 @@
 <template>
   <v-app id="app" dark>
     <v-navigation-drawer
-      :mini-variant="mini"
+      :mini-variant="miniMenu"
       width="200"
       fixed
       clipped
@@ -14,9 +14,8 @@
           :key="item.route"
           :to="{ name: item.route }"
           :exact="item.exact"
-          :ripple="!mini"
         >
-          <v-tooltip right :disabled="!mini">
+          <v-tooltip right :disabled="!miniMenu">
             <v-list-tile-action slot="activator">
               <v-badge v-if="item.route === 'Conversions' && newConversions" left>
                 <span slot="badge">{{ newConversions }}</span>
@@ -41,13 +40,13 @@
       app
     >
       <v-toolbar-title class="ml-0 pl-3">
-        <v-toolbar-side-icon @click.stop="mini = !mini" />
+        <v-toolbar-side-icon @click="miniMenu = !miniMenu" />
         <v-btn icon large class="ml-3">
           <v-avatar size="32px" tile>
             <img src="./assets/logo.png" alt="OpenMultimedia">
           </v-avatar>
         </v-btn>
-        <span class="hidden-xs-only">Open Multimedia</span>
+        <span class="hidden-xs-only">Open Multimedia <sup>v.{{ $store.state.version }}</sup></span>
       </v-toolbar-title>
       <v-spacer />
       <StreamSelector />
@@ -76,7 +75,6 @@ export default {
   name: 'app',
   data () {
     return {
-      mini: true,
       menu: [
         {
           route: 'Live',
@@ -109,7 +107,21 @@ export default {
 
   computed: {
     newConversions () {
-      return _.difference(this.$store.state.conversions.map(conv => conv.id), this.$store.state.seenConversions).length
+      const state = this.$store.state
+      if (state.seenConversions[state.streamId]) {
+        const convIds = state.conversions.map(conv => conv.id)
+        const seenIds = state.seenConversions[state.streamId]
+        return _.difference(convIds, seenIds).length
+      }
+    },
+
+    miniMenu: {
+      get () {
+        return this.$store.state.userSettings.miniMenu
+      },
+      set (value) {
+        this.$store.commit('SET_USERSETTINGS_MINIMENU', value)
+      }
     }
   },
 
