@@ -146,8 +146,9 @@ export default {
     ]),
 
     gotoDvr (conv) {
-      this.$store.dispatch('setDvr', conv)
-      this.$router.push({ name: 'Recorder' })
+      this.$router.push({ name: 'Recorder' }, () => {
+        this.$store.dispatch('setDvr', conv)
+      })
     },
 
     getThumbnail (conv, timeProportion) {

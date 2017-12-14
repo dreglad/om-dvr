@@ -56,7 +56,13 @@ export default {
 
     options () {
       return {
-        locale: 'es'
+        locale: 'es',
+        onInitialDrawComplete: (initial) => {
+          if (this.dvrStart) {
+            this.$refs.timeline.setCurrentTime(this.dvrStart)
+            this.$refs.timeline.moveTo(this.dvrStart)
+          }
+        }
       }
     },
 

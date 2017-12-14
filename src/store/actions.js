@@ -72,7 +72,6 @@ export default {
   setDvr ({ commit }, { duration, start }) {
     commit('SET_DVRDURATION', duration)
     commit('SET_DVRSTART', start)
-    // this.$router.push({ name: 'Recorder' })
   },
 
   getDvrStoreDetails ({ commit, state, getters }, dvrStore) {
