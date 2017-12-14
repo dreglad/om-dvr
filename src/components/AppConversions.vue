@@ -49,7 +49,7 @@
             <v-tooltip left>
               <v-btn fab flat
                 slot="activator"
-                @click="setDvr(props.item)"
+                @click="gotoDvr(props.item)"
               >
                 <v-icon large>av_timer</v-icon>
               </v-btn>
@@ -145,6 +145,11 @@ export default {
       'removeConversion'
     ]),
 
+    gotoDvr (conv) {
+      this.$store.dispatch('setDvr', conv)
+      this.$router.push({ name: 'Recorder' })
+    },
+
     getThumbnail (conv, timeProportion) {
       timeProportion = timeProportion || 0
       let time = moment(conv.start).add(conv.duration.asSeconds() * timeProportion, 'seconds')
@@ -182,12 +187,6 @@ export default {
         case 'QUEUED':
           return 'access_alarm'
       }
-    },
-
-    setDvr (conv) {
-      this.$store.commit('SET_DVRDURATION', conv.duration)
-      this.$store.commit('SET_DVRSTART', conv.start)
-      this.$router.push({ name: 'Recorder' })
     }
   },
 

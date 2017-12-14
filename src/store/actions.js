@@ -46,6 +46,7 @@ export default {
     commit('SET_STREAMID', stream.id)
     commit('SET_PREVIOUS_STREAMID', stream.id)
     dispatch('requestStreamDetails', stream).then(() => {
+      // RECORDER
       if (!state.dvrStart) {
         let start = moment(getters.dvrAvailableMax).subtract(getters.dvrDuration, 'seconds')
         if (start.isBefore(getters.dvrAvailableMin)) {
@@ -60,9 +61,18 @@ export default {
       }
     })
 
+    // CONVERSIONS
+    dispatch('requestConversions')
+
     // state.dvrStores[stream]
     // .map(dvrStore => () => dispatch('getDvrStoreDetails', dvrStore))
     // .reduce((curr, next) => curr.then(next), Promise.resolve())
+  },
+
+  setDvr ({ commit }, { duration, start }) {
+    commit('SET_DVRDURATION', duration)
+    commit('SET_DVRSTART', start)
+    // this.$router.push({ name: 'Recorder' })
   },
 
   getDvrStoreDetails ({ commit, state, getters }, dvrStore) {

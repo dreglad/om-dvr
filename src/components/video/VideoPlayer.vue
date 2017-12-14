@@ -97,7 +97,6 @@ export default {
       return Object.values(this.dependenciesLoaded).every(dep => dep)
     },
     hlsSource () {
-      console.log('computando')
       return this.sources.find(src => this.getSrcType(src) === 'application/x-mpegURL')
     }
   },

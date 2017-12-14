@@ -1,7 +1,6 @@
 <template>
-  <v-container fluid grid-list-xl>
+  <v-container fluid class="pa-0">
     <v-layout row wrap justify-center>
-
       <!-- left buttons -->
       <v-flex lg5 text-xs-right class="pa-0 ma-0 pt-1">
         <!-- <v-select
@@ -9,19 +8,19 @@
           segmented
           style="width: 100px"
         /> -->
-        <v-btn small class="pa-0 ma-0"
+        <v-btn class="pa-0 ma-0"
           v-if="canExpandStart"
           @click="expandDuration(-60*30)"
         >
           &lt; 30m
         </v-btn>
-        <v-btn small class="pa-0 ma-0"
+        <v-btn class="pa-0 ma-0"
           v-if="canExpandStart"
           @click="expandDuration(-10*60)"
         >
           &lt; 10m
         </v-btn>
-        <v-btn small class="pa-0 ma-0"
+        <v-btn class="pa-0 ma-0"
           v-if="canExpandStart"
           @click="expandDuration(-5)"
         >
@@ -78,14 +77,14 @@
         >
           <v-icon dark>subdirectory_arrow_left</v-icon>
         </v-btn>
-        <v-btn v-if="canExpandEnd" @click="expandDuration(+5)" small :disabled="!playerSources.length">5s &gt;</v-btn>
-        <v-btn v-if="canExpandEnd" @click="expandDuration(+10*60)" small :disabled="!playerSources.length">10m &gt;</v-btn>
-        <v-btn v-if="canExpandEnd" @click="expandDuration(+60*30)" small :disabled="!playerSources.length">30m &gt;</v-btn>
+        <v-btn v-if="canExpandEnd" @click="expandDuration(+5)" class="pa-0 ma-0" :disabled="!playerSources.length">5s &gt;</v-btn>
+        <v-btn v-if="canExpandEnd" @click="expandDuration(+10*60)" class="pa-0 ma-0" :disabled="!playerSources.length">10m &gt;</v-btn>
+        <v-btn v-if="canExpandEnd" @click="expandDuration(+60*30)" class="pa-0 ma-0" :disabled="!playerSources.length">30m &gt;</v-btn>
       </v-flex>
     </v-layout>
 
-    <v-layout row wrap>
-      <v-flex lg6 md12 text-xs-center style="cursor: pointer; width:680px;">
+    <v-layout row wrap class="pt-2" justify-space-between>
+      <v-flex lg6 md12 text-xs-center class="pr-2" style="height: 400px; cursor: pointer;">
         <div
           v-if="playerSources.length"
           @click="playing = !playing"
@@ -108,7 +107,7 @@
         <v-progress-circular v-else indeterminate />
       </v-flex>
 
-      <v-flex lg3 md6 text-xs-center>
+      <v-flex lg3 md6 text-xs-right justify-right>
         <v-time-picker
           v-model="selectedTime"
           :allowed-hours="allowedHours"
@@ -125,31 +124,6 @@
         />
       </v-flex>
     </v-layout>
-
-    <!-- <v-layout row justify-center>
-      <v-flex lg1>
-              <v-text-field 
-                v-model="currentSeconds"
-                :prefix="secondsPrefix"
-                type="number"
-              />
-            </v-flex>
-      <v-flex lg6>
-        <v-slider
-          v-model="duration"
-          :max="(60 * 60 * 3)"
-          :min="1"
-          label="Duración"
-        />
-      </v-flex>
-      <v-flex lg3>
-        <v-text-field 
-          v-model="duration"
-          :suffix="durationDisplay"
-          type="number"
-        />
-      </v-flex>
-    </v-layout> -->
   </v-container>
 </template>
 

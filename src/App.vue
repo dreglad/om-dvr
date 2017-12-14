@@ -49,13 +49,13 @@
         <span class="hidden-xs-only">Open Multimedia <sup>v.{{ $store.state.version }}</sup></span>
       </v-toolbar-title>
       <v-spacer />
-      <StreamSelector />
-      <UserSettings />
       <!-- <v-toolbar-items> -->
+        <StreamSelector />
+        <UserSettings />
       <!-- </v-toolbar-items> -->
     </v-toolbar>
-    <v-content light>
-      <v-container fluid fill-height>
+    <v-content>
+      <v-container fluid>
         <!-- <keep-alive> -->
         <router-view>
         </router-view>

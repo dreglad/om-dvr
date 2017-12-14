@@ -52,7 +52,7 @@ export default {
   },
 
   created () {
-    this.requestStreams().then(() => this.$store.dispatch('requestConversions'))
+    this.requestStreams()
   },
 
   methods: {

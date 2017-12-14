@@ -1,8 +1,7 @@
 <template>
   <div>
-    <v-layout>
-      <StreamNavigator />
-    </v-layout>
+    <StreamNavigator />
+    <StreamTimeline />
     <v-btn
       v-if="recordingUrl"
       @click.stop="dialog = !dialog"
@@ -76,6 +75,7 @@
 
 <script>
 import StreamNavigator from './video/StreamNavigator'
+import StreamTimeline from './video/StreamTimeline'
 import moment from 'moment'
 import { mapGetters, mapActions, mapState } from 'vuex'
 moment.locale('es')
@@ -148,7 +148,8 @@ export default {
   },
 
   components: {
-    StreamNavigator
+    StreamNavigator,
+    StreamTimeline
   }
 }
 </script>
