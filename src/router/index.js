@@ -19,6 +19,14 @@ export default new Router({
       component: AppRecorder
     },
     {
+      path: '/recorder/:stream/:dvrStart',
+      component: AppRecorder
+    },
+    {
+      path: '/recorder/:stream/:dvrDuration',
+      component: AppRecorder
+    },
+    {
       path: '/recorder/:stream/:dvrStart/:dvrDuration',
       component: AppRecorder
     },
@@ -31,6 +39,11 @@ export default new Router({
       path: '/live',
       name: 'Live',
       component: AppLive
+    },
+    {
+      path: '/videos',
+      name: 'Videos',
+      component: AppSupport
     },
     {
       path: '/support',

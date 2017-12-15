@@ -92,7 +92,7 @@ export default {
           icon: 'fiber_smart_record'
         },
         {
-          route: 'Support',
+          route: 'Videos',
           title: 'Videos',
           icon: 'subscriptions'
         },

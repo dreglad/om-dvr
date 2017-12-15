@@ -70,7 +70,7 @@ export default {
   },
 
   setDvr ({ commit }, { duration, start }) {
-    commit('SET_DVRDURATION', duration)
+    commit('SET_DVRDURATION', moment.isDuration(duration) ? duration.asSeconds() : duration)
     commit('SET_DVRSTART', start)
   },
 
