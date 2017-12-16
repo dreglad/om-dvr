@@ -48,7 +48,7 @@ export default {
       stream: stream.id,
       dvr_store: store,
       start: moment(start).format(),
-      duration: moment.duration(duration, 'seconds').format('HH:mm:ss.SSSSSS'),
+      duration: moment.duration(duration, 'seconds').format('HH:mm:ss.SS', { trim: false }),
       metadata: metadata
     }
     console.log(params)
