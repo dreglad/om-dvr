@@ -39,8 +39,8 @@ export default {
   data () {
     return {
       groups: [
-        { id: 'conversions', content: 'Conversiones' },
-        { id: 'current', content: 'Nueva' }
+        { id: 'conversions', content: 'Conversiones', className: 'conversions' },
+        { id: 'recording', content: 'Grabación', className: 'recording' }
       ],
       endBar: null
     }
