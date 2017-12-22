@@ -27,8 +27,10 @@ export default {
   },
 
   RECEIVE_DVRSTORE_DETAILS (state, details) {
-    details.utcRange = moment.range(moment.utc(details.utcStart, 'x'), moment.utc(details.utcEnd))
-    Vue.set(state.dvrStoreDetails, details['dvrStoreName'], details)
+    [...details].map(details => {
+      details.utcRange = moment.range(moment.utc(details.utcStart, 'x'), moment.utc(details.utcEnd))
+      Vue.set(state.dvrStoreDetails, details['dvrStoreName'], details)
+    })
   },
 
   RESET_DVRSORE_DETAILS (state) {
@@ -69,6 +71,18 @@ export default {
 
   SET_USERSETTINGS_MINIMENU (state, value) {
     state.userSettings.miniMenu = !!value
+  },
+
+  SET_VIDEO_SOURCE (state, source) {
+    state.videoSource = source
+  },
+
+  SET_VIDEO_TIME (state, videoTime) {
+    state.videoTime = videoTime
+  },
+
+  SET_PLAYING (state, playing) {
+    state.playing = playing
   }
 
 }

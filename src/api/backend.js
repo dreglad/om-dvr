@@ -8,7 +8,7 @@ const moment = extendMoment(Moment)
 require('moment-duration-format')
 
 // const apiBase = 'http://127.0.0.1:8000/api'
-const apiBase = 'http://dvr.omedia.io:8000/api'
+const apiBase = 'http://dvr.omedia.io/api'
 
 function error (e) {
   console.log('Backend API error: ', e)

@@ -13,11 +13,11 @@ export default {
     return state.dvrDuration || state.userSettings.defaultDvrDuration
   },
 
-  isCurrentStore (state, getters) {
-    if (state.currentStoreName) {
-      return getters.selectedStoreDetails === state.currentStoreName
-    }
-  },
+  // isCurrentStore (state, getters) {
+  //   if (state.currentStoreName) {
+  //     return getters.selectedStoreDetails === state.currentStoreName
+  //   }
+  // },
 
   selectedStream (state) {
     const streamId = state.streamId || state.userSettings.defaultStream
@@ -37,6 +37,12 @@ export default {
       const meta = getters.selectedStream.metadata
       const streamName = `smil:${meta.wseStream}.smil`
       return urljoin(meta.wseStreamingUrl, meta.wseApplication, streamName, 'playlist.m3u8')
+    }
+  },
+
+  dvrRange (state, getters) {
+    if (state.dvrStart) {
+      return moment.range(state.dvrStart, moment(state.dvrStart).add(getters.dvrDuration, 'seconds'))
     }
   },
 
@@ -64,7 +70,7 @@ export default {
   //   }
   // },
 
-  recordingUrl (state, getters) {
+  videoSource (state, getters) {
     if (getters.selectedStoreDetails) {
       return WowzaApi.getPlaylistUrl({
         stream: getters.selectedStream,

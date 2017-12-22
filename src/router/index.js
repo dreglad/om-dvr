@@ -1,9 +1,9 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import AppConversions from '@/components/AppConversions'
-import AppSupport from '@/components/AppSupport'
-import AppRecorder from '@/components/AppRecorder'
+import AppDvr from '@/components/AppDvr'
 import AppLive from '@/components/AppLive'
+import AppSupport from '@/components/AppSupport'
 
 Vue.use(Router)
 
@@ -12,23 +12,23 @@ export default new Router({
     {
       path: '/recorder',
       name: 'Recorder',
-      component: AppRecorder
+      component: AppDvr
     },
     {
       path: '/recorder/:stream',
-      component: AppRecorder
+      component: AppDvr
     },
     {
       path: '/recorder/:stream/:dvrStart',
-      component: AppRecorder
+      component: AppDvr
     },
     {
       path: '/recorder/:stream/:dvrDuration',
-      component: AppRecorder
+      component: AppDvr
     },
     {
       path: '/recorder/:stream/:dvrStart/:dvrDuration',
-      component: AppRecorder
+      component: AppDvr
     },
     {
       path: '/conversions',

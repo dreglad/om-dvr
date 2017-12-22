@@ -41,7 +41,7 @@
     >
       <v-toolbar-title class="ml-0 pl-3">
         <v-toolbar-side-icon @click="miniMenu = !miniMenu" />
-        <v-btn icon large class="ml-3">
+        <v-btn icon large class="ml-3 hidden-xs-only">
           <v-avatar size="32px" tile>
             <img src="./assets/logo.png" alt="OpenMultimedia">
           </v-avatar>
@@ -55,10 +55,9 @@
       <!-- </v-toolbar-items> -->
     </v-toolbar>
     <v-content>
-      <v-container fluid>
+      <v-container fluid class="pa-0">
         <!-- <keep-alive> -->
-        <router-view>
-        </router-view>
+        <router-view></router-view>
         <!-- </keep-alive> -->
       </v-container>
     </v-content>

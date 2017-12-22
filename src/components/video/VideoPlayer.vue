@@ -20,14 +20,14 @@
         :type="getSrcType(src)"
         :src="src.src || src"
       >
-    {{ $t('Video format not supported
+    Video format not supported
     </video>
     <div
       v-else-if="noVideoTag"
       ref="playerWrapper"
       :style="{ width: width, height: height }"
     ></div>
-    <canvas id="buffered_c" height="15" class="videoCentered" onclick="buffered_seek(event);"></canvas><br><br>
+    <!-- <canvas id="buffered_c" height="15" class="videoCentered" onclick="buffered_seek(event);"></canvas><br><br> -->
   </div>
 </template>
 

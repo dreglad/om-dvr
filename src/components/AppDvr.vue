@@ -1,19 +1,66 @@
 <template>
   <div>
-    <StreamNavigator />
-    <StreamTimeline />
-    <v-btn
-      v-if="recordingUrl"
-      @click.stop="dialog = !dialog"
-      fab
-      bottom
-      right
-      color="pink"
-      dark
-      fixed
+    <!-- Select time widget -->
+    <v-menu lazy offset-y full-width
+      :close-on-content-click="false"
+      transition="scale-transition"
+      :nudge-right="40"
     >
-      <v-icon>add</v-icon>
+      <v-btn slot="activator" small fab right fixed top style="margin-top: 60px; margin-right:48px;">
+        <v-tooltip left>
+          <v-icon slot="activator">query_builder</v-icon>
+          <span>Elegir hora</span>
+        </v-tooltip>
+      </v-btn>
+      <dvr-time-picker type="time" />
+    </v-menu>
+
+    <!-- Select date widget -->
+    <v-menu lazy offset-y full-width slot="activator"
+      :close-on-content-click="false"
+      transition="scale-transition"
+      :nudge-right="40"
+    >
+      <v-btn slot="activator" small fab right fixed top style="margin-top: 60px;">
+        <v-tooltip bottom>
+          <v-icon slot="activator">event</v-icon>
+          <span>Elegir&nbsp;fecha</span>
+        </v-tooltip>
+      </v-btn>
+      <dvr-time-picker type="date" />
+    </v-menu>
+
+    <!-- main vidoe player -->
+    <v-layout row style="min-height: 400px;">
+      <v-flex md5>
+        <dvr-player />
+      </v-flex>
+      <v-flex md7 d-flex>
+        <v-card>
+          Card
+        </v-card>
+      </v-flex>
+    </v-layout>
+
+    <!-- timeline -->
+    <v-layout row>
+      <v-flex xs12>
+        <dvr-timeline />
+      </v-flex>
+    </v-layout>
+
+    <!-- Add new segment button -->
+    <v-btn small style="margin-right: 0;"
+      v-if="streamId"
+      @click.stop="dialog = !dialog"
+      fab bottom right fixed
+    >
+      <v-tooltip top :open-delay="2000">
+        <v-icon slot="activator">add</v-icon>
+        <span>Agregr&nbsp;segmento</span>
+      </v-tooltip>
     </v-btn>
+
     <v-dialog v-model="dialog" width="500px">
       <v-card>
         <v-card-title class="py-4 title">Convertir video</v-card-title>
@@ -74,14 +121,15 @@
 </template>
 
 <script>
-import StreamNavigator from './video/StreamNavigator'
-import StreamTimeline from './video/StreamTimeline'
+import DvrPlayer from './video/DvrPlayer'
+import DvrTimeline from './video/DvrTimeline'
+import DvrTimePicker from './pickers/DvrTimePicker'
 import moment from 'moment'
 import { mapGetters, mapActions, mapState } from 'vuex'
 moment.locale('es')
 
 export default {
-  name: 'AppRecorder',
+  name: 'app-dvr',
 
   data () {
     return {
@@ -111,11 +159,12 @@ export default {
   computed: {
     ...mapState([
       'dvrStart',
-      'dvrStores'
+      'dvrStores',
+      'streamId'
     ]),
     ...mapGetters([
       'streams',
-      'recordingUrl'
+      'dvrRange'
     ])
   },
 
@@ -148,8 +197,9 @@ export default {
   },
 
   components: {
-    StreamNavigator,
-    StreamTimeline
+    DvrPlayer,
+    DvrTimeline,
+    DvrTimePicker
   }
 }
 </script>

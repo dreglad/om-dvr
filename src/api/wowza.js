@@ -50,7 +50,9 @@ export default {
   },
 
   getStoreDetails (store, cb) {
+    console.log('aaap')
     return axios.get(`${dvrstoresBase}/${store}`).then(({ data }) => {
+      console.log('ccc')
       const store = data.DvrConverterStore
       if ((store.utcEnd - store.utcStart) > 0) {
         cb(store)
@@ -100,6 +102,7 @@ export default {
   getPlaylistUrl ({ stream, store, currentStoreName, start, duration }) {
     const streamName = (store.dvrStoreName === currentStoreName)
       ? `smil:${stream.metadata.wseStream}.smil` : store.dvrStoreName
+    // const streamName = store.dvrStoreName
     const url = urljoin(
       stream.metadata.wseStreamingUrl, stream.metadata.wseApplication, streamName, 'playlist.m3u8')
     const qs = querystring.stringify({

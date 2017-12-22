@@ -9,7 +9,7 @@ Vue.use(Vuex)
 
 const debug = process.env.NODE_ENV !== 'production'
 
-const version = '0.1.5'
+const version = '0.2.2'
 const persistedState = createPersistedState({
   key: 'dvr-2',
   paths: [
@@ -21,7 +21,6 @@ const persistedState = createPersistedState({
 
 const state = {
   // Remote data
-
   streams: [],
   dvrStores: {},
   dvrStoreDetails: {},
@@ -33,7 +32,15 @@ const state = {
   dvrStart: null,
   dvrDuration: null,
 
+  // Ephemeral video state
+  videoTime: 0,
+  playing: false,
+  ended: false,
+
+  segments: [],
+
   // Persistent
+  savedSegments: [],
   userSettings: {
     username: 'admin',
     password: 'passpass',

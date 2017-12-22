@@ -23,7 +23,10 @@ export default {
     return backend.getStreamDetails(stream, details => {
       const data = details['provider_data']
       commit('RECEIVE_DVRSTORES', data['stores'])
-      commit('RECEIVE_DVRSTORE_DETAILS', data['current_store_details'])
+      commit('RECEIVE_DVRSTORE_DETAILS', [
+        ...data['current_store_details'],
+        ...data['store_details'].filter(s => s.utcStart > 0)
+      ])
       commit('SET_CURRENT_STORENAME', data['current_store_details'].dvrStoreName)
     })
   },
@@ -54,29 +57,37 @@ export default {
         }
         commit('SET_DVRSTART', start)
       }
-      if (!state.userSettings.onlyLeadingStore && state.dvrStores) {
-        console.log(Object.values(state.dvrStores))
-        const dvrStores = [...Object.values(state.dvrStores)[0]]
-        dvrStores.splice(1, dvrStores.length).map(dvrStore => dispatch('getDvrStoreDetails', dvrStore))
-      }
+
+      // if (1 + 1 === 2 || (!state.userSettings.onlyLeadingStore && state.dvrStores)) {
+      [...Object.values(state.dvrStores)[0]].slice(1, 10).map(dvrStore => {
+        if (!state.dvrStoreDetails[dvrStore.dvrStoreName]) {
+          dispatch('getDvrStoreDetails', dvrStore)
+        }
+      })
+      // }
+      // if ( && state.dvrStores) {
+      //   // console.log(Object.values(state.dvrStores))
+      //   dvrStores.splice(1, dvrStores.length).map(dvrStore => dispatch('getDvrStoreDetails', dvrStore))
+      // }
+
+      // state.dvrStores[stream].slice(1, 5)
+      // .map(dvrStore => () => dispatch('getDvrStoreDetails', dvrStore))
+      // .reduce((curr, next) => curr.then(next), Promise.resolve())
     })
 
     // CONVERSIONS
     dispatch('requestConversions')
-
-    // state.dvrStores[stream]
-    // .map(dvrStore => () => dispatch('getDvrStoreDetails', dvrStore))
-    // .reduce((curr, next) => curr.then(next), Promise.resolve())
   },
 
   setDvr ({ commit }, { duration, start }) {
-    commit('SET_DVRDURATION', moment.isDuration(duration) ? duration.asSeconds() : duration)
     commit('SET_DVRSTART', start)
+    commit('SET_DVRDURATION', moment.isDuration(duration) ? duration.asSeconds() : duration)
   },
 
   getDvrStoreDetails ({ commit, state, getters }, dvrStore) {
+    console.log('aagga')
     return wowzaApi.getStoreDetails(dvrStore.name, details => {
-      console.log(details)
+      console.log('aaa')
       commit('RECEIVE_DVRSTORE_DETAILS', details)
       // if (moment(start).add(getters.dvrDuration, 'seconds').isAfter(getters.dvrAvailableMax)) {
       //   commit('SET_DVRDURATION', moment(getters.dvrAvailableMax).diff(start, 'seconds'))
