@@ -37,7 +37,8 @@ export default {
           version: '0.2.4',
           date: moment('2017-12-22 18:11:35'),
           changes: [
-            'Nuevo manejador de conexiones basado en axios'
+            'Nuevo manejador de conexiones basado en axios',
+            'Se elimina variante mini de navigation-drawer'
           ]
         },
         {

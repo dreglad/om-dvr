@@ -1,43 +1,22 @@
 <template>
   <div>
-    <!-- Select time widget -->
-    <v-menu lazy offset-y full-width
-      :close-on-content-click="false"
-      transition="scale-transition"
-      :nudge-right="40"
-    >
-      <v-btn slot="activator" small fab right fixed top style="margin-top: 60px; margin-right:48px;">
-        <v-tooltip left>
-          <v-icon slot="activator">query_builder</v-icon>
-          <span>Elegir hora</span>
-        </v-tooltip>
-      </v-btn>
-      <dvr-time-picker type="time" />
-    </v-menu>
-
-    <!-- Select date widget -->
-    <v-menu lazy offset-y full-width slot="activator"
-      :close-on-content-click="false"
-      transition="scale-transition"
-      :nudge-right="40"
-    >
-      <v-btn slot="activator" small fab right fixed top style="margin-top: 60px;">
-        <v-tooltip bottom>
-          <v-icon slot="activator">event</v-icon>
-          <span>Elegir&nbsp;fecha</span>
-        </v-tooltip>
-      </v-btn>
-      <dvr-time-picker type="date" />
-    </v-menu>
-
     <!-- main vidoe player -->
-    <v-layout row style="min-height: 400px;">
-      <v-flex md5>
-        <dvr-player />
+    <v-layout row wrap style="">
+      <v-flex md5 d-flex>
+        <v-card class="ma-2">
+          <v-card-media>
+            <dvr-player />
+          </v-card-media>
+        </v-card>
       </v-flex>
       <v-flex md7 d-flex>
-        <v-card>
-          Card
+        <v-card class="ma-2">
+          <v-card-title primary-title>
+            <div>
+              <div v-if="selectedStream" class="headline">{{ selectedStream.name }}</div>
+              <span class="grey--text">Duración: {{ $store.getters.dvrMomentDuration.format() }}</span>
+            </div>
+          </v-card-title>
         </v-card>
       </v-flex>
     </v-layout>
@@ -51,7 +30,7 @@
 
     <!-- Add new segment button -->
     <v-btn small style="margin-right: 0;"
-      v-if="streamId"
+      v-if="selectedStream"
       @click.stop="dialog = !dialog"
       fab bottom right fixed
     >
@@ -123,7 +102,6 @@
 <script>
 import DvrPlayer from './video/DvrPlayer'
 import DvrTimeline from './video/DvrTimeline'
-import DvrTimePicker from './pickers/DvrTimePicker'
 import moment from 'moment'
 import { mapGetters, mapActions, mapState } from 'vuex'
 moment.locale('es')
@@ -133,6 +111,8 @@ export default {
 
   data () {
     return {
+      datePickerOpened: true,
+      timePickerOpened: true,
       dialog: false,
       name: '',
       mType: 'programa',
@@ -159,12 +139,12 @@ export default {
   computed: {
     ...mapState([
       'dvrStart',
-      'dvrStores',
-      'streamId'
+      'dvrStores'
     ]),
     ...mapGetters([
       'streams',
-      'dvrRange'
+      'dvrRange',
+      'selectedStream'
     ])
   },
 
@@ -198,8 +178,7 @@ export default {
 
   components: {
     DvrPlayer,
-    DvrTimeline,
-    DvrTimePicker
+    DvrTimeline
   }
 }
 </script>

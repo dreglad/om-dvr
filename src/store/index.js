@@ -9,7 +9,7 @@ Vue.use(Vuex)
 
 const debug = process.env.NODE_ENV !== 'production'
 
-const version = '0.2.2'
+const version = '0.2.3'
 const persistedState = createPersistedState({
   key: 'dvr-2',
   paths: [
@@ -36,6 +36,7 @@ const state = {
   videoTime: 0,
   playing: false,
   ended: false,
+  selectedSource: null,
 
   segments: [],
 
@@ -52,7 +53,7 @@ const state = {
     defaultPosition: 'start', // 'start', 'end' or time in seconds
     hlsLevel: 'auto', // 'auto', or level
     defaultPage: 'Live',
-    miniMenu: false
+    drawer: false
   },
   seenConversions: {},
   previousStreamId: null,

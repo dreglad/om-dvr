@@ -1,7 +1,7 @@
 <template>
   <v-app id="app" dark>
     <v-navigation-drawer
-      :mini-variant="miniMenu"
+      v-model="drawer"
       width="200"
       fixed
       clipped
@@ -15,7 +15,7 @@
           :to="{ name: item.route }"
           :exact="item.exact"
         >
-          <v-tooltip right :disabled="!miniMenu">
+          <v-tooltip right>
             <v-list-tile-action slot="activator">
               <v-badge v-if="item.route === 'Conversions' && newConversions" left>
                 <span slot="badge">{{ newConversions }}</span>
@@ -33,6 +33,7 @@
       </v-list>
     </v-navigation-drawer>
     <v-toolbar
+      dense
       color="light-blue accent-4"
       dark
       clipped-left
@@ -40,45 +41,103 @@
       app
     >
       <v-toolbar-title class="ml-0 pl-3">
-        <v-toolbar-side-icon @click="miniMenu = !miniMenu" />
-        <v-btn icon large class="ml-3 hidden-xs-only">
+        <v-toolbar-side-icon @click="drawer = !drawer" />
+        <v-btn icon large class="ml-3 hidden-sm-and-down">
           <v-avatar size="32px" tile>
             <img src="./assets/logo.png" alt="OpenMultimedia">
           </v-avatar>
         </v-btn>
-        <span class="hidden-xs-only">Open Multimedia <sup>v.{{ $store.state.version }}</sup></span>
+        <span class="hidden-sm-and-down">Open Multimedia <sup><v-btn class="pa-0 ma-0" small flat @click="changelogOpened = !changelogOpened">v.{{ $store.state.version }}</v-btn></sup></span>
       </v-toolbar-title>
+      
       <v-spacer />
-      <!-- <v-toolbar-items> -->
-        <StreamSelector />
-        <UserSettings />
-      <!-- </v-toolbar-items> -->
+
+      <v-tooltip left>
+        <v-btn icon @click="isLive = !isLive" slot="activator">
+          <v-icon v-if="isLive">cast_connected</v-icon>
+          <v-icon v-else>cast</v-icon>
+        </v-btn>
+        <span>
+          Activar en-vivo
+          <br>
+          <img :src="liveThumbnail" width="70" />
+        </span>
+      </v-tooltip>
+
+      <!-- Select time widget -->
+      <v-menu offset-y full-width right
+        :close-on-content-click="false"
+        transition="slide-y-transition"
+        :nudge-top="-10"
+      >
+        <v-btn slot="activator" icon>
+          <v-tooltip left>
+            <v-icon slot="activator">query_builder</v-icon>
+            <span>Elegir hora</span>
+          </v-tooltip>
+        </v-btn>
+        <dvr-time-picker type="time" />
+      </v-menu>
+
+      <!-- Select date widget -->
+      <v-menu offset-y full-width right
+        :close-on-content-click="false"
+        transition="slide-y-transition"
+        :nudge-top="-10"
+      >
+        <v-btn slot="activator" icon>
+          <v-tooltip left>
+            <v-icon slot="activator">event</v-icon>
+            <span>Elegir&nbsp;fecha</span>
+          </v-tooltip>
+        </v-btn>
+        <dvr-time-picker type="date" />
+      </v-menu>
+
+      <StreamSelector />
+
+      <UserSettings />
     </v-toolbar>
     <v-content>
-      <v-container fluid class="pa-0">
+      <v-container fluid class="pa-2">
         <!-- <keep-alive> -->
         <router-view></router-view>
         <!-- </keep-alive> -->
       </v-container>
     </v-content>
     <!-- <v-footer app></v-footer> -->
+
+    <v-dialog v-model="changelogOpened" width="80%">
+      <ChangeLog />
+    </v-dialog>
   </v-app>
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
+import backend from '@/api/backend'
+import ChangeLog from '@/ChangeLog'
 import StreamSelector from '@/components/pickers/StreamSelector'
 import UserSettings from '@/components/pickers/UserSettings'
+import DvrTimePicker from '@/components/pickers/DvrTimePicker'
 import _ from 'lodash'
+import Moment from 'moment'
+import { extendMoment } from 'moment-range'
+const moment = extendMoment(Moment)
+require('moment-duration-format')
 
 export default {
   name: 'app',
   data () {
     return {
+      changelogOpened: false,
+      currentTime: null,
+      isLive: false,
       menu: [
         {
           route: 'Live',
           title: 'En vivo',
-          icon: 'live_tv'
+          icon: 'cast'
         },
         {
           route: 'Recorder',
@@ -105,6 +164,11 @@ export default {
   },
 
   computed: {
+
+    ...mapGetters([
+      'selectedStream'
+    ]),
+
     newConversions () {
       const state = this.$store.state
       if (state.seenConversions[state.streamId]) {
@@ -114,20 +178,38 @@ export default {
       }
     },
 
-    miniMenu: {
+    liveThumbnail () {
+      if (this.selectedStream) {
+        return backend.getThumbnailUrl(
+          this.selectedStream,
+          moment(this.currentTime).subtract(10, 'seconds')
+        )
+      }
+    },
+
+    drawer: {
       get () {
-        return this.$store.state.userSettings.miniMenu
+        return this.$store.state.userSettings.drawer
       },
       set (value) {
-        this.$store.commit('SET_USERSETTINGS_MINIMENU', value)
+        this.$store.commit('SET_USERSETTINGS_DRAWER', value)
       }
     }
   },
 
   mounted () {
+    this.currentTime = moment().subtract('seconds', 10)
+    setInterval(() => {
+      this.currentTime = moment().subtract('seconds', 10)
+    }, 5000)
   },
 
-  components: { StreamSelector, UserSettings }
+  components: {
+    DvrTimePicker,
+    StreamSelector,
+    UserSettings,
+    ChangeLog
+  }
 }
 </script>
 

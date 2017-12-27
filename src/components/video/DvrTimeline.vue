@@ -3,14 +3,15 @@
 
     <!-- timeline -->
     <timeline
-      v-if="dvrStart && currentConversions"
+      v-if="dvrStart && currentConversions && recordingItems.length"
       ref="timeline"
       :items="allItems"
       :options="options"
       :groups="groups"
-      @doubleClick="(e) => focusItem(e.item, null, true)"
+      @doubleClick="(e, i, o) => doubleClick(e, i, o)"
       @select="(items, e) => selected(items)"
       @timechanged="(e) => endSelected(e)"
+      @mouseOver="(event) => mouseOver(event)"
     />
 
     <!-- Add new segment button -->
@@ -45,8 +46,10 @@
 </template>
 
 <script>
+// import _ from 'lodash'
 import { mapGetters, mapState } from 'vuex'
 import { Timeline } from 'vue2vis'
+import backend from '@/api/backend'
 import Moment from 'moment'
 import { extendMoment } from 'moment-range'
 const moment = extendMoment(Moment)
@@ -58,9 +61,9 @@ export default {
 
   data () {
     return {
-      timelineLoaded: false,
+      timeline: null,
       groups: [{
-        id: 'recording',
+        id: 'recordings',
         content: 'Grabación',
         className: 'recordings'
       }, {
@@ -84,7 +87,8 @@ export default {
       'dvrDuration',
       'dvrAvailableMax',
       'dvrAvailableMin',
-      'videoSource'
+      'videoSource',
+      'selectedStream'
     ]),
     ...mapState([
       'dvrStart',
@@ -92,9 +96,16 @@ export default {
       'streamId'
     ]),
 
+    dvrStore () {
+      return this.$store.getters.selectedStoreDetails
+    },
+
     options () {
       return {
-        editable: { updateTime: true },
+        editable: {
+          add: true,
+          updateTime: true
+        },
         configure: false,
         groupEditable: true,
         max: moment(this.dvrAvailableMax).add(15, 'minutes'),
@@ -103,26 +114,74 @@ export default {
         zoomMin: 10000,
         zoomMax: 172800000,
         showCurrentTime: false,
+        orientation: {
+          axis: 'both'
+        },
+        snap: null,
         margin: {
           item: 0
         },
         moment: moment,
         start: this.dvrAvailableMax,
-        onInitialDrawComplete: (initial) => {
-          this.timelineLoaded = true
+        onInitialDrawComplete: () => {
+          this.timeline = this.$refs.timeline
 
           if (this.dvrStart) {
-            this.$refs.timeline.moveTo(this.dvrStart)
+            this.timeline.setCurrentTime(this.videoTime)
           }
 
           this.$watch('videoSource', this.watchVideoSource)
           this.$watch('videoTime', this.watchVideoTime)
+
+          if (this.recordingItems) {
+            this.timeline.focus(this.recordingItems.map(i => i.id))
+          }
+          this.setTimeBars()
         },
-        onMove: (item) => {
-          this.$store.dispatch('setDvr', {
-            start: item.start,
-            duration: moment(item.end).diff(item.start, 'seconds')
-          })
+        onUpdate: (item, callback) => {
+          console.log('edit')
+          if (this.timeline.getSelection() !== [item.id]) {
+            this.timeline.setSelection(item.id, {
+              focus: true
+            })
+          }
+          callback(item)
+        },
+        onAdd: (item, callback) => {
+          item.className = 'recording'
+          item.group = 'recordings'
+          item.end = moment(item.start).add(30, 'minutes')
+          callback(item)
+        },
+        onMoving: (item, callback) => {
+          // if (this.timeline.getSelection() !== [item.id]) {
+          // this.timeline.setSelection(item.id, {
+          //   focus: false
+          // })
+          // }
+          if (this.dvrAvailableMin.isBefore(item.start) && this.dvrAvailableMax.isAfter(item.end)) {
+            callback(item)
+          } else {
+            callback(null)
+          }
+        },
+        onMove: (item, callback) => {
+          if (this.dvrAvailableMin.isBefore(item.start) && this.dvrAvailableMax.isAfter(item.end)) {
+            this.$store.dispatch('setDvr', {
+              start: item.start,
+              duration: moment(item.end).diff(item.start, 'seconds')
+            })
+            callback(item)
+          } else {
+            callback(null)
+          }
+        },
+        tooltip: {
+          followMouse: true,
+          overflowMethod: 'cap'
+        },
+        tooltipOnItemUpdateTime: {
+          template: this.itemTooltip
         }
       }
     },
@@ -160,28 +219,30 @@ export default {
     storeBackgroundItems () {
       return Object.values(this.$store.state.dvrStoreDetails).map(store => {
         return {
-          id: store.dvrStoreName,
+          id: 'back' + store.dvrStoreName,
           start: moment(store.utcStart, 'x'),
           end: moment(store.utcEnd, 'x'),
           type: 'background',
-          group: 'recording',
+          group: 'recordings',
           className: 'store',
+          subgroup: store.dvrStoreName,
           content: 'Bloque ' + store.dvrStoreName.split('.').pop()
         }
       })
     },
 
     recordingItems () {
-      const duration = this.$store.getters.dvrDuration
-      if (this.dvrStart && duration) {
+      if (this.videoSource) {
         return [{
-          id: '0',
+          id: 'recording-dvr',
           start: this.dvrStart,
-          end: moment(this.dvrStart).add(moment.duration(duration, 'seconds')),
+          subgroup: this.dvrStore.dvrStoreName,
+          end: moment(this.dvrStart).add(moment.duration(this.dvrDuration, 'seconds')),
           editable: { updateTime: true, remove: false, add: true },
-          className: 'recording blue',
-          content: 'Nuevo',
-          group: 'recording'
+          className: 'recording',
+          content: moment.duration(this.dvrDuration, 'seconds').format('HH:mm:ss'),
+          group: 'recordings'
+          // title: 'nueva'
         }]
       } else {
         return []
@@ -190,41 +251,61 @@ export default {
   },
 
   methods: {
-    watchVideoSource () {
-      const timeline = this.$refs.timeline
-      if (this.videoSource && timeline) {
-        // timeline.setCurrentTime(this.dvrStart)
-        const { start, end } = timeline.getWindow()
-        if (!moment.range(start, end).contains(this.dvrStart)) {
-          timeline.moveTo(this.dvrStart)
-        }
-        const duration = moment.duration(this.dvrDuration, 'seconds')
-        const dvrEnd = moment(this.dvrStart).add(duration)
-        if (this.endBar) {
-          timeline.setCustomTime(dvrEnd, 'end')
-        } else {
-          timeline.addCustomTime(dvrEnd, 'end')
-        }
-        this.endBar = dvrEnd
 
-        if (this.startBar) {
-          timeline.setCustomTime(this.dvrStart, 'start')
-        } else {
-          timeline.addCustomTime(this.dvrStart, 'start')
+    mouseOver (event) {
+      // console.log(event)
+    },
+
+    doubleClick (e, i, o) {
+      console.log(e, i, o)
+    },
+
+    itemTooltip (item) {
+      return (
+        `<img src="${backend.getThumbnailUrl(this.selectedStream, item.start)}" class="tooltip start" />` +
+        `<img src="${backend.getThumbnailUrl(this.selectedStream, item.end)}" class="tooltip end" />`
+      )
+    },
+
+    setTimeBars () {
+      const duration = moment.duration(this.dvrDuration, 'seconds')
+      const dvrEnd = moment(this.dvrStart).add(duration)
+      if (this.endBar) {
+        this.timeline.setCustomTime(dvrEnd, 'end')
+      } else {
+        this.timeline.addCustomTime(dvrEnd, 'end')
+      }
+      this.endBar = dvrEnd
+
+      if (this.startBar) {
+        this.timeline.setCustomTime(this.dvrStart, 'start')
+      } else {
+        this.timeline.addCustomTime(this.dvrStart, 'start')
+      }
+      this.startBar = this.dvrStart
+    },
+
+    watchVideoSource () {
+      if (this.videoSource && this.timeline) {
+        // timeline.setCurrentTime(this.dvrStart)
+        const { start, end } = this.timeline.getWindow()
+        if (!moment.range(start, end).contains(this.dvrStart)) {
+          // this.timeline.moveTo(this.dvrStart)
+          this.timeline.focus(this.recordingItems.map(i => i.id))
         }
-        this.startBar = this.dvrStart
+        this.setTimeBars()
       }
     },
 
     watchVideoTime () {
-      const timeline = this.$refs.timeline
-      if (timeline && this.timelineLoaded) {
+      if (this.timeline) {
         const time = moment(this.dvrStart).add(moment.duration(this.videoTime, 'seconds'))
         if (!this.currentBar) {
-          timeline.addCustomTime(time, 'current')
+          this.timeline.addCustomTime(time, 'current')
         } else {
-          timeline.setCustomTime(time, 'current')
+          this.timeline.setCustomTime(time, 'current')
         }
+        this.timeline.setCurrentTime(time)
         this.currentBar = time
         // timeline.setCurrentTime()
       }
@@ -244,17 +325,15 @@ export default {
         })
       }
     },
-
-    focusItem (item) {
-      if (item) {
-        this.$refs.timeline.focus(item)
-      }
-    },
+    // focusItem (what) {
+    //   if (item && this.timeline) {
+    //     this.timeline.focus(this.recordingItems)
+    //   }
+    // },
 
     setDvrItem (itemId) {
       const conv = this.currentConversions.find(conv => conv.id === itemId)
-      const timeline = this.$refs.timeline
-      if (conv && timeline) {
+      if (conv && this.timeline) {
         this.$store.dispatch('setDvr', conv)
         // timeline.setCurrentTime(conv.start)
       }
@@ -276,16 +355,39 @@ export default {
       /*background: #ffecea;*/
     }
 
+
     .vis-item {
       /*border-color: white;*/
-      border: 0px solid grey;
+      /*border: 0px solid grey;*/
       /*height: 28px;*/
+      /*margin-top: 2px;*/
       /*margin-top: 1px;*/
       /*background-color: pink;*/
       /*font-size: 15pt;*/
       /*color: 'black';*/
       /*box-shadow: 5px 5px 12px rgba(128,128,128, 0.5);*/
     }
+
+    .vis-item img.tooltip {
+      width: 48%;
+      margin-top: 2px;
+      border: 2px solid black;
+    }
+
+    .vis-item img.tooltip.start {
+      /*padding-right: 2em;*/
+      margin-right: 6px;
+    }
+
+    .vis-item.recording {
+      background-color: #1565C0;
+    }
+
+    .vis-item.recording.vis-selected {
+      background-color: #1E88E5;
+      border-color: #90CAF9;
+    }
+
 
     .vis-item.store {
       opacity: 0.5;
@@ -298,10 +400,6 @@ export default {
 
     .vis-item.conversion.SUCCESS {
       background-color: green;
-    },
-
-    .vis-item.recording {
-
     }
 
    .vis-custom-time.current {
@@ -316,18 +414,9 @@ export default {
       /*font-size: 70%;*/
     }
 
-   /* .vis-label .vis-inner {
-       height: 61px;
-    }*/
-
-/*    .vis-item,
-    .vis-item.vis-line {
-      border-width: 3px;
-    }*/
-
     .vis-item.vis-selected {
-      border-color: white;
-      background-color: lightgreen;
+      border: 1px solid white;
+      /*background-color: lightgreen;*/
     }
 
     .vis-time-axis .vis-text {

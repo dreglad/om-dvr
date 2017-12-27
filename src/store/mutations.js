@@ -69,8 +69,8 @@ export default {
     state.conversions = []
   },
 
-  SET_USERSETTINGS_MINIMENU (state, value) {
-    state.userSettings.miniMenu = !!value
+  SET_USERSETTINGS_DRAWER (state, value) {
+    state.userSettings.drawer = !!value
   },
 
   SET_VIDEO_SOURCE (state, source) {

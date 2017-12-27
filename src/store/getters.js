@@ -26,6 +26,10 @@ export default {
     }
   },
 
+  dvrMomentDuration (state, getters) {
+    return moment.duration(getters.dvrDuration, 'seconds')
+  },
+
   // inLastStore (state) {
   //   if (state.stream) {
   //     state.stores[state.stream]
@@ -71,14 +75,21 @@ export default {
   // },
 
   videoSource (state, getters) {
-    if (getters.selectedStoreDetails) {
-      return WowzaApi.getPlaylistUrl({
-        stream: getters.selectedStream,
-        store: getters.selectedStoreDetails,
-        currentStoreName: state.currentStoreName,
-        start: state.dvrStart,
-        duration: getters.dvrDuration
-      })
+    switch (state.selectedSource) {
+      case 'live':
+      case 'conversion':
+      case 'video':
+      case 'dvr':
+      default:
+        if (getters.selectedStoreDetails) {
+          return WowzaApi.getPlaylistUrl({
+            stream: getters.selectedStream,
+            store: getters.selectedStoreDetails,
+            currentStoreName: state.currentStoreName,
+            start: state.dvrStart,
+            duration: getters.dvrDuration
+          })
+        }
     }
   },
 

@@ -2,7 +2,6 @@ import axios from 'axios'
 import urljoin from 'url-join'
 // import _ from 'lodash'
 import Moment from 'moment'
-// import querystring from 'querystring'
 import { extendMoment } from 'moment-range'
 const moment = extendMoment(Moment)
 require('moment-duration-format')
@@ -51,7 +50,7 @@ export default {
       duration: moment.duration(duration, 'seconds').format('HH:mm:ss.SS', { trim: false }),
       metadata: metadata
     }
-    console.log(params)
+    // console.log(params)
     return axios.post(urljoin(apiBase, 'conversions/'), params)
     .then(({ data }) => { cb(data) })
     .catch(e => error(e))

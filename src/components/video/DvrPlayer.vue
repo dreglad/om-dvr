@@ -1,6 +1,6 @@
 <template>
-  <div>
-    <div v-if="videoSource" @click="playing = !playing" style="min-height: 350px;">
+  <div style="min-height: 400px; width: 100%;">
+    <div v-if="videoSource" @click="playing = !playing">
       <video-player
         ref="player"
         :sources="playerSources"
@@ -20,85 +20,85 @@
     <v-progress-circular v-else indeterminate />
 
     <!-- control buttons -->
-    <v-layout row wrap justify-center>
+    <v-layout v-if="videoSource" row wrap justify-center>
     <!-- left buttons -->
-        <v-flex lg5 text-xs-right class="pa-0 ma-0 pt-1">
-          <!-- <v-select
-            :items="expandOptions"
-            segmented
-            style="width: 100px"
-          /> -->
-          <!-- <v-btn class="pa-0 ma-0" small
-            v-if="canExpandStart"
-            @click="expandDuration(-60*30)"
-          >
-            &lt; 30m
-          </v-btn> -->
-          <v-btn small icon class="pa-0 ma-0"
-            v-if="canExpandStart" 
-            @click="expandDuration(-10*60)"
-          >&lt;60</v-btn>
-          <v-btn small icon class="pa-0 ma-0"
-            v-if="canExpandStart"
-            @click="expandDuration(-5)"
-          >&lt;5</v-btn>
-          <v-btn style="min-width: 60px" small
-            :disabled="!videoSource || Math.floor(videoTime) == 0"
-            @click="setPosition('start')"
-          ><v-icon dark>subdirectory_arrow_right</v-icon></v-btn>
-          <v-btn style="min-width: 60px" small
-            :disabled="!videoSource || !videoTime"
-            @click="rewind"
-          ><v-icon dark>fast_rewind</v-icon></v-btn>
-        </v-flex>
-        <!-- end left buttons -->
+      <v-flex lg5 text-xs-right class="pa-0 ma-0 pt-1">
+        <!-- <v-select
+          :items="expandOptions"
+          segmented
+          style="width: 100px"
+        /> -->
+        <!-- <v-btn class="pa-0 ma-0" small
+          v-if="canExpandStart"
+          @click="expandDuration(-60*30)"
+        >
+          &lt; 30m
+        </v-btn> -->
+        <v-btn small icon class="pa-0 ma-0"
+          v-if="canExpandStart" 
+          @click="expandDuration(-10*60)"
+        >&lt;60</v-btn>
+        <v-btn small icon class="pa-0 ma-0"
+          v-if="canExpandStart"
+          @click="expandDuration(-5)"
+        >&lt;5</v-btn>
+        <v-btn style="min-width: 40px" small
+          :disabled="!videoSource || Math.floor(videoTime) == 0"
+          @click="setPosition('start')"
+        ><v-icon dark>subdirectory_arrow_right</v-icon></v-btn>
+        <v-btn style="min-width: 40px" small
+          :disabled="!videoSource || !videoTime"
+          @click="rewind"
+        ><v-icon dark>fast_rewind</v-icon></v-btn>
+      </v-flex>
+      <!-- end left buttons -->
 
-        <!-- center play/pause button -->
-        <v-flex xs1 text-xs-center>
-          <v-btn fab color="secondary" small
-            v-if="!playing"
-            @click="playing = true" 
-            :disabled="!videoSource"
-          >
-            <v-icon dark v-if="Math.floor(videoTime) >= dvrDuration">replay</v-icon>
-            <v-icon dark v-else >play_arrow</v-icon>
-          </v-btn>
-          <v-btn fab color="secondary" small
-            v-else
-            @click="playing = false"
-            :disabled="!videoSource"
-          >
-            <v-icon dark>pause</v-icon>
-          </v-btn>
-        </v-flex>
-        <!-- end center play/pause button -->
+      <!-- center play/pause button -->
+      <v-flex xs1 text-xs-center>
+        <v-btn dark fab color="default" small
+          v-if="!playing"
+          @click="playing = true" 
+          :disabled="!videoSource"
+        >
+          <v-icon dark v-if="Math.floor(videoTime) >= dvrDuration">replay</v-icon>
+          <v-icon dark v-else >play_arrow</v-icon>
+        </v-btn>
+        <v-btn dark fab color="default" small
+          v-else
+          @click="playing = false"
+          :disabled="!videoSource"
+        >
+          <v-icon dark>pause</v-icon>
+        </v-btn>
+      </v-flex>
+      <!-- end center play/pause button -->
 
-        <!-- right edge buttons -->
-        <v-flex lg5 text-xs-left class="pa-0 ma-0 pt-1">
-          <v-btn small
-            :disabled="!videoSource || Math.floor(videoTime) >= dvrDuration"
-            @click="forward"
-            style="min-width: 60px"
-          >
-            <v-icon dark>fast_forward</v-icon>
-          </v-btn>
-          <v-btn small
-            :disabled="Math.floor(videoTime) >= dvrDuration || !videoTime"
-            @click="setPosition('end')"
-            style="min-width: 60px"
-          >
-            <v-icon dark>subdirectory_arrow_left</v-icon>
-          </v-btn>
+      <!-- right edge buttons -->
+      <v-flex lg5 text-xs-left class="pa-0 ma-0 pt-1">
+        <v-btn small
+          :disabled="!videoSource || Math.floor(videoTime) >= dvrDuration"
+          @click="forward"
+          style="min-width: 40px"
+        >
+          <v-icon dark>fast_forward</v-icon>
+        </v-btn>
+        <v-btn small
+          :disabled="Math.floor(videoTime) >= dvrDuration || !videoTime"
+          @click="setPosition('end')"
+          style="min-width: 40px"
+        >
+          <v-icon dark>subdirectory_arrow_left</v-icon>
+        </v-btn>
 
-          <v-btn small icon class="pa-0 ma-0"
-            v-if="canExpandEnd"
-            @click="expandDuration(+5)"
-            :disabled="!videoSource"
-          >
-            5&gt;
-          </v-btn>
-          <v-btn v-if="canExpandEnd" small icon @click="expandDuration(+60)" class="pa-0 ma-0" :disabled="!videoSource">60&gt;</v-btn>
-        </v-flex>
+        <v-btn small icon class="pa-0 ma-0"
+          v-if="canExpandEnd"
+          @click="expandDuration(+5)"
+          :disabled="!videoSource"
+        >
+          5&gt;
+        </v-btn>
+        <v-btn v-if="canExpandEnd" small icon @click="expandDuration(+60)" class="pa-0 ma-0" :disabled="!videoSource">60&gt;</v-btn>
+      </v-flex>
     </v-layout>
   </div>
 </template>

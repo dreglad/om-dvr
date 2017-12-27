@@ -1,10 +1,11 @@
 <template>
   <div class="text-xs-center">
     <v-menu
-      offset-x
+      offset-y
       :close-on-content-click="false"
-      :nudge-width="300"
       v-model="menu"
+      :nudge-top="-10"
+      right
     >
       <v-btn icon large slot="activator"><v-icon>settings</v-icon></v-btn>
       <v-card>

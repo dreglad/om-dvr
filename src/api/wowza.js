@@ -17,7 +17,7 @@ const _conf = {
   instance: '_definst_'
 }
 
-const streamingBase = `${_conf.scheme}://${_conf.host}:${_conf.streamingPort}`
+// const streamingBase = `${_conf.scheme}://${_conf.host}:${_conf.streamingPort}`
 const apiBase = `${_conf.scheme}://${_conf.host}:${_conf.apiPort}/v2`
 const serverBase = `${apiBase}/servers/${_conf.server}`
 const vhostBase = `${serverBase}/vhosts/${_conf.vhost}`
@@ -50,9 +50,9 @@ export default {
   },
 
   getStoreDetails (store, cb) {
-    console.log('aaap')
+    // console.log('aaap')
     return axios.get(`${dvrstoresBase}/${store}`).then(({ data }) => {
-      console.log('ccc')
+      // console.log('ccc')
       const store = data.DvrConverterStore
       if ((store.utcEnd - store.utcStart) > 0) {
         cb(store)
@@ -84,21 +84,20 @@ export default {
     .catch(e => error(e))
   },
 
-  pgetPlaylistUrl (stream, { ngrp = '_all', params = {} } = {}) {
-    let qs = Object.keys(params).map(k => `${encodeURIComponent(k)}=${encodeURIComponent(params[k])}`).join('&')
-    if (params.wowzadvrplayliststart) {
-      qs = 'DVR&' + qs
-      // return `${streamingBase}/${_conf.application}/ngrp:${stream}${ngrp}/playlist.m3u8` + (qs ? `?${qs}` : '')
-      if (stream.indexOf('english') === -1) {
-        return `${streamingBase}/${_conf.application}/smil:telesur-satmex6.stream.smil/playlist.m3u8` + (qs ? `?${qs}` : '')
-      } else {
-        return `${streamingBase}/${_conf.application}/smil:telesur-english-venesat.stream.smil/playlist.m3u8` + (qs ? `?${qs}` : '')
-      }
-    } else {
-      return `${streamingBase}/${_conf.application}/ngrp:${stream}${ngrp}/playlist.m3u8` + (qs ? `?${qs}` : '')
-    }
-  },
-
+  // pgetPlaylistUrl (stream, { ngrp = '_all', params = {} } = {}) {
+  //   let qs = Object.keys(params).map(k => `${encodeURIComponent(k)}=${encodeURIComponent(params[k])}`).join('&')
+  //   if (params.wowzadvrplayliststart) {
+  //     qs = 'DVR&' + qs
+  //     // return `${streamingBase}/${_conf.application}/ngrp:${stream}${ngrp}/playlist.m3u8` + (qs ? `?${qs}` : '')
+  //     if (stream.indexOf('english') === -1) {
+  //       return `${streamingBase}/${_conf.application}/smil:telesur-satmex6.stream.smil/playlist.m3u8` + (qs ? `?${qs}` : '')
+  //     } else {
+  //       return `${streamingBase}/${_conf.application}/smil:telesur-english-venesat.stream.smil/playlist.m3u8` + (qs ? `?${qs}` : '')
+  //     }
+  //   } else {
+  //     return `${streamingBase}/${_conf.application}/ngrp:${stream}${ngrp}/playlist.m3u8` + (qs ? `?${qs}` : '')
+  //   }
+  // },
   getPlaylistUrl ({ stream, store, currentStoreName, start, duration }) {
     const streamName = (store.dvrStoreName === currentStoreName)
       ? `smil:${stream.metadata.wseStream}.smil` : store.dvrStoreName
