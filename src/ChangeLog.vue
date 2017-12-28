@@ -37,8 +37,8 @@ export default {
           version: '0.2.4',
           date: moment('2017-12-22 18:11:35'),
           changes: [
-            'Nuevo manejador de conexiones basado en axios',
-            'Se elimina variante mini de navigation-drawer'
+            'Funcionalidad temporal ex profeso de distribución directa a Captura-teleSUR',
+            'Nuevo manejador de conexiones basado en axios'
           ]
         },
         {
@@ -53,7 +53,8 @@ export default {
           version: '0.2.2',
           date: moment('2017-12-20 04:51:03'),
           changes: [
-            'Versión inicial'
+            'Se elimina variante mini de navigation-drawer',
+            'Actualización a Vuetify alpha 3'
           ]
         },
         {
