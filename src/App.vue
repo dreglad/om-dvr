@@ -153,12 +153,12 @@ export default {
           route: 'Videos',
           title: 'Videos',
           icon: 'subscriptions'
-        },
-        {
-          route: 'Support',
-          title: 'Soporte',
-          icon: 'live_help'
         }
+        // {
+        //   route: 'Support',
+        //   title: 'Soporte',
+        //   icon: 'live_help'
+        // }
       ]
     }
   },
