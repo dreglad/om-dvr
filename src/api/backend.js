@@ -80,7 +80,7 @@ export default {
     }))
   },
 
-  getMetadataOptions (resource) {
-    return axios.get('https://multimedia.telesurtv.net/api/' + resource + '/?ultimo=300&auth=yik24')
+  getMetadataOptions (resource, lang = 'es') {
+    return axios.get(`https://multimedia.telesurtv.net/${lang}/api/${resource}/?ultimo=300&auth=yik24`)
   }
 }
