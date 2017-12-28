@@ -208,7 +208,7 @@ export default {
           id: conv.id,
           start: conv.start,
           end: conv.end,
-          content: conv.dvr_store,
+          content: conv.status === 'STARTED' ? Math.round(conv.progress * 100) + '%' : conv.dvr_store,
           group: 'conversions',
           className: `conversion ${conv.status}`,
           editable: false,
@@ -302,11 +302,12 @@ export default {
       if (this.timeline) {
         const time = moment(this.dvrStart).add(moment.duration(this.videoTime, 'seconds'))
         if (!this.currentBar) {
+          this.currentBar = time
           this.timeline.addCustomTime(time, 'current')
         } else {
           this.timeline.setCustomTime(time, 'current')
         }
-        this.timeline.setCurrentTime(time)
+        // this.timeline.setCurrentTime(time)
         this.currentBar = time
         // timeline.setCurrentTime()
       }

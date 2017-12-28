@@ -21,10 +21,13 @@
           <td>
             <!-- <v-layout row justify-left align-center> -->
               <img :height="68" class="pa-2" style="vertical-align:middle;"
+                :data-proportion="0" :data-retries="0"
                 :style="{ opacity: props.item.progress < 1 ? 0.6 : 1 }"
-                :src="getThumbnail(props.item, 0)" />
+                :src="getThumbnail(props.item, 0)"
+                @error="e => { thumbnailError(props.item, e.target) }" />
               <!-- <v-flex xs1 ><v-icon>forward_arrow</v-icon></v-flex> -->
               <img :height="68" class="pa-2" style="vertical-align:middle;"
+                :data-proportion="props.item.progress" :data-retries="0"
                 :style="{ opacity: props.item.progress < 1 ? 0.6 : 1 }"
                 :src="getThumbnail(props.item, props.item.progress)" />
             <!-- </v-layout> -->
@@ -69,7 +72,7 @@
                 :href="props.item.url"
                 target="_blank"
               >
-                <v-icon large>file_download</v-icon>
+                <v-icon>attach_file</v-icon>
               </v-btn>
               <span>Link de descarga</span>
             </v-tooltip>
@@ -79,7 +82,7 @@
                 slot="activator"
                 @click="gotoDvr(props.item)"
               >
-                <v-icon large>av_timer</v-icon>
+                <v-icon>av_timer</v-icon>
               </v-btn>
               <span>Ver en la grabadora</span>
             </v-tooltip>
@@ -90,8 +93,8 @@
                 :disabled="props.item.status === 'STARTED'"
                 @click="removeConversion(props.item)"
               >
-                <v-icon v-if="props.item.status == 'PENDING'" large>cancel</v-icon>
-                <v-icon v-else large>delete</v-icon>
+                <v-icon v-if="props.item.status == 'PENDING'">cancel</v-icon>
+                <v-icon v-else>delete</v-icon>
               </v-btn>
               <span v-if="props.item.status == 'PENDING'">Cancelar conversión</span>
               <span v-else>Eliminar conversión</span>
@@ -272,21 +275,72 @@ export default {
       'removeConversion'
     ]),
 
+    distribute ({ profileId, conversionId }) {
+      this.confirmed = false
+      this.error = false
+
+      if (profileId === 3 || profileId === 4) {
+        this.confirmDialog = true
+        backend.distributeCaptura({ profileId, conversionId }).then(({ data }) => {
+          this.confirmed = true
+        }).catch((err) => {
+          this.error = true
+          console.log(err)
+        })
+      } else if (profileId === 1 || profileId === 2) {
+        this.selectedConversionId = conversionId
+        this.selectedProfileId = profileId
+        this.metadataDialog = true
+      }
+    },
+
+    distributeMultimedia () {
+      backend.distributeMultimedia({
+        profileId: this.selectedProfileId,
+        conversionId: this.selectedConversionId,
+        metadata: {
+          titulo: this.metadataTitle,
+          descripcion: this.metadataDescription,
+          tipo: this.metadataTipo,
+          programa: this.metadataPrograma
+        }
+      }).then(({ data }) => {
+        this.confirmed = true
+      }).catch((err) => {
+        console.log(err)
+        this.error = true
+      })
+      this.metadataDialog = false
+    },
+
     gotoDvr (conv) {
       this.$router.push({ name: 'Recorder' }, () => {
         this.$store.dispatch('setDvr', conv)
       })
     },
 
-    getThumbnail (conv, timeProportion) {
+    getThumbnail (conv, timeProportion, offset = 0) {
       timeProportion = timeProportion || 0
       let time = moment(conv.start).add(conv.duration.asSeconds() * timeProportion, 'seconds')
       if (timeProportion === 0) {
-        time += 1
+        time += 500
       } else if (timeProportion >= 1) {
-        time -= 1
+        time -= 500
+      }
+      time += offset * 1000
+      if (offset) {
+        console.log(time)
       }
       return backend.getThumbnailUrl(this.selectedStream, time)
+    },
+
+    thumbnailError (conv, elem) {
+      const retries = parseInt(elem.getAttribute('data-retries'))
+      console.log(retries, 'Recovering from thumbnail error')
+      if (retries < 3) {
+        elem.setAttribute('data-retries', retries + 1)
+        elem.setAttribute('src', this.getThumbnail(conv, elem.getAttribute('data-proportion'), retries + 1))
+      }
     },
 
     progressColor (conv) {
@@ -319,13 +373,21 @@ export default {
   },
 
   mounted () {
+    backend.getMetadataOptions('programa').then(({ data }) => {
+      this.metadataProgramaOptions = data
+    })
+
+    backend.getMetadataOptions('tipo_clip').then(({ data }) => {
+      this.metadataTipoOptions = data
+    })
+
     this.requestConversions().then(() => {
       this.$store.commit('RESET_SEEN_CONVERSIONS')
       this.intervalId = setInterval(() => {
         this.requestConversions().then(() => {
           this.$store.commit('RESET_SEEN_CONVERSIONS')
         })
-      }, 1000)
+      }, 2000)
     })
   },
 
