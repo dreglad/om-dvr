@@ -137,7 +137,7 @@
             <v-flex xs6>
               <v-select
                 v-model="metadataTipo"
-                :items="metadataTipoOptions"
+                :items="metadataTipoOptions[selectedProfileId === 1 ? 'es' : 'en']"
                 item-value="slug"
                 item-text="nombre"
                 label="Tipo de clip"
@@ -148,7 +148,7 @@
             <v-flex xs6>
               <v-select
                 v-model="metadataPrograma"
-                :items="metadataProgramaOptions"
+                :items="metadataProgramaOptions[selectedProfileId === 1 ? 'es' : 'en']"
                 item-value="slug"
                 item-text="nombre"
                 label="Programa de origen"
@@ -204,8 +204,14 @@ export default {
       metadataDescription: '',
       metadataPrograma: null,
       metadataTipo: null,
-      metadataProgramaOptions: [],
-      metadataTipoOptions: [],
+      metadataProgramaOptions: {
+        'es': [],
+        'en': []
+      },
+      metadataTipoOptions: {
+        'es': [],
+        'en': []
+      },
       metadataDialog: false,
       confirmDialog: false,
       confirmed: false,
@@ -328,15 +334,15 @@ export default {
         time -= 500
       }
       time += offset * 1000
-      if (offset) {
-        console.log(time)
-      }
+      // if (offset) {
+      //  // console.log(time)
+      // }
       return backend.getThumbnailUrl(this.selectedStream, time)
     },
 
     thumbnailError (conv, elem) {
       const retries = parseInt(elem.getAttribute('data-retries'))
-      console.log(retries, 'Recovering from thumbnail error')
+      // console.log(retries, 'Recovering from thumbnail error')
       if (retries < 3) {
         elem.setAttribute('data-retries', retries + 1)
         elem.setAttribute('src', this.getThumbnail(conv, elem.getAttribute('data-proportion'), retries + 1))
@@ -373,12 +379,18 @@ export default {
   },
 
   mounted () {
-    backend.getMetadataOptions('programa').then(({ data }) => {
-      this.metadataProgramaOptions = data
+    backend.getMetadataOptions('programa', 'es').then(({ data }) => {
+      // console.log(data, 'poin')
+      this.$set(this.metadataProgramaOptions, 'es', data)
     })
-
-    backend.getMetadataOptions('tipo_clip').then(({ data }) => {
-      this.metadataTipoOptions = data
+    backend.getMetadataOptions('programa', 'en').then(({ data }) => {
+      this.$set(this.metadataProgramaOptions, 'en', data)
+    })
+    backend.getMetadataOptions('tipo_clip', 'es').then(({ data }) => {
+      this.$set(this.metadataTipoOptions, 'es', data)
+    })
+    backend.getMetadataOptions('tipo_clip', 'en').then(({ data }) => {
+      this.$set(this.metadataTipoOptions, 'en', data)
     })
 
     this.requestConversions().then(() => {
