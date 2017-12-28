@@ -3,6 +3,7 @@ import urljoin from 'url-join'
 // import _ from 'lodash'
 import Moment from 'moment'
 import { extendMoment } from 'moment-range'
+import querystring from 'querystring'
 const moment = extendMoment(Moment)
 require('moment-duration-format')
 
@@ -60,5 +61,26 @@ export default {
     return axios.delete(urljoin(apiBase, 'conversions', conv.id, '/'))
     .then(({ data }) => { cb(data) })
     .catch(e => error(e))
+  },
+
+  distributeCaptura ({ profileId, conversionId }) {
+    return axios.post('http://captura-telesur.openmultimedia.biz/cargar_captura/', querystring.stringify({
+      archivo: `http://captura-saro.openmultimedia.biz:8020/${conversionId}.mp4`,
+      idioma: profileId === 3 ? 'es' : 'en'
+    }))
+  },
+
+  distributeMultimedia ({ profileId, conversionId, metadata }) {
+    return axios.post('http://captura-telesur.openmultimedia.biz/crear_nuevo/', querystring.stringify({
+      archivo_url: `http://captura-saro.openmultimedia.biz:8020/${conversionId}.mp4`,
+      idioma: profileId === 1 ? 'es' : 'en',
+      usuario_remoto: 'DVR',
+      publicado: 0,
+      ...metadata
+    }))
+  },
+
+  getMetadataOptions (resource) {
+    return axios.get('https://multimedia.telesurtv.net/api/' + resource + '/?ultimo=300&auth=yik24')
   }
 }

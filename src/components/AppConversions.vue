@@ -34,6 +34,34 @@
           <td>{{ props.item.end.format('HH:mm:ss') }}</td>
           <td>{{ props.item.duration.format('HH:mm:ss', { trim: false }) }}</td>
           <td>
+
+            <v-menu offset-y
+              :close-on-content-click="false"
+              transition="slide-y-transition"
+              :nudge-top="-10"
+            >
+              <v-btn slot="activator"
+                fab flat
+                :disabled="props.item.status !== 'SUCCESS'"
+              >
+                <v-tooltip left>
+                  <v-icon slot="activator">public</v-icon>
+                  <span>Distribuir</span>
+                </v-tooltip>
+              </v-btn>
+              <v-list>
+                <v-list-tile
+                  v-for="profile in distributionProfiles"
+                  :key="profile.id"
+                  @click="distribute({ profileId: profile.id, conversionId: props.item.id })"
+                >
+                  <v-list-tile-title>
+                    {{ profile.name }}
+                  </v-list-tile-title>
+                </v-list-tile>
+              </v-list>
+            </v-menu>
+
             <v-tooltip top>
               <v-btn fab flat
                 slot="activator"
@@ -72,6 +100,87 @@
         </template>
       </v-data-table>
     </v-flex>
+
+    <v-dialog
+      v-model="confirmDialog"
+      :overlay="true"
+      :persistent="!confirmed && !error"
+      width="200"
+      transition="fadein"
+    >
+      <v-card>
+        <v-card-text v-if="confirmed" class="text-xs-center">
+          Confirmado <v-icon class="pl-2"color="green">check</v-icon>
+        </v-card-text>
+        <v-card-text v-else-if="error" class="text-xs-center">
+          Error <v-icon class="pl-2"color="deep-orange">error</v-icon>
+        </v-card-text>
+        <v-card-text v-else class="text-xs-center">
+          <v-progress-circular indeterminate />
+        </v-card-text>
+      </v-card>
+    </v-dialog>
+
+
+    <v-dialog
+      v-model="metadataDialog"
+      :overlay="true"
+      width="500px"
+    >
+      <v-card>
+        <v-card-title class="py-4 title">Distribuir video</v-card-title>
+        <v-container grid-list-sm class="pa-4">
+          <v-layout row wrap>
+            <v-flex xs6>
+              <v-select
+                v-model="metadataTipo"
+                :items="metadataTipoOptions"
+                item-value="slug"
+                item-text="nombre"
+                label="Tipo de clip"
+                autocomplete
+                required
+              />
+            </v-flex>
+            <v-flex xs6>
+              <v-select
+                v-model="metadataPrograma"
+                :items="metadataProgramaOptions"
+                item-value="slug"
+                item-text="nombre"
+                label="Programa de origen"
+                clearable
+                autocomplete
+              />
+            </v-flex>
+            <v-flex xs12 align-center justify-space-between>
+              <v-layout align-center>
+                <v-text-field
+                  v-model="metadataTitle"
+                  placeholder="Título"
+                  required
+                />
+              </v-layout>
+            </v-flex>
+            <v-flex xs12 align-center justify-space-between>
+              <v-layout align-center>
+                <v-text-field
+                  v-model="metadataDescription"
+                  placeholder="Descripción"
+                  multi-line
+                />
+              </v-layout>
+            </v-flex>
+          </v-layout>
+        </v-container>
+        <v-card-actions>
+          <!-- <v-btn flat color="primary">Guardar para después</v-btn> -->
+          <v-spacer></v-spacer>
+          <v-btn flat color="primary" @click="metadataDialog = false">Cancelar</v-btn>
+          <v-btn flat @click="distributeMultimedia">Distribuir</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-layout>
 </template>
 
@@ -88,6 +197,24 @@ export default {
 
   data () {
     return {
+      metadataTitle: '',
+      metadataDescription: '',
+      metadataPrograma: null,
+      metadataTipo: null,
+      metadataProgramaOptions: [],
+      metadataTipoOptions: [],
+      metadataDialog: false,
+      confirmDialog: false,
+      confirmed: false,
+      selectedConversionId: null,
+      selectedProfileId: null,
+      error: false,
+      distributionProfiles: [
+          { name: 'Multimedia teleSUR Español', id: 1 },
+          { name: 'Multimedia teleSUR English', id: 2 },
+          { name: 'Captura teleSUR Español', id: 3 },
+          { name: 'Captura teleSUR English', id: 4 }
+      ],
       pagination: {
         rowsPerPage: 25,
         sortBy: 'created_at',

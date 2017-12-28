@@ -31,7 +31,7 @@
     <!-- Add new segment button -->
     <v-btn small style="margin-right: 0;"
       v-if="selectedStream"
-      @click.stop="dialog = !dialog"
+      @click.stop="doRequestConversion"
       fab bottom right fixed
     >
       <v-tooltip top :open-delay="2000">
@@ -39,63 +39,6 @@
         <span>Agregr&nbsp;segmento</span>
       </v-tooltip>
     </v-btn>
-
-    <v-dialog v-model="dialog" width="500px">
-      <v-card>
-        <v-card-title class="py-4 title">Convertir video</v-card-title>
-        <v-container grid-list-sm class="pa-4">
-          <v-layout row wrap>
-            <v-flex xs12 align-center justify-space-between>
-              <v-layout align-center>
-                <v-text-field
-                  v-model="name"
-                  placeholder="Nombre"
-                />
-              </v-layout>
-            </v-flex>
-            <v-flex xs12>
-              <v-checkbox
-                v-model="mUpload"
-                label="Cargar a multimedia"
-              />
-            </v-flex>
-            <v-flex xs3>
-              <v-select
-                v-model="mLanguage"
-                :items="mLAnguages"
-                :disabled="!mUpload"
-                label="Idioma"
-                autocomplete
-              />
-            </v-flex>
-            <v-flex xs3>
-              <v-select
-                v-model="mType"
-                :items="mTypes"
-                :disabled="!mUpload"
-                label="Tipo de clip"
-                autocomplete
-              />
-            </v-flex>
-            <v-flex xs6>
-              <v-select
-                v-model="mSerie"
-                :items="mSeries"
-                :disabled="!mUpload"
-                label="Programa"
-                autocomplete
-              />
-            </v-flex>
-          </v-layout>
-        </v-container>
-        <v-card-actions>
-          <!-- <v-btn flat color="primary">Guardar para después</v-btn> -->
-          <v-spacer></v-spacer>
-          <v-btn flat color="primary" @click="dialog = false">Cancelar</v-btn>
-          <v-btn flat @click="doRequestConversion">Convertir</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
   </div>
 </template>
 
@@ -111,9 +54,9 @@ export default {
 
   data () {
     return {
+      intervalId: null,
       datePickerOpened: true,
       timePickerOpened: true,
-      dialog: false,
       name: '',
       mType: 'programa',
       mLanguage: 'es',
@@ -156,24 +99,29 @@ export default {
     ]),
 
     doRequestConversion () {
-      this.requestConversion({ name: this.name })
-      .then(() => {
-        this.dialog = false
+      this.requestConversion().then(() => {
         this.$store.dispatch('requestConversions')
       })
     }
   },
 
   mounted () {
+    this.intervalId = setInterval(() => {
+      this.$store.dispatch('requestConversions')
+    }, 5000)
     // this.requestDvrStores(this.$route.params.stream)
     // this.requestStreams()
 
-    const ESC_KEY = 27
-    document.addEventListener('keyup', (e) => {
-      if (this.dialog && e.keyCode === ESC_KEY) {
-        this.dialog = false
-      }
-    })
+    // const ESC_KEY = 27
+    // document.addEventListener('keyup', (e) => {
+    //   if (this.dialog && e.keyCode === ESC_KEY) {
+    //     this.dialog = false
+    //   }
+    // })
+  },
+
+  beforeDestroy () {
+    clearInterval(this.intervalId)
   },
 
   components: {

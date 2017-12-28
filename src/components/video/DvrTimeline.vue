@@ -15,7 +15,7 @@
     />
 
     <!-- Add new segment button -->
-    <v-menu lazy offset-y top slot="activator"
+    <!-- <v-menu lazy offset-y top slot="activator"
       :close-on-content-click="false"
       transition="slide-y-reverse-transition"
       :nudge-right="40"
@@ -40,7 +40,7 @@
           <v-list-tile-title>1 día</v-list-tile-title>
         </v-list-tile>
       </v-list>
-    </v-menu>
+    </v-menu> -->
 
   </div>
 </template>
@@ -159,11 +159,12 @@ export default {
           //   focus: false
           // })
           // }
-          if (this.dvrAvailableMin.isBefore(item.start) && this.dvrAvailableMax.isAfter(item.end)) {
-            callback(item)
-          } else {
-            callback(null)
-          }
+          callback(item)
+          // if (this.dvrAvailableMin.isBefore(item.start) && this.dvrAvailableMax.isAfter(item.end)) {
+          //   callback(item)
+          // } else {
+          //   callback(null)
+          // }
         },
         onMove: (item, callback) => {
           if (this.dvrAvailableMin.isBefore(item.start) && this.dvrAvailableMax.isAfter(item.end)) {
