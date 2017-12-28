@@ -126,6 +126,10 @@ export default {
         onInitialDrawComplete: () => {
           this.timeline = this.$refs.timeline
 
+          this.currentBar = null
+          this.endBar = null
+          this.startBar = null
+
           if (this.dvrStart) {
             this.timeline.setCurrentTime(this.videoTime)
           }
@@ -208,7 +212,7 @@ export default {
           id: conv.id,
           start: conv.start,
           end: conv.end,
-          content: conv.status === 'STARTED' ? Math.round(conv.progress * 100) + '%' : conv.dvr_store,
+          content: conv.status === 'STARTED' ? Math.round(conv.progress * 100) + '%' : conv.duration.format('HH:mm:ss'),
           group: 'conversions',
           className: `conversion ${conv.status}`,
           editable: false,

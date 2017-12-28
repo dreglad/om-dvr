@@ -9,7 +9,7 @@ Vue.use(Vuex)
 
 const debug = process.env.NODE_ENV !== 'production'
 
-const version = '0.2.4'
+const version = '0.2.5'
 const persistedState = createPersistedState({
   key: 'dvr-2',
   paths: [
