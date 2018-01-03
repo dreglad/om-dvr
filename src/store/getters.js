@@ -46,7 +46,7 @@ export default {
 
   dvrRange (state, getters) {
     if (state.dvrStart) {
-      return moment.range(state.dvrStart, moment(state.dvrStart).add(getters.dvrDuration, 'seconds'))
+      return moment.range(moment(state.dvrStart), moment(state.dvrStart).add(getters.dvrDuration, 'seconds'))
     }
   },
 

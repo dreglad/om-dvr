@@ -1,0 +1,12 @@
+{
+  "short_name": "Open Multimedia",
+  "name": "Open Multimedia DVR",
+  "icons": [
+    {
+      "src": "logo.png",
+      "type": "image/png",
+      "sizes": "46x40"
+    }
+  ],
+  "start_url": "index.html"
+}
