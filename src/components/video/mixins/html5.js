@@ -9,8 +9,8 @@ export default {
       this.hls = new window.Hls({
         debug: false,
         autoStartLoad: false,
-        maxBufferLength: 30 * 60,
-        maxBufferSize: 300000,
+        // maxBufferLength: 30 * 60,
+        // maxBufferSize: 300000,
         maxBufferHole: 0.6,
         maxFragLookUpTolerance: 0.6,
         abrBandWidthFactor: 0.9,

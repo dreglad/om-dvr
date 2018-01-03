@@ -6,6 +6,7 @@ import router from './router'
 import Vuetify from 'vuetify'
 import App from './App'
 import store from './store'
+import VueWorker from 'vue-worker'
 
 // import('../node_modules/vuetify/dist/vuetify.min.css')
 
@@ -13,6 +14,7 @@ Vue.config.productionTip = false
 
 Vue.use(Vuetify)
 Vue.use(Vuex)
+Vue.use(VueWorker)
 
 /* eslint-disable no-new */
 new Vue({

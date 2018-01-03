@@ -128,7 +128,8 @@ export default {
     ...mapState([
       'dvrStart',
       'videoTime',
-      'videoSource'
+      'videoSource',
+      'seekTo'
     ]),
 
     ...mapGetters([
@@ -138,7 +139,7 @@ export default {
     ]),
 
     playerSources () {
-      return this.videoSource ? [{ src: this.videoSource, type: 'application/x-mpegURL' }] : []
+      return [{ src: this.videoSource, type: 'application/x-mpegURL' }]
     },
 
     playing: {
@@ -147,6 +148,12 @@ export default {
       },
       set (value) {
         this.$store.commit('SET_PLAYING', !!value)
+      }
+    },
+
+    player () {
+      if (this.playerSources && this.$refs.player) {
+        return this.$refs.player.$refs.player
       }
     }
 
@@ -160,26 +167,22 @@ export default {
     ]),
 
     rewind () {
-      this.$refs.player.$refs.player.currentTime = 0
+      this.player.currentTime = 0
     },
 
     forward () {
-      const player = this.$refs.player.$refs.player
-      player.currentTime = player.duration - 0.6
+      this.player.currentTime = this.player.duration - 0.6
     },
 
     setPosition (side) {
       if (side === 'start') {
         this.setDvr({
-          start: moment(this.dvrStart).add(this.videoTime, 'seconds'),
-          duration: this.dvrDuration - this.videoTime
+          start: moment(this.dvrStart).add(this.player.currentTime, 'seconds'),
+          duration: this.dvrDuration - this.player.currentTime
         })
       } else if (side === 'end') {
-        // this.playing = false
-        this.$store.dispatch('setDvrDuration', this.videoTime)
-        // this.$store.commit('SET_DVRDURATION', this.videoTime)
-        this.playerStartPosition = this.videoTime - 1
-        // this.playing = true
+        this.$store.dispatch('setDvrDuration', this.player.currentTime)
+        this.playerStartPosition = this.videoTime - 2
       }
     },
 
@@ -192,7 +195,7 @@ export default {
       if (time < 0) {
         this.setDvrStart(moment(this.dvrStart).subtract(Math.abs(time), 'seconds'))
       } else {
-        this.playerStartPosition = this.dvrDuration - 1
+        this.playerStartPosition = this.dvrDuration - 2
       }
     },
 
@@ -201,14 +204,19 @@ export default {
     },
 
     canExpandEnd () {
-      if (this.videoTime) {
-        const video = this.$refs.player && this.$refs.player.$refs.player
-        if (video) {
-          return (Math.ceil(video.currentTime) + 5 >= Math.floor(this.dvrDuration))
-        }
+      if (this.videoTime && this.player) {
+        return (Math.ceil(this.player.currentTime) + 5 >= Math.floor(this.dvrDuration))
       }
     }
 
+  },
+
+  watch: {
+    seekTo (val) {
+      if (this.player) {
+        this.player.currentTime = val
+      }
+    }
   },
 
   components: {

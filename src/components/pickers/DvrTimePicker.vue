@@ -5,6 +5,7 @@
     v-model="selectedDate"
     :allowed-dates="allowedDates"
     locale="es"
+    :scrollable="true"
   />
   <v-time-picker
     :landscape="$vuetify.breakpoint.smAndUp"
@@ -33,22 +34,46 @@ export default {
   computed: {
     ...mapState([
       'dvrStart',
-      'timeSelectionMode',
-      'dvrStoreDetails'
-    ]),
-    ...mapGetters([
+      'dvrDuration',
+      'dvrStoreDetails',
+      'pickerSide',
+      'videoTime'
     ]),
 
     selectedTime: {
       get () {
-        if (this.dvrStart) {
-          return moment(this.dvrStart).add(this.videoTime).format('HH:mm')
-        } else {
-          return moment().format('HH:mm')
+        switch (this.pickerSide) {
+          case 0: // left
+          case 2: // left & right pinned
+            // return moment(this.dvrStart).add(this.videoTime, 'seconds').format('HH:mm')
+            return moment(this.dvrStart).format('HH:mm')
+          case 1: // right
+          case 3: // right & left pinned
+            return moment(this.dvrStart).add(this.dvrDuration, 'seconds').format('HH:mm')
         }
       },
       set (val) {
-        this.setDvrStart(moment(`${this.selectedDate} ${val}:0`, 'YYYY-MM-DD HH:mm:s'))
+        const selectedMoment = moment(`${this.selectedDate} ${val}:0`, 'YYYY-MM-DD HH:mm:s')
+        switch (this.pickerSide) {
+          case 0: // left
+            this.setDvrStart(selectedMoment)
+            break
+          case 1: // right
+            this.setDvrStart(selectedMoment.subtract(moment.duration(this.dvrDuration, 'seconds')))
+            break
+          case 2: // left & right pinned
+            this.setDvr({
+              start: selectedMoment,
+              duration: this.dvrDuration + moment(this.dvrStart).diff(selectedMoment, 'seconds')
+            })
+            break
+          case 3: // right & left pinned
+            this.setDvr({
+              start: this.dvrStart,
+              duration: selectedMoment.diff(this.dvrStart, 'seconds')
+            })
+            break
+        }
       }
     },
 
@@ -80,17 +105,37 @@ export default {
     },
 
     allowedHours (hour) {
-      return Object.values(this.dvrStoreDetails).some(store => {
-        return moment(`${this.selectedDate} ${hour}:0`, 'YYYY-MM-DD H:m').range('hour').overlaps(store.utcRange)
+      const selectedMoment = moment(`${this.selectedDate} ${hour}:0`, 'YYYY-MM-DD H:m')
+      const inRange = Object.values(this.dvrStoreDetails).some(store => {
+        return selectedMoment.range('hour').overlaps(store.utcRange)
       })
+      switch (this.pickerSide) {
+        case 0: // left
+        case 1: // right
+          return inRange
+        case 2: // left & right pinned
+          return inRange && selectedMoment.isBefore(moment(this.dvrStart).add(this.dvrDuration, 'seconds'))
+        case 3: // right & left pinned
+          return inRange && selectedMoment.isAfter(this.dvrStart)
+      }
     },
 
     allowedMinutes (minute) {
       if (this.selectedDate && this.selectedTime) {
         const [ hour, , ] = this.selectedTime.split(':')
-        return Object.values(this.dvrStoreDetails).some(store => {
-          return store.utcRange.contains(moment(`${this.selectedDate} ${hour}:${minute}`, 'YYYY-MM-DD HH:m'))
+        const selectedMoment = moment(`${this.selectedDate} ${hour}:${minute}`, 'YYYY-MM-DD HH:m')
+        const inRange = Object.values(this.dvrStoreDetails).some(store => {
+          return store.utcRange.contains(selectedMoment)
         })
+        switch (this.pickerSide) {
+          case 0: // left
+          case 1: // right
+            return inRange
+          case 2: // left & right pinned
+            return inRange && selectedMoment.isBefore(moment(this.dvrStart).add(this.dvrDuration, 'seconds'))
+          case 3: // right & left pinned
+            return inRange && selectedMoment.isAfter(this.dvrStart)
+        }
       }
       return false
     }

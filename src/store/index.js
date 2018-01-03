@@ -35,6 +35,7 @@ const state = {
 
   // Ephemeral video state
   videoTime: 0,
+  seekTo: null,
   playing: false,
   ended: false,
   selectedSource: null,

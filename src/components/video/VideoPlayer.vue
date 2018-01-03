@@ -13,7 +13,7 @@
       @ended="() => { $emit('ended') }"
       @pause="() => { $emit('pause') }"
       @play="() => { $emit('play') }"
-      playsinline
+      playsinline muted
     >
       <source
         v-for="src in sources"

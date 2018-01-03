@@ -39,6 +39,17 @@
         <span>Agregr&nbsp;segmento</span>
       </v-tooltip>
     </v-btn>
+
+    <v-snackbar
+      :timeout="6000"
+      :bottom="true"
+      v-model="snackbar"
+      :color="snackbarColor"
+    >
+      {{ snackbarText }}
+      <v-btn flat @click.native="snackbar = false">Cerrar</v-btn>
+    </v-snackbar>
+
   </div>
 </template>
 
@@ -54,7 +65,11 @@ export default {
 
   data () {
     return {
-      intervalId: null,
+      snackbar: false,
+      snackbarText: '',
+      snackbarColor: 'success',
+      conversionsIntervalId: null,
+      sceneChangesIntervalId: null,
       datePickerOpened: true,
       timePickerOpened: true,
       name: '',

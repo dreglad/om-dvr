@@ -3,7 +3,7 @@
 
     <!-- timeline -->
     <timeline
-      v-if="dvrStart && currentConversions && recordingItems.length"
+      v-if="!!streamId && currentConversions && recordingItems.length"
       ref="timeline"
       :items="allItems"
       :options="options"
@@ -129,6 +129,8 @@ export default {
           add: true,
           updateTime: true
         },
+        stackSubgroups: false,
+        stack: false,
         configure: false,
         groupEditable: true,
         max: moment(this.dvrAvailableMax).add(15, 'minutes'),
@@ -312,8 +314,21 @@ export default {
       // console.log(event)
     },
 
-    doubleClick (e, i, o) {
-      console.log(e, i, o)
+    doubleClick (e) {
+      if (e.what === 'axis') {
+        if (this.dvrRange.contains(moment(e.time))) { // inside currently playing video
+          // console.log('no')
+          this.$store.commit('SET_SEEK_TO', moment(e.time).diff(moment(this.dvrStart), 'seconds'))
+        } else { // outside of playing video
+          const seekOffset = 60
+          this.$store.commit('SET_DVRSTART', moment(e.time).subtract(seekOffset, 'seconds'))
+          this.$nextTick().then(() => {
+            this.$store.commit('SET_SEEK_TO', seekOffset)
+          })
+        }
+      } else if (e.item === 'recording-dvr') {
+        this.timeline.focus(e.item)
+      }
     },
 
     itemTooltip (item) {
