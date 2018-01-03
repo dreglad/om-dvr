@@ -1,11 +1,9 @@
 <template>
   <v-app id="app" dark>
     <v-navigation-drawer
+      fixed clipped dark
       v-model="drawer"
       width="200"
-      fixed
-      clipped
-      dark
       app
     >
       <v-list>
@@ -52,7 +50,7 @@
       
       <v-spacer />
 
-      <v-tooltip left>
+      <v-tooltip bottom>
         <v-btn icon @click="isLive = !isLive" slot="activator">
           <v-icon v-if="isLive">cast_connected</v-icon>
           <v-icon v-else>cast</v-icon>
@@ -66,27 +64,64 @@
 
       <!-- Select time widget -->
       <v-menu offset-y full-width right
+        v-if="$route.name == 'Recorder'"
+        :close-on-click="false"
         :close-on-content-click="false"
         transition="slide-y-transition"
         :nudge-top="-10"
+        v-model="timePickerOpened"
       >
-        <v-btn slot="activator" icon>
-          <v-tooltip left>
+        <v-btn slot="activator" icon
+          :outline="timePickerOpened"
+          @click="timePickerActivated"
+        >
+          <v-tooltip bottom>
             <v-icon slot="activator">query_builder</v-icon>
             <span>Elegir hora</span>
           </v-tooltip>
         </v-btn>
-        <dvr-time-picker type="time" />
+        <div style="position:relative;">
+          <div style="position:absolute;z-index:1" class="pl-1 pt-3">
+            <v-btn-toggle mandatory v-model="pickerSide">
+              <v-tooltip bottom>
+                <v-btn slot="activator" flat><v-icon>first_page</v-icon></v-btn>
+                <span>Elegir tiempo inicial</span>
+              </v-tooltip>
+
+              <v-tooltip bottom>
+                <v-btn slot="activator" flat><v-icon>last_page</v-icon></v-btn>
+                <span>Elegir tiempo final</span>
+              </v-tooltip>
+
+              <v-tooltip bottom>
+                <v-btn slot="activator" flat><v-icon>skip_previous</v-icon></v-btn>
+                <span>Elegir tiempo inicial, fijando tiempo final</span>
+              </v-tooltip>
+
+              <v-tooltip bottom>
+                <v-btn slot="activator" flat><v-icon>skip_next</v-icon></v-btn>
+                <span>Elegir tiempo final, fijando tiempo incial</span>
+              </v-tooltip>
+            </v-btn-toggle>
+          </div>
+          <dvr-time-picker type="time" />
+        </div>
       </v-menu>
 
       <!-- Select date widget -->
       <v-menu offset-y full-width right
+        v-if="$route.name == 'Recorder'"
+        :close-on-click="false"
         :close-on-content-click="false"
         transition="slide-y-transition"
         :nudge-top="-10"
+        v-model="datePickerOpened"
       >
-        <v-btn slot="activator" icon>
-          <v-tooltip left>
+        <v-btn slot="activator" icon
+          :outline="datePickerOpened"
+          @click="datePickerActivated"
+        >
+          <v-tooltip right>
             <v-icon slot="activator">event</v-icon>
             <span>Elegir&nbsp;fecha</span>
           </v-tooltip>
@@ -130,6 +165,8 @@ export default {
   name: 'app',
   data () {
     return {
+      timePickerOpened: false,
+      datePickerOpened: false,
       changelogOpened: false,
       currentTime: null,
       isLive: false,
@@ -169,6 +206,15 @@ export default {
       'selectedStream'
     ]),
 
+    pickerSide: {
+      get () {
+        return this.$store.state.pickerSide
+      },
+      set (value) {
+        this.$store.commit('SET_PICKER_SIDE', value)
+      }
+    },
+
     newConversions () {
       const state = this.$store.state
       if (state.seenConversions[state.streamId]) {
@@ -197,11 +243,31 @@ export default {
     }
   },
 
+  methods: {
+    datePickerActivated () {
+      this.timePickerOpened = false
+      this.datePickerOpened = !this.datePickerOpened
+    },
+
+    timePickerActivated () {
+      this.datePickerOpened = false
+      this.timePickerOpened = !this.timePickerOpened
+    }
+  },
+
   mounted () {
     this.currentTime = moment().subtract('seconds', 10)
     setInterval(() => {
       this.currentTime = moment().subtract('seconds', 10)
     }, 5000)
+  },
+
+  watch: {
+    '$route' (to, from) {
+      if (to.name === 'Recorder') {
+        this.datePickerOpened = this.timePickerOpened = false
+      }
+    }
   },
 
   components: {
