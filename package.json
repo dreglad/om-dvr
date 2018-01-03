@@ -1,7 +1,7 @@
 {
   "name": "live2vod",
-  "version": "1.0.0",
-  "description": "A Vue.js project",
+  "version": "0.2.7",
+  "description": "Smart DVR Recorder and CMS by Open Multimedia",
   "author": "David Regla <dreglad@gmail.com>",
   "private": true,
   "scripts": {
@@ -23,9 +23,11 @@
     "url-join": "^2.0.2",
     "vis": "^4.21.0",
     "vue": "^2.5.6",
+    "vue-analytics": "^5.8.0",
     "vue-i18n": "^7.3.2",
     "vue-meta": "^1.3.1",
     "vue-router": "^3.0.1",
+    "vue-worker": "^1.2.1",
     "vue2vis": "^0.0.9",
     "vuetify": "^1.0.0-alpha.3",
     "vuex": "^3.0.1",

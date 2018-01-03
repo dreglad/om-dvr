@@ -35,6 +35,25 @@ export default {
       expanded: [ true ],
       versions: [
         {
+          version: '0.2.7',
+          date: moment('2018-01-03 01:15:32'),
+          changes: [
+            'Se agregó opción de configuración para ajustar la sensibilidad de la detección de los marcadores de cambios de escena. Se puede elegir un valor de entre 65% hasta 100%; entre mayor sea, la diferenca entre un cuadro y el sieguinte debe ser mayor para considerarse como un cambio de escena.',
+            'Se agregó opción de configuración para ajustar el tiempo antes y después (relativo al video reprooduciéndose) en donde se muestras marcadores de cambio de escena sobre la línea de tiempo'
+          ]
+        },
+        {
+          version: '0.2.6',
+          date: moment('2017-12-31 14:21:16'),
+          changes: [
+            'En el disco de selección de hora se agregó una barra de botones para elejir el modo en que se afecta el video actual, con cuatro modos: "elegir tiempo inicial", "elegir tiempo final", "elegir tiempo inicial sin mover tiempo final" y "elegir tiempo final sin mover incial".',
+            'En la línea de tiempo se agregó grupo de marcadores auxiliares que indican posibles cambios de escena',
+            'Con doble click sobre el eje numérico de la línea de tiempo, la reproducción se recorre al momento correspondiente',
+            'Los selectores de fecha y tiempo ya no se cierran al hacer click fuera de ellos sino sólo al tocar el ícono nuevamente',
+            'Los íconos para mostrar los selectores de fecha y hora ahora sólo se muestran en la sección Grabadora'
+          ]
+        },
+        {
           version: '0.2.5',
           date: moment('2017-12-28 00:52:35'),
           changes: [
@@ -45,7 +64,7 @@ export default {
         },
         {
           version: '0.2.4',
-          date: moment('2017-12-22 18:11:35'),
+          date: moment('2017-12-23 18:11:35'),
           changes: [
             'Funcionalidad ex profeso de distribución a Multimedia teleSUR como Video Capturado',
             'Nuevo manejador de conexiones basado en axios'
