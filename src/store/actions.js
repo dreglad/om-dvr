@@ -130,6 +130,14 @@ export default {
     }
   },
 
+  requestSceneChanges ({ commit, getters }, options) {
+    if (getters.selectedStream) {
+      return backend.requestSceneChanges(getters.selectedStream, sceneChanges => {
+        commit('RECEIVE_SCENE_CHANGES', sceneChanges)
+      })
+    }
+  },
+
   requestConversion ({ commit, state, getters }, options) {
     return backend.requestConversion({
       stream: getters.selectedStream,

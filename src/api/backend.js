@@ -38,6 +38,14 @@ export default {
     .catch(e => error(e))
   },
 
+  requestSceneChanges (stream, cb) {
+    return axios.get(urljoin(apiBase, 'scene_changes/'), {
+      params: { scene_analysis__stream: stream.id, value__gte: 0.7 }
+    })
+    .then(({ data }) => { cb(data) })
+    .catch(e => error(e))
+  },
+
   getThumbnailUrl (stream, time) {
     const fileName = `${stream.metadata.wseStream}_${Math.ceil(moment(time).format('X'))}.jpg`
     return urljoin(stream.metadata.wseVodUrl, 'thumbnails', fileName)

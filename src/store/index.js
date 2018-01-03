@@ -25,6 +25,7 @@ const state = {
   dvrStores: {},
   dvrStoreDetails: {},
   conversions: [],
+  sceneChanges: [],
   currentStoreName: null,
 
   // Selected
@@ -41,7 +42,9 @@ const state = {
   segments: [],
 
   // Persistent
-  savedSegments: [],
+
+  pickerSide: 0, // left
+
   userSettings: {
     username: 'admin',
     password: 'passpass',
@@ -53,7 +56,10 @@ const state = {
     defaultPosition: 'start', // 'start', 'end' or time in seconds
     hlsLevel: 'auto', // 'auto', or level
     defaultPage: 'Live',
-    drawer: false
+    drawer: false,
+    showSceneChanges: true,
+    sceneChangeMinValue: 0.65,
+    sceneChangeOffset: 60 * 10
   },
   seenConversions: {},
   previousStreamId: null,

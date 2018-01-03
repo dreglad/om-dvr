@@ -26,6 +26,10 @@ export default {
     state.conversions = conversions
   },
 
+  RECEIVE_SCENE_CHANGES (state, sceneChanges) {
+    state.sceneChanges = sceneChanges
+  },
+
   RECEIVE_DVRSTORE_DETAILS (state, details) {
     [...details].map(details => {
       details.utcRange = moment.range(moment.utc(details.utcStart, 'x'), moment.utc(details.utcEnd))
@@ -45,8 +49,20 @@ export default {
     state.dvrDuration = duration
   },
 
+  SET_USERSETTINGS_SCENECHANGEMINVALUE (state, value) {
+    state.userSettings.sceneChangeMinValue = value
+  },
+
+  SET_USERSETTINGS_SCENECHANGEOFFSET (state, value) {
+    state.userSettings.sceneChangeOffset = value
+  },
+
   SET_USERSETTINGS_ONLYLEADINGSTORE (state, value) {
     state.userSettings.onlyLeadingStore = !!value
+  },
+
+  SET_USERSETTINGS_SHOWSCENECHANGES (state, value) {
+    state.userSettings.showSceneChanges = !!value
   },
 
   SET_PREVIOUS_STREAMID (state, streamId) {
@@ -81,8 +97,16 @@ export default {
     state.videoTime = videoTime
   },
 
+  SET_SEEK_TO (state, seekTo) {
+    state.seekTo = seekTo
+  },
+
   SET_PLAYING (state, playing) {
     state.playing = playing
+  },
+
+  SET_PICKER_SIDE (state, pickerSide) {
+    state.pickerSide = pickerSide
   }
 
 }

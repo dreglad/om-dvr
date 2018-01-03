@@ -62,19 +62,6 @@ export default {
   data () {
     return {
       timeline: null,
-      groups: [{
-        id: 'recordings',
-        content: 'Grabación',
-        className: 'recordings'
-      }, {
-        id: 'conversions',
-        content: 'Conversiones',
-        className: 'conversions'
-      }, {
-        id: 'videos',
-        content: 'Videos',
-        className: 'videos'
-      }],
       currentBar: null,
       endBar: null,
       startBar: null
@@ -88,13 +75,49 @@ export default {
       'dvrAvailableMax',
       'dvrAvailableMin',
       'videoSource',
+      'dvrRange',
       'selectedStream'
     ]),
     ...mapState([
       'dvrStart',
       'videoTime',
-      'streamId'
+      'streamId',
+      'sceneChanges',
+      'userSettings'
     ]),
+
+    groups () {
+      return [
+        ...this.sceneChangesGroup,
+        {
+          id: 'recordings',
+          content: 'Grabación',
+          className: 'recordings'
+        },
+        {
+          id: 'conversions',
+          content: 'Conversiones',
+          className: 'conversions'
+        },
+        {
+          id: 'videos',
+          content: 'Videos',
+          className: 'videos'
+        }
+      ]
+    },
+
+    sceneChangesGroup () {
+      if (this.userSettings.showSceneChanges) {
+        return [{
+          id: 'sceneChanges',
+          content: '',
+          className: 'sceneChanges'
+        }]
+      } else {
+        return []
+      }
+    },
 
     dvrStore () {
       return this.$store.getters.selectedStoreDetails
@@ -157,19 +180,19 @@ export default {
           item.end = moment(item.start).add(30, 'minutes')
           callback(item)
         },
-        onMoving: (item, callback) => {
-          // if (this.timeline.getSelection() !== [item.id]) {
-          // this.timeline.setSelection(item.id, {
-          //   focus: false
-          // })
-          // }
-          callback(item)
-          // if (this.dvrAvailableMin.isBefore(item.start) && this.dvrAvailableMax.isAfter(item.end)) {
-          //   callback(item)
-          // } else {
-          //   callback(null)
-          // }
-        },
+        // onMoving: (item, callback) => {
+        //   // if (this.timeline.getSelection() !== [item.id]) {
+        //   // this.timeline.setSelection(item.id, {
+        //   //   focus: false
+        //   // })
+        //   // }
+        //   callback(item)
+        //   // if (this.dvrAvailableMin.isBefore(item.start) && this.dvrAvailableMax.isAfter(item.end)) {
+        //   //   callback(item)
+        //   // } else {
+        //   //   callback(null)
+        //   // }
+        // },
         onMove: (item, callback) => {
           if (this.dvrAvailableMin.isBefore(item.start) && this.dvrAvailableMax.isAfter(item.end)) {
             this.$store.dispatch('setDvr', {
@@ -182,8 +205,8 @@ export default {
           }
         },
         tooltip: {
-          followMouse: true,
-          overflowMethod: 'cap'
+          followMouse: true
+          // overflowMethod: 'cap'
         },
         tooltipOnItemUpdateTime: {
           template: this.itemTooltip
@@ -196,7 +219,8 @@ export default {
         ...this.videoItems,
         ...this.conversionItems,
         ...this.storeBackgroundItems,
-        ...this.recordingItems
+        ...this.recordingItems,
+        ...this.sceneChangeItems
       ]
     },
 
@@ -204,12 +228,39 @@ export default {
       return []
     },
 
+    sceneChangeItems () {
+      if (this.userSettings.showSceneChanges) {
+        const range = moment.range(
+          moment(this.dvrStart).subtract(this.userSettings.sceneChangeOffset, 'seconds'),
+          moment(this.dvrStart)
+          .add(moment.duration(this.dvrDuration, 'seconds'))
+          .add(this.userSettings.sceneChangeOffset, 'seconds')
+        )
+        return this.sceneChanges.filter(change => {
+          return range.contains(moment(change.time)) && change.value >= this.userSettings.sceneChangeMinValue
+        }).map(change => {
+          return {
+            id: 'change_' + change.id,
+            start: change.time,
+            content: '',
+            group: 'sceneChanges',
+            className: 'sceneChange',
+            type: 'point',
+            editable: false,
+            selectable: false
+          }
+        })
+      } else {
+        return []
+      }
+    },
+
     conversionItems () {
       return this.currentConversions
       .filter(conv => this.dvrAvailableMin.isBefore(conv.start))
       .map(conv => {
         return {
-          id: conv.id,
+          id: 'conv_' + conv.id,
           start: conv.start,
           end: conv.end,
           content: conv.status === 'STARTED' ? Math.round(conv.progress * 100) + '%' : conv.duration.format('HH:mm:ss'),
@@ -224,7 +275,7 @@ export default {
     storeBackgroundItems () {
       return Object.values(this.$store.state.dvrStoreDetails).map(store => {
         return {
-          id: 'back' + store.dvrStoreName,
+          id: 'block_' + store.dvrStoreName,
           start: moment(store.utcStart, 'x'),
           end: moment(store.utcEnd, 'x'),
           type: 'background',
@@ -385,6 +436,16 @@ export default {
       margin-right: 6px;
     }
 
+    .vis-item.sceneChange {
+      background-color: white;
+      width: 1px;
+      border:none;
+      stroke-width: 0;
+      stroke: unset;
+      height: 5px;
+      opacity: 1;
+    }
+
     .vis-item.recording {
       background-color: #1565C0;
     }
@@ -445,9 +506,10 @@ export default {
       border-color: #888;
     }
 
-/*    .vis-group.recordings {
-      height: 50px !important;
-    }*/
+    .vis-group.sceneChanges {
+      min-height: 6px;
+      border: none;
+    }
 
     /*.vis-group.conversions {
       min-height: 120px;

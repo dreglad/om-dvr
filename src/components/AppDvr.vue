@@ -95,20 +95,34 @@ export default {
     ...mapActions([
       'requestDvrStores',
       'requestStores',
-      'requestConversion'
+      'requestConversion',
+      'requestSceneChanges'
     ]),
 
     doRequestConversion () {
       this.requestConversion().then(() => {
+        this.snackbarText = 'Conversión creada'
+        this.snackbarColor = 'success'
+        this.snackbar = true
         this.$store.dispatch('requestConversions')
+      }).catch(e => {
+        this.snackbarText = 'Error creando conversión'
+        this.snackbarColor = 'error'
+        this.snackbar = true
       })
     }
   },
 
   mounted () {
-    this.intervalId = setInterval(() => {
+    this.$store.dispatch('requestConversions')
+    this.conversionsIntervalId = setInterval(() => {
       this.$store.dispatch('requestConversions')
     }, 5000)
+
+    this.$store.dispatch('requestSceneChanges')
+    this.sceneChangesIntervalId = setInterval(() => {
+      this.$store.dispatch('requestSceneChanges')
+    }, 20000)
     // this.requestDvrStores(this.$route.params.stream)
     // this.requestStreams()
 
@@ -121,7 +135,8 @@ export default {
   },
 
   beforeDestroy () {
-    clearInterval(this.intervalId)
+    clearInterval(this.conversionsIntervalId)
+    clearInterval(this.sceneChangesIntervalId)
   },
 
   components: {
