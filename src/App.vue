@@ -1,6 +1,7 @@
 <template>
   <v-app id="app" dark>
     <v-navigation-drawer
+      v-if="isAuthenticated"
       fixed clipped dark
       v-model="drawer"
       width="200"
@@ -31,6 +32,7 @@
       </v-list>
     </v-navigation-drawer>
     <v-toolbar
+      v-if="isAuthenticated"
       dense
       color="light-blue accent-4"
       dark
@@ -172,14 +174,14 @@ export default {
       isLive: false,
       menu: [
         {
-          route: 'Live',
-          title: 'En vivo',
-          icon: 'cast'
-        },
-        {
           route: 'Recorder',
           title: 'Grabadora',
           icon: 'av_timer'
+        },
+        {
+          route: 'Live',
+          title: 'En vivo',
+          icon: 'cast'
         },
         {
           route: 'Conversions',
@@ -203,7 +205,8 @@ export default {
   computed: {
 
     ...mapGetters([
-      'selectedStream'
+      'selectedStream',
+      'isAuthenticated'
     ]),
 
     pickerSide: {
@@ -256,9 +259,10 @@ export default {
   },
 
   mounted () {
-    this.currentTime = moment().subtract('seconds', 10)
+    // new AuthService().login()
+    this.currentTime = moment().subtract(10, 'seconds')
     setInterval(() => {
-      this.currentTime = moment().subtract('seconds', 10)
+      this.currentTime = moment().subtract(10, 'seconds')
     }, 5000)
   },
 

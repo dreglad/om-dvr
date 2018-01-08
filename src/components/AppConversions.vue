@@ -8,12 +8,12 @@
       >
         <template slot="items" slot-scope="props">
           <td v-if="props.item.status == 'STARTED' || props.item.status == 'SUCCESS'">
-            <v-progress-circular :size="50" :width="3" class="ma-2"
+            <v-progress-circular :size="40" :width="2" class="ma-2"
               :value="props.item.progress * 100"
               :color="progressColor(props.item)"
             >
               <!-- <span v-if="props.item.progress < 1">{{ Math.max(1, Math.ceil(props.item.progress * 100 )) }}%</span> -->
-              <span><v-icon :color="progressColor(props.item)">{{ progressIcon(props.item) }}</v-icon></span>
+              <span><v-icon small :color="progressColor(props.item)">{{ progressIcon(props.item) }}</v-icon></span>
             </v-progress-circular>
           </td>
           <td v-else>{{ props.item.status | converisonStatus }}</td>
@@ -33,11 +33,12 @@
             <!-- </v-layout> -->
           </td>
           <td>{{ props.item.start.format('dddd D [de] MMM [de] YYYY') }}</td>
-          <td>{{ props.item.start.format('HH:mm:ss') }}</td>
-          <td>{{ props.item.end.format('HH:mm:ss') }}</td>
-          <td>{{ props.item.duration.format('HH:mm:ss', { trim: false }) }}</td>
           <td>
-
+            {{ props.item.start.format('HH:mm:ss') }} - 
+            {{ props.item.end.format('HH:mm:ss') }}
+          </td>
+          <td>{{ props.item.duration.humanize() }}</td>
+          <td>
             <v-menu offset-y
               :close-on-content-click="false"
               transition="slide-y-transition"
@@ -128,13 +129,13 @@
     <v-dialog
       v-model="metadataDialog"
       :overlay="true"
-      width="500px"
+      :width="540"
     >
       <v-card>
-        <v-card-title class="py-4 title">Distribuir video</v-card-title>
+        <v-card-title class="title">Distribuir video</v-card-title>
         <v-container grid-list-sm class="pa-4">
           <v-layout row wrap>
-            <v-flex xs6>
+            <v-flex xs5 class="pa-1">
               <v-select
                 v-model="metadataTipo"
                 :items="metadataTipoOptions[selectedProfileId === 1 ? 'es' : 'en']"
@@ -145,12 +146,13 @@
                 required
               />
             </v-flex>
-            <v-flex xs6>
+            <v-flex xs7 class="pa-1">
               <v-select
                 v-model="metadataPrograma"
                 :items="metadataProgramaOptions[selectedProfileId === 1 ? 'es' : 'en']"
                 item-value="slug"
                 item-text="nombre"
+                dense
                 label="Programa de origen"
                 clearable
                 autocomplete
@@ -219,10 +221,10 @@ export default {
       selectedProfileId: null,
       error: false,
       distributionProfiles: [
-          { name: 'Multimedia teleSUR Español', id: 1 },
-          { name: 'Multimedia teleSUR English', id: 2 },
-          { name: 'Captura teleSUR Español', id: 3 },
-          { name: 'Captura teleSUR English', id: 4 }
+          { name: 'Multimedia teleSUR | Clip en Español', id: 1 },
+          { name: 'Multimedia teleSUR | Clip en Inglés', id: 2 },
+          { name: 'Multimedia teleSUR | Video Capturado en Español', id: 3 },
+          { name: 'Multimedia teleSUR | Video Capturado en Inglés', id: 4 }
       ],
       pagination: {
         rowsPerPage: 25,
@@ -245,13 +247,8 @@ export default {
           align: 'left'
         },
         {
-          text: 'Hora inicial',
+          text: 'Rango',
           value: 'start',
-          align: 'left'
-        },
-        {
-          text: 'Hora final',
-          value: 'end',
           align: 'left'
         },
         {
@@ -308,7 +305,8 @@ export default {
           titulo: this.metadataTitle,
           descripcion: this.metadataDescription,
           tipo: this.metadataTipo,
-          programa: this.metadataPrograma
+          programa: this.metadataPrograma,
+          user: this.$store.state.auth0.user
         }
       }).then(({ data }) => {
         this.confirmed = true
@@ -354,7 +352,7 @@ export default {
         case 'STARTED':
           return 'blue'
         case 'SUCCESS':
-          return 'green'
+          return 'green darken-2'
         case 'FAILURE':
           return 'deep-orange'
         case 'PENDING':

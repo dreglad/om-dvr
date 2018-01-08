@@ -13,7 +13,8 @@
       @ended="() => { $emit('ended') }"
       @pause="() => { $emit('pause') }"
       @play="() => { $emit('play') }"
-      playsinline muted
+      playsinline
+      :muted="$vuetify.breakpoint.smAndDown"
     >
       <source
         v-for="src in sources"

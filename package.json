@@ -11,9 +11,11 @@
     "lint": "eslint --ext .js,.vue src"
   },
   "dependencies": {
+    "auth0-js": "^9.0.2",
     "axios": "^0.17.0",
     "file-size": "^1.0.0",
     "humanize": "0.0.9",
+    "jwt-decode": "^2.2.0",
     "lodash": "^4.17.4",
     "moment": "^2.19.1",
     "moment-duration-format": "^2.0.1",

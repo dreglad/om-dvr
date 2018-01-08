@@ -7,18 +7,14 @@ import { extendMoment } from 'moment-range'
 const moment = extendMoment(Moment)
 
 const _conf = {
-  scheme: 'http',
-  host: 'captura-saro.openmultimedia.biz',
-  apiPort: 8087,
-  streamingPort: 1935,
+  baseUrl: 'https://wse-saro-api.openmultimedia.biz',
   server: '_defaultServer_',
   vhost: '_defaultVHost_',
   application: 'live',
   instance: '_definst_'
 }
 
-// const streamingBase = `${_conf.scheme}://${_conf.host}:${_conf.streamingPort}`
-const apiBase = `${_conf.scheme}://${_conf.host}:${_conf.apiPort}/v2`
+const apiBase = `${_conf.baseUrl}/v2`
 const serverBase = `${apiBase}/servers/${_conf.server}`
 const vhostBase = `${serverBase}/vhosts/${_conf.vhost}`
 const applicationBase = `${vhostBase}/applications/${_conf.application}`

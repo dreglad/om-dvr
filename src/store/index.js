@@ -4,12 +4,13 @@ import actions from './actions'
 import getters from './getters'
 import mutations from './mutations'
 import createPersistedState from 'vuex-persistedstate'
+import auth0 from './modules/auth0'
 
 Vue.use(Vuex)
 
 const debug = process.env.NODE_ENV !== 'production'
 
-const version = '0.2.7'
+const version = '0.2.8'
 const persistedState = createPersistedState({
   key: 'dvr-2',
   paths: [
@@ -17,6 +18,10 @@ const persistedState = createPersistedState({
     'seenConversions',
     'previousStreamId'
   ]
+})
+const loginPersistentState = createPersistedState({
+  key: 'auth0',
+  paths: ['auth0.accessToken', 'auth0.idToken', 'auth0.expiresIn', 'auth0.user']
 })
 
 const state = {
@@ -68,10 +73,13 @@ const state = {
 }
 
 export default new Vuex.Store({
+  modules: {
+    auth0
+  },
   state,
   getters,
   actions,
   mutations,
-  plugins: [persistedState],
+  plugins: [ persistedState, loginPersistentState ],
   strict: debug
 })

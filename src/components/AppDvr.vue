@@ -14,9 +14,22 @@
           <v-card-title primary-title>
             <div>
               <div v-if="selectedStream" class="headline">{{ selectedStream.name }}</div>
-              <span class="grey--text">Duración: {{ $store.getters.dvrMomentDuration.format() }}</span>
             </div>
           </v-card-title>
+          <v-card-text>
+              <div class="grey--text">Duración: {{ $store.getters.dvrMomentDuration.format({ trim: false }) }}</div>
+              <div class="grey--text">Inicio: {{ $store.getters.dvrRange.start.format() }}</div>
+              <div class="grey--text">Final: {{ $store.getters.dvrRange.end.format() }}</div>
+          </v-card-text>
+          <v-card-actions>
+            <v-btn
+              @click="doRequestConversion"
+              :disabled="!canConvert"
+            >
+              Convertir
+              <v-icon right>add</v-icon>
+            </v-btn>
+          </v-card-actions>
         </v-card>
       </v-flex>
     </v-layout>
@@ -29,6 +42,7 @@
     </v-layout>
 
     <!-- Add new segment button -->
+    <!--
     <v-btn small style="margin-right: 0;"
       v-if="selectedStream"
       @click.stop="doRequestConversion"
@@ -39,6 +53,7 @@
         <span>Agregr&nbsp;segmento</span>
       </v-tooltip>
     </v-btn>
+  -->
 
     <v-snackbar
       :timeout="6000"
@@ -102,8 +117,16 @@ export default {
     ...mapGetters([
       'streams',
       'dvrRange',
-      'selectedStream'
-    ])
+      'dvrDuration',
+      'selectedStream',
+      'currentConversions'
+    ]),
+
+    canConvert () {
+      return this.dvrRange && !this.currentConversions.some(conv => {
+        return conv.start.utc().isSame(this.dvrStart) && this.dvrMomentDuration === conv.duration
+      })
+    }
   },
 
   methods: {

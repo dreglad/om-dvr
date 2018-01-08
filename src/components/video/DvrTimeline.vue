@@ -265,7 +265,9 @@ export default {
           id: 'conv_' + conv.id,
           start: conv.start,
           end: conv.end,
-          content: conv.status === 'STARTED' ? Math.round(conv.progress * 100) + '%' : conv.duration.format('HH:mm:ss'),
+          content: conv.status === 'STARTED'
+            ? Math.round(conv.progress * 100) + '%'
+            : conv.duration.format('HH:mm:ss') + ' ' + conv.id,
           group: 'conversions',
           className: `conversion ${conv.status}`,
           editable: false,

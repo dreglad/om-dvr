@@ -8,7 +8,11 @@
       </v-btn>
     </v-toolbar>
     <v-expansion-panel>
-      <v-expansion-panel-content v-for="(log, index) in versions" key="version" v-model="expanded[index]">
+      <v-expansion-panel-content
+        v-model="expanded[index]"
+        v-for="(log, index) in versions"
+        :key="log.version"
+        >
         <div slot="header" class="pa-0">
           <big><strong>{{ log.version }}</strong> <small class="pl-3">{{ log.date.format('LLLL') }}</small></big>
         </div>
@@ -34,6 +38,17 @@ export default {
     return {
       expanded: [ true ],
       versions: [
+        {
+          version: '0.2.8',
+          date: moment('2018-01-08 01:29:19'),
+          changes: [
+            'Se agregó registro y autenticación de usuarios',
+            'Se simplificaron los datos que se muestran en la tabla de conversiones',
+            'Todo el tráfico ahora es dirigido por conexiones seguras HTTPS',
+            'Se mejoró el menú de ajustes de usuario',
+            'Se movió el botón para generar nueva conversión que se encontraba en límite infrerior de la página hacia el panel de selección a la derecha del reproductor de video'
+          ]
+        },
         {
           version: '0.2.7',
           date: moment('2018-01-03 01:15:32'),
