@@ -73,11 +73,10 @@ export default {
     }))
   },
 
-  distributeMultimedia ({ profileId, conversionId, metadata, user }) {
+  distributeMultimedia ({ profileId, conversionId, metadata }) {
     return axios.post('http://captura-telesur.openmultimedia.biz/crear_nuevo/', querystring.stringify({
       archivo_url: `http://captura-saro.openmultimedia.biz:8020/${conversionId}.mp4`,
       idioma: profileId === 1 ? 'es' : 'en',
-      usuario_remoto: user.email,
       publicado: 0,
       ...metadata
     }))

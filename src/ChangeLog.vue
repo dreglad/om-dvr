@@ -45,9 +45,9 @@ export default {
             'Se agregó registro y autenticación de usuarios',
             'Se eliminó la sección de video en vivo. Ahora el video en vivo se activa a través del ícono correspondiente en la barra de heraamientas superior desde cualquier parte del sitio',
             'Se simplificaron los datos que se muestran en la tabla de conversiones',
-            'Todo el tráfico ahora es dirigido por conexiones seguras HTTPS',
             'Se mejoró el menú de ajustes de usuario',
-            'Se movió el botón para generar nueva conversión que se encontraba en límite infrerior de la página hacia el panel de selección a la derecha del reproductor de video'
+            'Se movió el botón para generar nueva conversión que se encontraba en límite infrerior de la página hacia el panel de selección a la derecha del reproductor de video',
+            'Todo el tráfico ahora es dirigido por conexiones seguras HTTPS'
           ]
         },
         {

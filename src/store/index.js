@@ -64,7 +64,7 @@ const state = {
     defaultPage: 'Live',
     drawer: false,
     showSceneChanges: true,
-    sceneChangeMinValue: 0.65,
+    sceneChangeMinValue: 0.80,
     sceneChangeOffset: 60 * 10
   },
   seenConversions: {},

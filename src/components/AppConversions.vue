@@ -5,6 +5,8 @@
         :items="currentConversions"
         :headers="headers"
         :pagination.sync="pagination"
+        rows-per-page-text="Elementos por página"
+        no-data-text="Sin datos"
       >
         <template slot="items" slot-scope="props">
           <td v-if="props.item.status == 'STARTED' || props.item.status == 'SUCCESS'">
@@ -18,15 +20,15 @@
           </td>
           <td v-else>{{ props.item.status | converisonStatus }}</td>
           <!-- <td>{{ props.item.created_at.format('lll') }}</td> -->
-          <td>
+          <td class="justify-center">
             <!-- <v-layout row justify-left align-center> -->
-              <img :height="68" class="pa-2" style="vertical-align:middle;"
+              <img :height="60" class="px-1 py-2" style="vertical-align:middle;"
                 :data-proportion="0" :data-retries="0"
                 :style="{ opacity: props.item.progress < 1 ? 0.6 : 1 }"
                 :src="getThumbnail(props.item, 0)"
                 @error="e => { thumbnailError(props.item, e.target) }" />
               <!-- <v-flex xs1 ><v-icon>forward_arrow</v-icon></v-flex> -->
-              <img :height="68" class="pa-2" style="vertical-align:middle;"
+              <img :height="60" class="px-1 py-2" style="vertical-align:middle;"
                 :data-proportion="props.item.progress" :data-retries="0"
                 :style="{ opacity: props.item.progress < 1 ? 0.6 : 1 }"
                 :src="getThumbnail(props.item, props.item.progress)" />
@@ -38,17 +40,17 @@
             {{ props.item.end.format('HH:mm:ss') }}
           </td>
           <td>{{ props.item.duration.humanize() }}</td>
-          <td>
+          <td class="justify-center px-0">
             <v-menu offset-y
               :close-on-content-click="false"
               transition="slide-y-transition"
               :nudge-top="-10"
             >
               <v-btn slot="activator"
-                fab flat
+                icon class="mx-0"
                 :disabled="props.item.status !== 'SUCCESS'"
               >
-                <v-tooltip left>
+                <v-tooltip top>
                   <v-icon slot="activator">public</v-icon>
                   <span>Distribuir</span>
                 </v-tooltip>
@@ -67,7 +69,7 @@
             </v-menu>
 
             <v-tooltip top>
-              <v-btn fab flat
+              <v-btn icon class="mx-0"
                 slot="activator"
                 :disabled="props.item.status !== 'SUCCESS'"
                 :href="props.item.url"
@@ -78,8 +80,8 @@
               <span>Link de descarga</span>
             </v-tooltip>
 
-            <v-tooltip left>
-              <v-btn fab flat
+            <v-tooltip top>
+              <v-btn icon class="mx-0"
                 slot="activator"
                 @click="gotoDvr(props.item)"
               >
@@ -88,8 +90,8 @@
               <span>Ver en la grabadora</span>
             </v-tooltip>
 
-            <v-tooltip right>
-              <v-btn fab flat
+            <v-tooltip top>
+              <v-btn icon class="mx-0"
                 slot="activator"
                 :disabled="props.item.status === 'STARTED'"
                 @click="removeConversion(props.item)"
@@ -306,7 +308,7 @@ export default {
           descripcion: this.metadataDescription,
           tipo: this.metadataTipo,
           programa: this.metadataPrograma,
-          user: this.$store.state.auth0.user
+          usuario_remoto: this.$store.getters.userEmail
         }
       }).then(({ data }) => {
         this.confirmed = true

@@ -52,7 +52,7 @@
 
           <v-list-tile :disabled="!showSceneChanges">
             <v-list-tile-action>
-              <v-select auto dense :append-icon=false
+              <v-select auto dense :append-icon="false"
                 :items="sceneChangeMinValueOptions"
                 v-model="sceneChangeMinValue"
               />
@@ -65,7 +65,7 @@
 
           <v-list-tile :disabled="!showSceneChanges" v-if="advanced">
             <v-list-tile-action>
-              <v-select auto dense :append-icon=false
+              <v-select auto dense :append-icon="false"
                 :items="sceneChangeOffsetOptions"
                 v-model="sceneChangeOffset"
               />
@@ -80,7 +80,7 @@
 
           <v-list-tile>
             <v-list-tile-action>
-              <v-select auto dense :append-icon=false
+              <v-select auto dense :append-icon="false"
                 :items="durationOptions"
                 v-model="defaultDvrDuration"
               />
@@ -131,6 +131,7 @@ export default {
       menu: false,
       advanced: true,
       durationOptions: [
+        { text: '5 m.', value: 60 * 5 },
         { text: '15 m.', value: 60 * 15 },
         { text: '30 m.', value: 60 * 30 },
         { text: '1 h.', value: 60 * 60 },

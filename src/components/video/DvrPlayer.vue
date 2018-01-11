@@ -17,7 +17,9 @@
         width="100%"
       />
     </div>
-    <v-progress-circular v-else indeterminate />
+    <div v-else class="text-xs-center pa-3" style="margin-top:148px">
+      <v-progress-circular indeterminate />
+    </div>
 
     <!-- control buttons -->
     <v-layout v-if="videoSource" row wrap justify-center>

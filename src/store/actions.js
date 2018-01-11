@@ -46,10 +46,12 @@ export default {
     commit('RESET_DVRSORE_DETAILS')
     commit('RESET_CONVERSIONS')
     commit('SET_DVRSTART', null)
+    commit('SET_VIDEO_TIME', 0)
     commit('SET_STREAMID', stream.id)
     commit('SET_PREVIOUS_STREAMID', stream.id)
     dispatch('requestStreamDetails', stream).then(() => {
       // RECORDER
+      // Creates the segment
       if (!state.dvrStart) {
         let start = moment(getters.dvrAvailableMax).subtract(getters.dvrDuration, 'seconds')
         if (start.isBefore(getters.dvrAvailableMin)) {
