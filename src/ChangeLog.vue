@@ -43,6 +43,7 @@ export default {
           date: moment('2018-01-08 01:29:19'),
           changes: [
             'Se agregó registro y autenticación de usuarios',
+            'Se eliminó la sección de video en vivo. Ahora el video en vivo se activa a través del ícono correspondiente en la barra de heraamientas superior desde cualquier parte del sitio',
             'Se simplificaron los datos que se muestran en la tabla de conversiones',
             'Todo el tráfico ahora es dirigido por conexiones seguras HTTPS',
             'Se mejoró el menú de ajustes de usuario',

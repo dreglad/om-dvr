@@ -53,15 +53,18 @@
       <v-spacer />
 
       <v-tooltip bottom>
-        <v-btn icon @click="isLive = !isLive" slot="activator">
+        <v-btn icon
+          slot="activator"
+          @click="isLive = !isLive"
+          :outline="isLive"
+        >
           <v-icon v-if="isLive">cast_connected</v-icon>
           <v-icon v-else>cast</v-icon>
         </v-btn>
-        <span>
-          Activar en-vivo
-          <br>
-          <img :src="liveThumbnail" width="70" />
-        </span>
+        <div class="text-xs-center">
+          <div>Activar video en vivo</div>
+          <img :src="liveThumbnail" width="100" class="mt-1">
+        </div>
       </v-tooltip>
 
       <!-- Select time widget -->
@@ -123,9 +126,9 @@
           :outline="datePickerOpened"
           @click="datePickerActivated"
         >
-          <v-tooltip right>
+          <v-tooltip bottom>
             <v-icon slot="activator">event</v-icon>
-            <span>Elegir&nbsp;fecha</span>
+            <span>Elegir fecha</span>
           </v-tooltip>
         </v-btn>
         <dvr-time-picker type="date" />
@@ -138,7 +141,7 @@
     <v-content>
       <v-container fluid class="pa-2">
         <!-- <keep-alive> -->
-        <router-view></router-view>
+        <router-view :isLive="isLive"></router-view>
         <!-- </keep-alive> -->
       </v-container>
     </v-content>
@@ -147,16 +150,30 @@
     <v-dialog v-model="changelogOpened" width="80%">
       <ChangeLog />
     </v-dialog>
+
+    <v-dialog
+      lazy
+      v-model="isLive"
+      :overlay="true"
+      transition="fadein"
+      width="100%"
+    >
+      <v-card color="black">
+        <app-live v-if="isLive"></app-live>
+      </v-card>
+    </v-dialog>
   </v-app>
 </template>
 
 <script>
+// import AuthService from '@/AuthService'
 import { mapGetters } from 'vuex'
 import backend from '@/api/backend'
 import ChangeLog from '@/ChangeLog'
 import StreamSelector from '@/components/pickers/StreamSelector'
 import UserSettings from '@/components/pickers/UserSettings'
 import DvrTimePicker from '@/components/pickers/DvrTimePicker'
+import AppLive from '@/components/AppLive'
 import _ from 'lodash'
 import Moment from 'moment'
 import { extendMoment } from 'moment-range'
@@ -178,21 +195,21 @@ export default {
           title: 'Grabadora',
           icon: 'av_timer'
         },
-        {
-          route: 'Live',
-          title: 'En vivo',
-          icon: 'cast'
-        },
+        // {
+        //   route: 'Live',
+        //   title: 'En vivo',
+        //   icon: 'cast'
+        // },
         {
           route: 'Conversions',
           title: 'Conversiones',
           icon: 'fiber_smart_record'
-        },
-        {
-          route: 'Videos',
-          title: 'Videos',
-          icon: 'subscriptions'
         }
+        // {
+        //   route: 'Videos',
+        //   title: 'Videos',
+        //   icon: 'subscriptions'
+        // }
         // {
         //   route: 'Support',
         //   title: 'Soporte',
@@ -278,6 +295,7 @@ export default {
     DvrTimePicker,
     StreamSelector,
     UserSettings,
+    AppLive,
     ChangeLog
   }
 }

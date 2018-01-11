@@ -113,6 +113,8 @@ const moment = extendMoment(Moment)
 export default {
   name: 'dvr-player',
 
+  props: ['isLive'],
+
   data () {
     return {
       playerStartPosition: 0,
@@ -144,7 +146,7 @@ export default {
 
     playing: {
       get () {
-        return this.$store.state.playing
+        return this.$store.state.playing && !this.isLive
       },
       set (value) {
         this.$store.commit('SET_PLAYING', !!value)

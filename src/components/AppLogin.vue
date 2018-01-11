@@ -16,7 +16,6 @@
 <script>
   export default {
     name: 'app-login',
-    props: ['auth'],
 
     data () {
       return {

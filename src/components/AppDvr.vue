@@ -5,7 +5,7 @@
       <v-flex md5 d-flex>
         <v-card class="ma-2">
           <v-card-media>
-            <dvr-player />
+            <dvr-player :isLive="isLive" />
           </v-card-media>
         </v-card>
       </v-flex>
@@ -77,6 +77,8 @@ moment.locale('es')
 
 export default {
   name: 'app-dvr',
+
+  props: ['isLive'],
 
   data () {
     return {
