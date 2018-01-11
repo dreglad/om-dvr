@@ -1,6 +1,5 @@
 <template>
   <div>
-
     <!-- timeline -->
     <timeline
       v-if="!!streamId && currentConversions && recordingItems.length"
@@ -8,10 +7,10 @@
       :items="allItems"
       :options="options"
       :groups="groups"
-      @doubleClick="(e, i, o) => doubleClick(e, i, o)"
-      @select="(items, e) => selected(items)"
-      @timechanged="(e) => endSelected(e)"
-      @mouseOver="(event) => mouseOver(event)"
+      @doubleClick="(e, i, o) => { doubleClick(e, i, o) }"
+      @select="(items, e) => { selected(items) }"
+      @timechanged="endSelected($event)"
+      @mouseOver="mouseOver($event)"
     />
 
     <!-- Add new segment button -->
@@ -57,7 +56,7 @@ moment.locale('es')
 
 export default {
 
-  name: 'dvr-timeline',
+  name: 'TheTimeline',
 
   data () {
     return {
@@ -129,6 +128,9 @@ export default {
           add: true,
           updateTime: true
         },
+        selectable: true,
+        multiselect: true,
+        multiselectPerGroup: true,
         stackSubgroups: false,
         stack: false,
         configure: false,
@@ -248,8 +250,7 @@ export default {
             group: 'sceneChanges',
             className: 'sceneChange',
             type: 'point',
-            editable: false,
-            selectable: false
+            editable: false
           }
         })
       } else {
@@ -421,14 +422,13 @@ export default {
 </script>
 
 <style>
-    .vis-timeline {
-      /*border: 2px solid purple;*/
-      border: none;
-      /*font-family:  purisa, 'comic sans', cursive;*/
-      font-size: 12pt;
-      /*background: #ffecea;*/
-    }
-
+  .vis-timeline {
+    /*border: 2px solid purple;*/
+    border: none;
+    /*font-family:  purisa, 'comic sans', cursive;*/
+    font-size: 12pt;
+    /*background: #ffecea;*/
+  }
 
     .vis-item {
       /*border-color: white;*/
@@ -472,7 +472,6 @@ export default {
       border-color: #90CAF9;
     }
 
-
     .vis-item.store {
       opacity: 0.5;
       color: #444;
@@ -480,6 +479,10 @@ export default {
 
     .vis-item.conversion {
       background-color: yellow;
+    }
+
+    .vis-item.conversion.vis-selected {
+      border-color: #90CAF9;
     }
 
     .vis-item.conversion.SUCCESS {

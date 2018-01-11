@@ -37,7 +37,7 @@
     <!-- timeline -->
     <v-layout row>
       <v-flex xs12>
-        <dvr-timeline />
+        <the-timeline />
       </v-flex>
     </v-layout>
 
@@ -70,7 +70,7 @@
 
 <script>
 import DvrPlayer from './video/DvrPlayer'
-import DvrTimeline from './video/DvrTimeline'
+import TheTimeline from './TheTimeline'
 import moment from 'moment'
 import { mapGetters, mapActions, mapState } from 'vuex'
 moment.locale('es')
@@ -179,7 +179,7 @@ export default {
 
   components: {
     DvrPlayer,
-    DvrTimeline
+    TheTimeline
   }
 }
 </script>
