@@ -27,23 +27,28 @@ export default {
   },
 
   requestConversions (stream, cb) {
-    return axios.get(urljoin(apiBase, 'conversions/'), {
-      params: { stream: stream.id }
-    })
-    .then(({ data }) => { cb(data) })
-    .catch(e => error(e))
+    try {
+      return axios
+        .get(urljoin(apiBase, 'conversions/'), { params: { stream: stream.id } })
+        .then(({ data }) => { cb(data) })
+        .catch(e => error(e))
+    } catch (e) {
+      console.log('rejecting')
+      return Promise.reject(e)
+    }
   },
 
   requestSceneChanges (stream, cb) {
     return axios.get(urljoin(apiBase, 'scene_changes/'), {
       params: { scene_analysis__stream: stream.id, value__gte: 0.7 }
-    })
-    .then(({ data }) => { cb(data) })
-    .catch(e => error(e))
+    }).then(({ data }) => { cb(data) })
+      .catch(e => error(e))
   },
 
   getThumbnailUrl (stream, time) {
     const fileName = `${stream.metadata.wseStream}_${Math.ceil(moment(time).format('X'))}.jpg`
+    console.log(stream.metadata.wseVodUrl)
+    console.log(urljoin(stream.metadata.wseVodUrl, 'thumbnails/' + fileName))
     return urljoin(stream.metadata.wseVodUrl, 'thumbnails', fileName)
   },
 
@@ -56,14 +61,14 @@ export default {
       metadata: metadata
     }
     return axios.post(urljoin(apiBase, 'conversions/'), params)
-    .then(({ data }) => { cb(data) })
-    .catch(e => error(e))
+      .then(({ data }) => { cb(data) })
+      .catch(e => error(e))
   },
 
   removeConversion (conv, cb) {
     return axios.delete(urljoin(apiBase, 'conversions', conv.id, '/'))
-    .then(({ data }) => { cb(data) })
-    .catch(e => error(e))
+      .then(({ data }) => { cb(data) })
+      .catch(e => error(e))
   },
 
   distributeCaptura ({ profileId, conversionId }) {
@@ -84,5 +89,15 @@ export default {
 
   getMetadataOptions (resource, lang = 'es') {
     return axios.get(`https://multimedia.telesurtv.net/${lang}/api/${resource}/?ultimo=300&auth=yik24`)
+  },
+
+  requestMultimediaClips (stream, params = { ultimo: 300 }) {
+    return axios.get(urljoin(stream.metadata.multimediaApiUrl, 'clip/'), {
+      params: {
+        autenticado: 'omdvr',
+        detalle: 'completo',
+        ...params
+      }
+    })
   }
 }

@@ -34,15 +34,14 @@ export default {
       const SUFFIX = '_1080p'
       // const SUFFIX = '_240p'
       const stores = _.chain(data.dvrconverterstoresummary)
-      .map(store => store.name)
-      .filter(storename => storename.indexOf(SUFFIX) !== -1)
-      .sortBy(storename => parseInt(storename.split('.').pop()))
-      .reverse()
-      .groupBy(storename => _.dropRight(storename.replace(SUFFIX, '').split('.')).join('.'))
-      .value()
+        .map(store => store.name)
+        .filter(storename => storename.indexOf(SUFFIX) !== -1)
+        .sortBy(storename => parseInt(storename.split('.').pop()))
+        .reverse()
+        .groupBy(storename => _.dropRight(storename.replace(SUFFIX, '').split('.')).join('.'))
+        .value()
       acb({ stores: stores, conversions: data.groupConversionStatusList })
-    })
-    .catch(e => error(e))
+    }).catch(e => error(e))
   },
 
   getStoreDetails (store, cb) {
@@ -76,8 +75,8 @@ export default {
 
   getInstance (cb) {
     return axios.get(instanceBase)
-    .then(response => cb(response.data))
-    .catch(e => error(e))
+      .then(response => cb(response.data))
+      .catch(e => error(e))
   },
 
   // pgetPlaylistUrl (stream, { ngrp = '_all', params = {} } = {}) {
