@@ -1,0 +1,43 @@
+{
+  "auth": {
+    "signing": "Signing in...",
+    "sign_in": "Sign in",
+    "sign_out": "Sign out"
+  },
+  "dvr": {
+    "duration": "Duration",
+    "start": "Start",
+    "end": "End"
+  },
+  "links": {
+    "recorder": "Recorder",
+    "conversions": "Conversions",
+    "dashboard": "Dashboard",
+    "about": "About"
+  },
+  "userSettings": {
+    "logout": "Log out",
+    "introduction": "This is an introduction in English."
+  },
+  "footer": {
+    "copyright": "Open Multimedia &copy; 2018",
+    "introduction": "This page is made to give you more informations."
+  },
+  "labels": {
+    "thumbnail": "Thumbnail",
+    "timeline": "Timeline",
+    "actions": "Actions",
+    "date": "Date",
+    "time": "Time",
+    "range": "Range",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "ok": "Ok",
+    "status": "Status",
+    "convert": "Convert"
+  },
+  "data_table": {
+    "items_per_page": "Items per page",
+    "no_data": "No data"
+  }
+}
