@@ -8,8 +8,9 @@ const moment = extendMoment(Moment)
 
 export default {
 
-  requestStreams ({ commit, state, dispatch }) {
-    return backend.getStreams(streams => {
+  requestStreams ({ commit, state, dispatch }, { poll = 0 } = {}) {
+    console.log('requesting streams')
+    const promise = backend.getStreams(streams => {
       commit('RECEIVE_STREAMS', streams)
       if (!state.streamId && streams.length) {
         // select default stream if none selected
@@ -17,10 +18,17 @@ export default {
         dispatch('selectStream', stream)
       }
     })
+    if (poll) {
+      promise
+        .then(() => { setTimeout(() => dispatch('requestStreams', { poll }), poll) })
+        .catch(() => { setTimeout(() => dispatch('requestStreams', { poll }), poll) })
+    }
+    return promise
   },
 
-  requestStreamDetails ({ commit }, stream) {
-    return backend.getStreamDetails(stream, details => {
+  requestStreamDetails ({ commit, dispatch }, stream, { poll = 0 } = {}) {
+    console.log('got store_details')
+    const promise = backend.getStreamDetails(stream, details => {
       const data = details['provider_data']
       commit('RECEIVE_DVRSTORES', data['stores'])
       commit('RECEIVE_DVRSTORE_DETAILS', [
@@ -29,6 +37,24 @@ export default {
       ])
       commit('SET_CURRENT_STORENAME', data['current_store_details'].dvrStoreName)
     })
+    if (poll) {
+      promise
+        .then(() => { setTimeout(() => dispatch('requestStreamDetails', stream, { poll }), poll) })
+        .catch(() => { setTimeout(() => dispatch('requestStreamDetails', stream, { poll }), poll) })
+    }
+    return promise
+  },
+
+  requestMultimediaItems ({ getters, commit, dispatch }, { poll = 0 } = {}) {
+    const promise = backend.requestMultimediaClips(getters.selectedStream).then(({ data }) => {
+      commit('RECEIVE_MULTIMEDIA_ITEMS', data)
+    })
+    if (poll) {
+      promise
+        .then(() => { setTimeout(() => dispatch('requestMultimediaItems', { poll }), poll) })
+        .catch(() => { setTimeout(() => dispatch('requestMultimediaItems', { poll }), poll) })
+    }
+    return promise
   },
 
   // requestDvrStores ({ commit, state, getters, dispatch }, defaultStream) {
@@ -78,7 +104,7 @@ export default {
     })
 
     // CONVERSIONS
-    dispatch('requestConversions')
+    // dispatch('requestConversions')
   },
 
   setDvr ({ commit }, { duration, start }) {
@@ -124,15 +150,21 @@ export default {
     })
   },
 
-  requestConversions ({ commit, getters }, options) {
-    if (getters.selectedStream) {
-      return backend.requestConversions(getters.selectedStream, conversions => {
-        commit('RECEIVE_CONVERSIONS', conversions)
-      })
+  requestConversions ({ commit, getters, dispatch }, { poll = 0 } = {}) {
+    console.log('requesting convs')
+    if (!getters.selectedStream) return
+    const promise = backend.requestConversions(getters.selectedStream, convs => {
+      commit('RECEIVE_CONVERSIONS', convs)
+    })
+    if (poll) {
+      promise
+        .then(() => { setTimeout(() => dispatch('requestConversions', { poll }), poll) })
+        .catch(() => { setTimeout(() => dispatch('requestConversions', { poll }), poll) })
     }
+    return promise
   },
 
-  requestSceneChanges ({ commit, getters }, options) {
+  requestSceneChanges ({ commit, getters }) {
     if (getters.selectedStream) {
       return backend.requestSceneChanges(getters.selectedStream, sceneChanges => {
         commit('RECEIVE_SCENE_CHANGES', sceneChanges)

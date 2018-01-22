@@ -6,6 +6,20 @@ const moment = extendMoment(Moment)
 
 export default {
 
+  RECEIVE_USER_IDENTITY: (state, { authResult, user }) => {
+    state.accessToken = authResult.accessToken
+    state.idToken = authResult.idToken
+    state.user = user
+    state.authExpirationDate = Date.now() + (authResult.expiresIn * 1000)
+  },
+
+  FORGET_USER_IDENTITY: (state) => {
+    state.accessToken = null
+    state.idToken = null
+    state.user = null
+    state.authExpirationDate = null
+  },
+
   SET_STREAMID (state, streamId) {
     state.streamId = streamId
   },
@@ -24,6 +38,10 @@ export default {
 
   RECEIVE_CONVERSIONS (state, conversions) {
     state.conversions = conversions
+  },
+
+  RECEIVE_MULTIMEDIA_ITEMS (state, items) {
+    state.multimediaItems = items
   },
 
   RECEIVE_SCENE_CHANGES (state, sceneChanges) {
@@ -49,6 +67,10 @@ export default {
     state.dvrDuration = duration
   },
 
+  SET_USERSETTINGNS_PREFERREDLANGUAGE (state, locale) {
+    state.userSettings.preferredLanguage = locale
+  },
+
   SET_USERSETTINGS_SCENECHANGEMINVALUE (state, value) {
     state.userSettings.sceneChangeMinValue = value
   },
@@ -63,6 +85,22 @@ export default {
 
   SET_USERSETTINGS_SHOWSCENECHANGES (state, value) {
     state.userSettings.showSceneChanges = !!value
+  },
+
+  SET_USERSETTINGS_SHOWMULTIMEDIACLIPS (state, value) {
+    state.userSettings.showMultimediaClips = !!value
+  },
+
+  SET_USERSETTINGS_SHOWMULTIMEDIAPROGRAMAS (state, value) {
+    state.userSettings.showMultimediaProgramas = !!value
+  },
+
+  SET_USERSETTINGNS_VIDEOHOVERSHADOW (state, value) {
+    state.userSettings.videoHoverShadow = value
+  },
+
+  SET_USERSETTINGS_NATIVEVIDEOCONTROLS (state, value) {
+    state.userSettings.nativeVideoControls = !!value
   },
 
   SET_PREVIOUS_STREAMID (state, streamId) {
@@ -99,6 +137,14 @@ export default {
 
   SET_SEEK_TO (state, seekTo) {
     state.seekTo = seekTo
+  },
+
+  SET_HOVER_TIME (state, time) {
+    state.hoverTime = time
+  },
+
+  SET_ISLIVE (state, isLive) {
+    state.isLive = !!isLive
   },
 
   SET_PLAYING (state, playing) {
