@@ -1,13 +1,17 @@
 <template>
   <div>
-    <v-menu v-if="streams" bottom offset-y>
+    <v-menu v-if="streams.length"
+      bottom
+      offset-y
+      :nudge-bottom="10"
+    >
       <v-toolbar-title slot="activator">
         <v-icon dark small>videocam</v-icon>
         <span v-if="stream">{{ stream.name }}</span>
-        <span v-else>Transmisión</span>
+        <span v-else>Cargando...</span>
         <v-icon dark>arrow_drop_down</v-icon>
       </v-toolbar-title>
-      <v-list dense>
+      <v-list>
         <v-list-tile
           v-for="item in streams"
           :key="item.id"
@@ -18,18 +22,18 @@
             <v-icon small v-if="item.id == stream.id">videocam</v-icon>
             {{ item.name }}
           </v-list-tile-title>
+          <v-divider />
         </v-list-tile>
       </v-list>
     </v-menu>
-    <v-progress-circular v-else indeterminate />
-</div>
+  </div>
 </template>
 
 <script>
 import { mapGetters, mapState, mapActions } from 'vuex'
 
 export default {
-  name: 'StreamSelector',
+  name: 'StreamPicker',
 
   computed: {
     ...mapState([
@@ -50,14 +54,9 @@ export default {
     }
   },
 
-  created () {
-    this.requestStreams()
-  },
-
   methods: {
     ...mapActions([
-      'selectStream',
-      'requestStreams'
+      'selectStream'
     ])
   }
 }

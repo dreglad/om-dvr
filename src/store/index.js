@@ -37,8 +37,6 @@ const state = {
 
   // Selected
   streamId: null,
-  dvrStart: null,
-  dvrDuration: null,
 
   // Ephemeral video state
   videoTime: 0,
@@ -46,11 +44,12 @@ const state = {
   playing: false,
   ended: false,
   selectedSource: null,
+  playerDuration: null,
 
   hoverTime: null,
 
-  segments: [],
-  selection: [],
+  fragments: [],
+  dvrItem: null,
 
   pickerSide: 0,
 

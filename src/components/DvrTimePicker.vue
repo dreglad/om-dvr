@@ -7,24 +7,48 @@
     locale="es"
     :scrollable="true"
   />
-  <v-time-picker
-    :landscape="$vuetify.breakpoint.smAndUp"
-    v-else-if="type === 'time'"
-    v-model="selectedTime"
-    :allowed-hours="allowedHours"
-    :allowed-minutes="allowedMinutes"
-    format="24hr"
-  />
+  <div v-else style="position:relative;">
+    <div style="position:absolute;z-index:1" class="pl-1 pt-3">
+      <v-btn-toggle mandatory v-model="pickerSide">
+        <v-tooltip bottom>
+          <v-btn slot="activator" flat><v-icon>first_page</v-icon></v-btn>
+          <span>Elegir tiempo inicial</span>
+        </v-tooltip>
+
+        <v-tooltip bottom>
+          <v-btn slot="activator" flat><v-icon>last_page</v-icon></v-btn>
+          <span>Elegir tiempo final</span>
+        </v-tooltip>
+
+        <v-tooltip bottom>
+          <v-btn slot="activator" flat><v-icon>skip_previous</v-icon></v-btn>
+          <span>Elegir tiempo inicial, fijando tiempo final</span>
+        </v-tooltip>
+
+        <v-tooltip bottom>
+          <v-btn slot="activator" flat><v-icon>skip_next</v-icon></v-btn>
+          <span>Elegir tiempo final, fijando tiempo incial</span>
+        </v-tooltip>
+      </v-btn-toggle>
+    </div>
+    <v-time-picker
+      :landscape="$vuetify.breakpoint.smAndUp"
+      v-model="selectedTime"
+      :allowed-hours="allowedHours"
+      :allowed-minutes="allowedMinutes"
+      format="24hr"
+    />
+  </div>
 </template>
 
 <script>
-import { mapState, mapActions } from 'vuex'
+import { mapGetters, mapState, mapActions } from 'vuex'
 import Moment from 'moment'
 import { extendMoment } from 'moment-range'
 const moment = extendMoment(Moment)
 
 export default {
-  name: 'dvr-time-picker',
+  name: 'DvrTimePicker',
 
   props: {
     type: String,
@@ -33,11 +57,14 @@ export default {
 
   computed: {
     ...mapState([
-      'dvrStart',
-      'dvrDuration',
       'dvrStoreDetails',
       'pickerSide',
       'videoTime'
+    ]),
+
+    ...mapGetters([
+      'dvrStart',
+      'dvrDuration'
     ]),
 
     selectedTime: {

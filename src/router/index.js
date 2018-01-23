@@ -1,66 +1,50 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import store from '@/store'
-import AppConversions from '@/components/AppConversions'
-import AppDvr from '@/components/AppDvr'
-import AppLive from '@/components/AppLive'
-import AppLogin from '@/components/AppLogin'
-import AppSupport from '@/components/AppSupport'
+import Meta from 'vue-meta'
+import PageAuthSignIn from '@/components/PageAuthSignIn'
+import PageAuthSignOut from '@/components/PageAuthSignOut'
+import PageConversions from '@/components/PageConversions'
+import PageAbout from '@/components/PageAbout'
+import PageRecorder from '@/components/PageRecorder'
 
 Vue.use(Router)
+Vue.use(Meta)
 
-// const refreshToken = (to, from, next) => {
-//   if (!store.getters.isAuthenticated && typeof store.state.auth0.refreshToken === 'string') {
-//     return store.dispatch('auth0RefreshToken').then(() => next())
-//   }
-
-//   next()
-// }
-
-const loginRequired = (to, from, next) => {
-  if (!store.getters.isAuthenticated) {
-    return store.dispatch('login')
-  }
-
-  next()
-}
-
-export default new Router({
+const router = new Router({
   mode: 'history',
   routes: [
     {
-      path: '/recorder',
-      name: 'Recorder',
-      beforeEnter: loginRequired,
-      component: AppDvr
+      path: '/auth/sign-in',
+      name: 'sign-in',
+      component: PageAuthSignIn,
+      meta: { layout: 'anonymous' }
     },
     {
-      path: '/',
-      name: 'Login',
-      component: AppLogin
+      path: '/auth/sign-out',
+      name: 'sign-out',
+      component: PageAuthSignOut,
+      meta: { layout: 'anonymous' }
+    },
+    {
+      path: '/recorder',
+      name: 'recorder',
+      component: PageRecorder
     },
     {
       path: '/conversions',
-      name: 'Conversions',
-      beforeEnter: loginRequired,
-      component: AppConversions
+      name: 'conversions',
+      component: PageConversions
     },
     {
-      path: '/live',
-      name: 'Live',
-      component: AppLive
+      path: '/about',
+      name: 'about',
+      component: PageAbout
     },
     {
-      path: '/videos',
-      name: 'Videos',
-      beforeEnter: loginRequired,
-      component: AppSupport
-    },
-    {
-      path: '/support',
-      name: 'Support',
-      beforeEnter: loginRequired,
-      component: AppSupport
+      path: '/',
+      redirect: 'recorder'
     }
   ]
 })
+
+export default router

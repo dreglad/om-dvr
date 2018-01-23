@@ -4,7 +4,6 @@ export const BRAND = 'html5'
 export default {
 
   created () {
-    console.log('CREATES HLS')
     if (this.brand === BRAND) {
       this.hls = new window.Hls({
         debug: false,
@@ -65,6 +64,11 @@ export default {
         this.startPosition = 0
       })
 
+      // this.hls.on(window.Hls.Events.FRAG_BUFFERED, (event, data) => {
+      //   console.log(data)
+      //   const buffer = data.stats.total
+      //   this.$emit('bufferUpdate', buffer)
+      // })
       this.hls.on(window.Hls.Events.ERROR, (event, data) => {
         console.log('HLS ERROR: ', data)
         if (data.fatal) {
@@ -81,7 +85,11 @@ export default {
             default:
               // cannot recover
               console.error('Cannot recover video error')
-              this.hls.destroy()
+              const media = this.hls.media
+              if (media) {
+                this.hls.detachMedia()
+                this.hls.attachMedia(media)
+              }
               break
           }
         }
@@ -90,14 +98,13 @@ export default {
   },
 
   mounted () {
-    console.log('MOUNTED')
     if (this.brand === BRAND) {
       this.setupListeners()
-      this.hls.attachMedia(this.$refs.player)
+      this.hls.attachMedia(this.$refs.video)
 
       // when sources change, realod media
       this.$watch('paused', paused => {
-        const player = this.$refs.player
+        const player = this.$refs.video
         this.$nextTick(() => {
           paused ? player.pause() : player.play()
         })
@@ -110,7 +117,11 @@ export default {
         if (this.hls.media && e.target === document.body) {
           switch (e.keyCode) {
             case SPACE_KEY:
-              this.paused = !this.paused
+              if (this.hls.media.paused || this.hls.media.ended) {
+                this.hls.media.play()
+              } else {
+                this.hls.media.pause()
+              }
               e.preventDefault()
               break
             case LEFT_KEY:

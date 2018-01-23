@@ -1,43 +1,68 @@
 <template>
-  <v-card>
-    <v-toolbar dark>
-      <v-toolbar-title><v-icon small>edit</v-icon> ChangeLog</v-toolbar-title>
-      <v-spacer></v-spacer>
-      <v-btn icon>
-        <v-icon>bug_report</v-icon>
-      </v-btn>
-    </v-toolbar>
-    <v-expansion-panel>
-      <v-expansion-panel-content
-        v-model="expanded[index]"
-        v-for="(log, index) in versions"
-        :key="log.version"
-        >
-        <div slot="header" class="pa-0">
-          <big><strong>{{ log.version }}</strong> <small class="pl-3">{{ log.date.format('LLLL') }}</small></big>
-        </div>
-        <v-list dense class="pt-0 pb-0">
-          <v-list-tile v-for="(change, index) in log.changes" :key="index" class="pa-0 ma-0">
-            <v-list-tile-avatar><v-icon small>done</v-icon></v-list-tile-avatar>
-            <v-list-tile-content>{{ change }}</v-list-tile-content>
-          </v-list-tile>
-        </v-list>
-      </v-expansion-panel-content>
-    </v-expansion-panel>
-  </v-card>
+  <v-layout column justify-center align-center>
+    <v-flex xs12 sm10 md9>
+      <div class="text-xs-center mb-4">
+        <h1>v0.3.0</h1>
+        <AppLogo />
+        <h2>Open Multimedia</h2>
+      </div>
+
+      <v-card>
+        <v-toolbar dark>
+          <v-toolbar-title><v-icon small>edit</v-icon> ChangeLog</v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-btn icon>
+            <v-icon>bug_report</v-icon>
+          </v-btn>
+        </v-toolbar>
+        <v-expansion-panel>
+          <v-expansion-panel-content
+            v-model="expanded[index]"
+            v-for="(log, index) in versions"
+            :key="log.version"
+            >
+            <div slot="header" class="pa-0">
+              <big><strong>{{ log.version }}</strong> <small class="pl-3">{{ log.date.locale($store.getters.locale).format('LLLL') }}</small></big>
+            </div>
+            <v-list dense class="pt-0 pb-0">
+              <v-list-tile v-for="(change, index) in log.changes" :key="index" class="pa-0 ma-0">
+                <v-list-tile-avatar><v-icon small>done</v-icon></v-list-tile-avatar>
+                <v-list-tile-content>{{ change }}</v-list-tile-content>
+              </v-list-tile>
+            </v-list>
+          </v-expansion-panel-content>
+        </v-expansion-panel>
+      </v-card>
+    </v-flex>
+  </v-layout>
 </template>
 
 <script>
 import moment from 'moment'
-moment.locale('es')
 
 export default {
-  name: 'ChangeLog',
 
+  name: 'PageAbout',
+
+  // 'Si el usuario no ha ajustado un idioma preferido, se usa el idioma reportado en el perfil del usuario autenticado
   data () {
     return {
       expanded: [ true ],
       versions: [
+        {
+          version: '0.3.0',
+          date: moment('2018-01-18 02:59:47'),
+          changes: [
+            'Se agregó capacidad multi-idioma y opción para elegir idioma en ajustes de usuario. Se agregó catálogo con traducciones de interfaz al Inglés.',
+            'Se declara manifiesto de Aplicación Web Progresiva (PWA), con íconos y metadatos de aplicación',
+            'El reproductor y sus cuadros flotantes varían de opacidad según la posición del cursor (demtro o fuera del reproductor o la barra de progreso) para enfocar selectivamente la visibilidad del video o de los indicadores de tiempo/posición/thumbnails.',
+            'Los recuadros flotantes sobre el reproductor se pueden arrastrar hacia la izquierda/derecha como alternativo para modificar el incio y final del video',
+            'Se agregó página "Acerca de" con Changelog y logotipo',
+            'La barra roja que marca el tiempo actual se puede arrastrar para adelantar/retrasar el video con vista previa',
+            'Se corrigió error en la tabla de la vista de conversiones donde el rango de fecha de la conversión se mostraba en diferente huso horario para el incio y para el final',
+            'Reestricutra de la aplicación integrando nuxt.js'
+          ]
+        },
         {
           version: '0.2.8',
           date: moment('2018-01-08 01:29:19'),
@@ -130,6 +155,10 @@ export default {
   }
 }
 </script>
+
+
+
+
 
 <style>
 .expansion-panel__header {

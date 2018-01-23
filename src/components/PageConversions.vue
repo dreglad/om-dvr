@@ -5,8 +5,8 @@
         :items="currentConversions"
         :headers="headers"
         :pagination.sync="pagination"
-        rows-per-page-text="Elementos por página"
-        no-data-text="Sin datos"
+        :rows-per-page-text="$t('data_table.items_per_page')"
+        :no-data-text="$t('data_table.no_data')"
       >
         <template slot="items" slot-scope="props">
           <td v-if="props.item.status == 'STARTED' || props.item.status == 'SUCCESS'">
@@ -22,27 +22,25 @@
           <!-- <td>{{ props.item.created_at.format('lll') }}</td> -->
           <td class="justify-center">
             <!-- <v-layout row justify-left align-center> -->
-              <img :height="60" class="px-1 py-2" style="vertical-align:middle;"
-                :data-proportion="0" :data-retries="0"
-                :style="{ opacity: props.item.progress < 1 ? 0.6 : 1 }"
-                :src="getThumbnail(props.item, 0)"
-                @error="e => { thumbnailError(props.item, e.target) }" />
-              <!-- <v-flex xs1 ><v-icon>forward_arrow</v-icon></v-flex> -->
-              <img :height="60" class="px-1 py-2" style="vertical-align:middle;"
-                :data-proportion="props.item.progress" :data-retries="0"
-                :style="{ opacity: props.item.progress < 1 ? 0.6 : 1 }"
-                :src="getThumbnail(props.item, props.item.progress)" />
-            <!-- </v-layout> -->
+              <VideoThumbnail
+                :height="60"
+                class="px-1 py-2"
+                :date="props.item.start"
+              />
+              <VideoThumbnail
+                :height="60"
+                class="px-1 py-2"
+                :date="getProgressedTime(props.item)"
+              />
           </td>
-          <td>{{ props.item.start.format('dddd D [de] MMM [de] YYYY') }}</td>
+          <td>{{ props.item.start.locale($store.getters.locale).format('dddd D [de] MMM [de] YYYY') }}</td>
           <td>
             {{ props.item.start.format('HH:mm:ss') }} - 
             {{ props.item.end.format('HH:mm:ss') }}
           </td>
-          <td>{{ props.item.duration.humanize() }}</td>
+          <td>{{ props.item.duration.locale($store.getters.locale).humanize() }}</td>
           <td class="justify-center px-0">
             <v-menu offset-y
-              :close-on-content-click="false"
               transition="slide-y-transition"
               :nudge-top="-10"
             >
@@ -99,8 +97,8 @@
                 <v-icon v-if="props.item.status == 'PENDING'">cancel</v-icon>
                 <v-icon v-else>delete</v-icon>
               </v-btn>
-              <span v-if="props.item.status == 'PENDING'">Cancelar conversión</span>
-              <span v-else>Eliminar conversión</span>
+              <span v-if="props.item.status == 'PENDING'">{{ $t('labels.cancel') }}</span>
+              <span v-else>{{ $t('labels.delete') }}</span>
             </v-tooltip>
           </td>
         </template>
@@ -193,6 +191,7 @@
 
 <script>
 import { mapActions, mapGetters } from 'vuex'
+import VideoThumbnail from '@/components/VideoThumbnail'
 import backend from '@/api/backend'
 import moment from 'moment'
 
@@ -200,10 +199,12 @@ import moment from 'moment'
 // import humanize from 'humanize'
 
 export default {
-  name: 'AppConversions',
+
+  name: 'PageConversions',
 
   data () {
     return {
+      intervalId: null,
       metadataTitle: '',
       metadataDescription: '',
       metadataPrograma: null,
@@ -223,10 +224,10 @@ export default {
       selectedProfileId: null,
       error: false,
       distributionProfiles: [
-          { name: 'Multimedia teleSUR | Clip en Español', id: 1 },
-          { name: 'Multimedia teleSUR | Clip en Inglés', id: 2 },
-          { name: 'Multimedia teleSUR | Video Capturado en Español', id: 3 },
-          { name: 'Multimedia teleSUR | Video Capturado en Inglés', id: 4 }
+        { name: 'Multimedia teleSUR | Clip en Español', id: 1 },
+        { name: 'Multimedia teleSUR | Clip en Inglés', id: 2 },
+        { name: 'Multimedia teleSUR | Video Capturado en Español', id: 3 },
+        { name: 'Multimedia teleSUR | Video Capturado en Inglés', id: 4 }
       ],
       pagination: {
         rowsPerPage: 25,
@@ -235,31 +236,32 @@ export default {
       },
       headers: [
         {
-          text: 'Estado',
+          text: this.$t('labels.status'),
           value: 'status',
           align: 'left'
         },
         {
-          text: 'Miniaturas',
-          align: 'left'
+          text: this.$t('labels.thumbnail'),
+          align: 'left',
+          value: 'start'
         },
         {
-          text: 'Fecha',
+          text: this.$t('labels.date'),
           value: 'start',
           align: 'left'
         },
         {
-          text: 'Rango',
+          text: this.$t('labels.range'),
           value: 'start',
           align: 'left'
         },
         {
-          text: 'Duración',
+          text: this.$t('dvr.duration'),
           value: 'duration',
           align: 'left'
         },
         {
-          text: 'Acciones',
+          text: this.$t('labels.actions'),
           align: 'left',
           value: null
         }
@@ -276,9 +278,13 @@ export default {
 
   methods: {
     ...mapActions([
-      'requestConversions',
-      'removeConversion'
+      'removeConversion',
+      'requestConversions'
     ]),
+
+    getProgressedTime (conv) {
+      return moment(conv.start).add(conv.duration.asSeconds() * conv.progress, 'seconds')
+    },
 
     distribute ({ profileId, conversionId }) {
       this.confirmed = false
@@ -320,33 +326,9 @@ export default {
     },
 
     gotoDvr (conv) {
-      this.$router.push({ name: 'Recorder' }, () => {
+      this.$router.push('/recorder', () => {
         this.$store.dispatch('setDvr', conv)
       })
-    },
-
-    getThumbnail (conv, timeProportion, offset = 0) {
-      timeProportion = timeProportion || 0
-      let time = moment(conv.start).add(conv.duration.asSeconds() * timeProportion, 'seconds')
-      if (timeProportion === 0) {
-        time += 500
-      } else if (timeProportion >= 1) {
-        time -= 500
-      }
-      time += offset * 1000
-      // if (offset) {
-      //  // console.log(time)
-      // }
-      return backend.getThumbnailUrl(this.selectedStream, time)
-    },
-
-    thumbnailError (conv, elem) {
-      const retries = parseInt(elem.getAttribute('data-retries'))
-      // console.log(retries, 'Recovering from thumbnail error')
-      if (retries < 3) {
-        elem.setAttribute('data-retries', retries + 1)
-        elem.setAttribute('src', this.getThumbnail(conv, elem.getAttribute('data-proportion'), retries + 1))
-      }
     },
 
     progressColor (conv) {
@@ -392,7 +374,9 @@ export default {
     backend.getMetadataOptions('tipo_clip', 'en').then(({ data }) => {
       this.$set(this.metadataTipoOptions, 'en', data)
     })
+  },
 
+  activated () {
     this.requestConversions().then(() => {
       this.$store.commit('RESET_SEEN_CONVERSIONS')
       this.intervalId = setInterval(() => {
@@ -403,8 +387,8 @@ export default {
     })
   },
 
-  activated () {
-    console.log('aaaaaaaa')
+  deactivated () {
+    clearInterval(this.intervalId)
   },
 
   beforeDestroy () {
@@ -422,6 +406,10 @@ export default {
         default: return ''
       }
     }
+  },
+
+  components: {
+    VideoThumbnail
   }
 }
 </script>

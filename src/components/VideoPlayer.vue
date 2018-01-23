@@ -2,7 +2,7 @@
   <div>
     <video
       v-if="allDependenciesLoaded && !noVideoTag"
-      ref="player"
+      ref="video"
       :controls="!!controls"
       :poster="poster"
       :autoplay="autoplay"
@@ -13,35 +13,34 @@
       @ended="() => { $emit('ended') }"
       @pause="() => { $emit('pause') }"
       @play="() => { $emit('play') }"
-      playsinline
+      @progress="() => { $emit('progress') }"
+      @durationchange="$emit('durationchange', $event.target.duration)"
+      :playsinline="playsInline"
       :muted="$vuetify.breakpoint.smAndDown"
     >
       <source
         v-for="src in sources"
         :type="getSrcType(src)"
         :src="src.src || src"
-      >
-    Video format not supported
+      />
+    {{ $t('unsupported') }}
     </video>
     <div
       v-else-if="noVideoTag"
       ref="playerWrapper"
       :style="{ width: width, height: height }"
-    ></div>
-    <!-- <canvas id="buffered_c" height="15" class="videoCentered" onclick="buffered_seek(event);"></canvas><br><br> -->
+    />
   </div>
 </template>
 
 <script>
-// import Vue from 'vue'
-import jwplayer from './mixins/jwplayer.js'
-import videojs from './mixins/videojs.js'
-import html5 from './mixins/html5.js'
-import flowplayer from './mixins/flowplayer.js'
+// import jwplayer from './mixins/jwplayer.js'
+// import videojs from './mixins/videojs.js'
+// import flowplayer from './mixins/flowplayer.js'
+import html5 from './videoPlayerMixins/html5.js'
 
 export default {
-
-  name: 'video-player',
+  name: 'VideoPlayer',
 
   data () {
     return {
@@ -59,6 +58,10 @@ export default {
       validator: (value) => ['jwplayer', 'videojs', 'html5', 'flowplayer'].includes(value)
     },
     paused: {
+      type: Boolean,
+      default: false
+    },
+    playsInline: {
       type: Boolean,
       default: false
     },
@@ -86,10 +89,12 @@ export default {
       default: true
     },
     width: {
-      type: [Number, String]
+      type: [Number, String],
+      default: '100%'
     },
     height: {
-      type: [Number, String]
+      type: [Number, String],
+      default: 'auto'
     }
   },
 
@@ -134,17 +139,18 @@ export default {
     }
   },
 
-  mixins: [html5, jwplayer, videojs, flowplayer]
+  // mixins: [html5, jwplayer, videojs, flowplayer]
+  mixins: [html5]
 }
 </script>
 
 <i18n>
 {
   "en": {
-    "videoNotSupported": "Video format not supported"
+    "unsupported": "Video format not supported"
   },
   "es": {
-    "videoNotSupported": "Formato de video no soportado"
+    "unsupported": "Formato de video no soportado"
   }
 }
 </i18n>

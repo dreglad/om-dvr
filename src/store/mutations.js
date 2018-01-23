@@ -6,14 +6,45 @@ const moment = extendMoment(Moment)
 
 export default {
 
-  RECEIVE_USER_IDENTITY: (state, { authResult, user }) => {
+  ADD_FRAGMENT (state, { start, duration, selected = false }) {
+    state.fragments.push({ start, duration, selected })
+  },
+
+  UPDATE_FRAGMENT (state, { fragment, start = null, duration = null, selected = null }) {
+    console.log(fragment, 'aa')
+    // const old = { ...fragment }
+    if (start) fragment.start = start
+    if (duration) fragment.duration = duration
+    if (selected) fragment.selected = selected
+    // if (state.dvrItem === fragment) {
+    //   state.dvrItem = updatedFrag
+    // }
+  },
+
+  DELETE_FRAGMENT (state, fragment) {
+    if (state.dvrItem === fragment) {
+      state.dvrItem = null
+    }
+    state.fragments.splice(state.fragments.indexOf(fragment), 1)
+  },
+
+  RESET_FRAGMENTS (state) {
+    state.fragments = []
+    state.dvrItem = null
+  },
+
+  SET_DVRITEM (state, item) {
+    state.dvrItem = item
+  },
+
+  RECEIVE_USER_IDENTITY (state, { authResult, user }) {
     state.accessToken = authResult.accessToken
     state.idToken = authResult.idToken
     state.user = user
     state.authExpirationDate = Date.now() + (authResult.expiresIn * 1000)
   },
 
-  FORGET_USER_IDENTITY: (state) => {
+  FORGET_USER_IDENTITY (state) {
     state.accessToken = null
     state.idToken = null
     state.user = null
@@ -57,14 +88,6 @@ export default {
 
   RESET_DVRSORE_DETAILS (state) {
     state.dvrStoreDetails = {}
-  },
-
-  SET_DVRSTART (state, date) {
-    state.dvrStart = date
-  },
-
-  SET_DVRDURATION (state, duration) {
-    state.dvrDuration = duration
   },
 
   SET_USERSETTINGNS_PREFERREDLANGUAGE (state, locale) {
@@ -145,6 +168,10 @@ export default {
 
   SET_ISLIVE (state, isLive) {
     state.isLive = !!isLive
+  },
+
+  SET_PLAYERDURATION (state, duration) {
+    state.platerDuration = duration
   },
 
   SET_PLAYING (state, playing) {

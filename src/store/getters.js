@@ -9,6 +9,28 @@ require('moment-duration-format')
 
 export default {
 
+  activeItem (state, getters) {
+    if (state.dvrItem) {
+      // Active item explicitly selected
+      return state.dvrItem
+    } else if (state.fragments.length) {
+      // First found fragment
+      return state.fragments[state.fragments.length - 1]
+    }
+  },
+
+  dvrStart (state, getters) {
+    if (getters.activeItem) {
+      return getters.activeItem.start
+    }
+  },
+
+  dvrDuration (state, getters) {
+    if (getters.activeItem) {
+      return getters.activeItem.duration
+    }
+  },
+
   /*
    * Whether we know the user's identiy
   */
@@ -38,16 +60,6 @@ export default {
   isAuthorized (state, getters) {
     return getters.isAuthenticated && state.currentTimestamp < state.authExpirationDate
   },
-
-  dvrDuration (state) {
-    return state.dvrDuration || state.userSettings.defaultDvrDuration
-  },
-
-  // isCurrentStore (state, getters) {
-  //   if (state.currentStoreName) {
-  //     return getters.selectedStoreDetails === state.currentStoreName
-  //   }
-  // },
 
   selectedStream (state) {
     const streamId = state.streamId || state.userSettings.defaultStream
@@ -80,8 +92,9 @@ export default {
   },
 
   dvrRange (state, getters) {
-    if (state.dvrStart) {
-      return moment.range(moment(state.dvrStart), moment(state.dvrStart).add(getters.dvrDuration, 'seconds'))
+    const item = getters.activeItem
+    if (item) {
+      return moment.range(item.start, moment(item.start).add(item.duration, 'seconds'))
     }
   },
 
@@ -95,7 +108,7 @@ export default {
 
   selectedStoreDetails (state, getters) {
     return Object.values(state.dvrStoreDetails).find(store => {
-      return store.utcRange.contains(moment(state.dvrStart))
+      return store.utcRange.contains(moment(getters.dvrStart))
     })
   },
 
@@ -122,7 +135,7 @@ export default {
             stream: getters.selectedStream,
             store: getters.selectedStoreDetails,
             currentStoreName: state.currentStoreName,
-            start: state.dvrStart,
+            start: getters.dvrStart,
             duration: getters.dvrDuration
           })
         }

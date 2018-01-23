@@ -68,54 +68,60 @@ export default {
   //   })
   // },
 
+  addFragment ({ state, getters, commit }, { start = null, duration = null } = {}) {
+    if (!start) {
+      if (getters.activeItem) {
+        start = moment(getters.activeItem.start).add(2, 'minutes')
+      } else {
+        start = moment(getters.dvrAvailableMax).subtract(state.userSettings.defaultDvrDuration + 60, 'seconds')
+      }
+    }
+    if (start.isBefore(getters.dvrAvailableMin)) {
+      start = getters.dvrAvailableMin
+    }
+    if (!duration) {
+      duration = state.userSettings.defaultDvrDuration
+    }
+    const newEnd = moment(start).add(duration, 'seconds')
+    if (newEnd.isAfter(getters.dvrAvailableMax)) {
+      duration -= newEnd.diff(getters.dvrAvailableMax, 'seconds')
+    }
+
+    commit('ADD_FRAGMENT', { start, duration })
+    // if (state.)
+    // let start = moment(getters.dvrAvailableMax).subtract(, 'seconds')
+    // if (!getters.dvrStart) {
+    //     let start = moment(getters.dvrAvailableMax).subtract(getters.dvrDuration, 'seconds')
+    //     if (start.isBefore(getters.dvrAvailableMin)) {
+    //       start = moment(getters.dvrAvailableMin)
+    //     }
+    //     let duration = state.userSettings.defaultDvrDuration
+    //     const end = moment(start).add(duration, 'seconds')
+    //     let duration =
+    //     if (.isAfter(getters.dvrAvailableMax)
+    //     commit('SET_DVRSTART', start)
+    //     if (!state.fragments.length) {
+    //       // auto create first segment
+    //       commit('ADD_FRAGMENT', { start: start, duration: getter.dvrDuration })
+    //     }
+  },
+
   selectStream ({ commit, state, getters, dispatch }, stream) {
     commit('RESET_DVRSORE_DETAILS')
     commit('RESET_CONVERSIONS')
-    commit('SET_DVRSTART', null)
     commit('SET_VIDEO_TIME', 0)
     commit('SET_STREAMID', stream.id)
     commit('SET_PREVIOUS_STREAMID', stream.id)
+    commit('RESET_FRAGMENTS', [])
     dispatch('requestStreamDetails', stream).then(() => {
-      // RECORDER
-      // Creates the segment
-      if (!state.dvrStart) {
-        let start = moment(getters.dvrAvailableMax).subtract(getters.dvrDuration, 'seconds')
-        if (start.isBefore(getters.dvrAvailableMin)) {
-          start = moment(getters.dvrAvailableMin)
-        }
-        commit('SET_DVRSTART', start)
+      if (!state.fragments.length) {
+        dispatch('addFragment')
       }
-
-      // if (1 + 1 === 2 || (!state.userSettings.onlyLeadingStore && state.dvrStores)) {
-      [...Object.values(state.dvrStores)[0]].slice(1, 10).map(dvrStore => {
-        if (!state.dvrStoreDetails[dvrStore.dvrStoreName]) {
-          dispatch('getDvrStoreDetails', dvrStore)
-        }
-      })
-      // }
-      // if ( && state.dvrStores) {
-      //   // console.log(Object.values(state.dvrStores))
-      //   dvrStores.splice(1, dvrStores.length).map(dvrStore => dispatch('getDvrStoreDetails', dvrStore))
-      // }
-
-      // state.dvrStores[stream].slice(1, 5)
-      // .map(dvrStore => () => dispatch('getDvrStoreDetails', dvrStore))
-      // .reduce((curr, next) => curr.then(next), Promise.resolve())
     })
-
-    // CONVERSIONS
-    // dispatch('requestConversions')
   },
 
-  setDvr ({ commit }, { duration, start }) {
-    commit('SET_DVRSTART', start)
-    commit('SET_DVRDURATION', moment.isDuration(duration) ? duration.asSeconds() : duration)
-  },
-
-  getDvrStoreDetails ({ commit, state, getters }, dvrStore) {
-    console.log('aagga')
+  getDvrStoreDetails ({ commit }, dvrStore) {
     return wowzaApi.getStoreDetails(dvrStore.name, details => {
-      console.log('aaa')
       commit('RECEIVE_DVRSTORE_DETAILS', details)
       // if (moment(start).add(getters.dvrDuration, 'seconds').isAfter(getters.dvrAvailableMax)) {
       //   commit('SET_DVRDURATION', moment(getters.dvrAvailableMax).diff(start, 'seconds'))
@@ -123,26 +129,38 @@ export default {
     })
   },
 
-  setDvrDuration ({ commit, state, getters }, duration) {
-    console.log(duration, 'intended')
-    if (getters.dvrAvailableMax.isAfter(moment(state.dvrStart).add(duration, 'seconds'))) {
-      commit('SET_DVRDURATION', duration)
-    } else {
-      commit('SET_DVRDURATION', moment(getters.dvrAvailableMax).diff(state.dvrStart, 'seconds'))
-    }
+  setDvrDuration ({ commit, getters }, duration) {
+    commit('UPDATE_FRAGMENT', { fragment: getters.activeItem, duration })
+    // if (getters.dvrAvailableMax.isAfter(moment(getters.dvrStart).add(duration, 'seconds'))) {
+    //   commit('SET_DVRDURATION', duration)
+    // } else {
+    //   commit('SET_DVRDURATION', moment(getters.dvrAvailableMax).diff(getters.dvrStart, 'seconds'))
+    // }
   },
 
-  setDvrStart ({ commit, state, getters }, start) {
-    commit('SET_DVRSTART', start)
-    if (getters.dvrAvailableMax.isBefore(moment(state.dvrStart).add(getters.dvrDuration, 'seconds'))) {
-      commit('SET_DVRDURATION', Math.abs(moment(getters.dvrAvailableMax).diff(state.dvrStart, 'seconds')))
+  setDvrStart ({ commit, getters }, start) {
+    if (getters.activeItem) {
+      commit('UPDATE_FRAGMENT', { fragment: getters.activeItem, start })
+    } else {
+      console.log('ERROR:  tried to set dvr start with no active item')
     }
+    // console.log(getters.activeItem.start.format())
+    // if (getters.dvrAvailableMax.isBefore(moment(getters.dvrStart).add(getters.dvrDuration, 'seconds'))) {
+    //   commit('SET_DVRDURATION', Math.abs(moment(getters.dvrAvailableMax).diff(getters.dvrStart, 'seconds')))
+    // }
+  },
+
+  setDvr ({ commit, getters }, { start, duration }) {
+    console.log('setdvr')
+    console.log(getters.activeItem)
+    commit('UPDATE_FRAGMENT', { fragment: getters.activeItem, start, duration })
+    console.log(getters.activeItem)
   },
 
   requestWowzaConversion ({ commit, state, getters }, options) {
     return wowzaApi.doConversionRequest({
       store: getters.dvrStoreDetails.dvrStoreName,
-      start: state.dvrStart.format('x'),
+      start: getters.dvrStart.format('x'),
       duration: Math.round(getters.dvrDuration * 1000),
       filename: slugify(options.name) + '.mp4'
     }, result => {
@@ -176,7 +194,7 @@ export default {
     return backend.requestConversion({
       stream: getters.selectedStream,
       store: getters.selectedStoreDetails.dvrStoreName,
-      start: state.dvrStart,
+      start: getters.dvrStart,
       duration: getters.dvrDuration
     }, result => {
       console.log(result)
