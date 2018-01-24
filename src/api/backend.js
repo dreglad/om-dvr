@@ -47,8 +47,8 @@ export default {
 
   getThumbnailUrl (stream, time) {
     const fileName = `${stream.metadata.wseStream}_${Math.ceil(moment(time).format('X'))}.jpg`
-    console.log(stream.metadata.wseVodUrl)
-    console.log(urljoin(stream.metadata.wseVodUrl, 'thumbnails/' + fileName))
+    // console.log(stream.metadata.wseVodUrl)
+    // console.log(urljoin(stream.metadata.wseVodUrl, 'thumbnails/' + fileName))
     return urljoin(stream.metadata.wseVodUrl, 'thumbnails', fileName)
   },
 
