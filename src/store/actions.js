@@ -27,7 +27,6 @@ export default {
   },
 
   requestStreamDetails ({ commit, dispatch }, stream, { poll = 0 } = {}) {
-    console.log('got store_details')
     const promise = backend.getStreamDetails(stream, details => {
       const data = details['provider_data']
       commit('RECEIVE_DVRSTORES', data['stores'])
@@ -67,7 +66,6 @@ export default {
   //     }
   //   })
   // },
-
   addFragment ({ state, getters, commit }, { start = null, duration = null } = {}) {
     if (!start) {
       if (getters.activeItem) {
