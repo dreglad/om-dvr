@@ -16,7 +16,6 @@ import { getWebAuth, checkSession, parseSession } from '@/api/auth0'
 export default {
 
   name: 'PageAuthSignIn',
-
   layout: 'anonymous',
 
   data () {
@@ -30,7 +29,7 @@ export default {
     fnc(this.webAuth)
       .then((userIdentity) => {
         this.$store.commit('RECEIVE_USER_IDENTITY', userIdentity)
-        this.$router.replace(this.$route.query.next || '/')
+        this.$router.replace(this.$route.query.next || { name: 'Recorder' })
       })
       .catch(() => {
         this.webAuth.authorize()

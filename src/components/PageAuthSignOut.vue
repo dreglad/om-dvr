@@ -2,7 +2,7 @@
   <v-layout column justify-center align-center fill-height>
     <AppLogo />
     <h1 class="ma-4">{{ $t('goodbye') }}</h1>
-    <v-btn color="primary" to='/auth/sign-in'>{{ $t('auth.sign_in') }}</v-btn>
+    <v-btn color="primary" to='SignIn'>{{ $t('auth.sign_in') }}</v-btn>
   </v-layout>
 </template>
 
@@ -10,7 +10,6 @@
 export default {
 
   name: 'PageAuthSignOut',
-  layout: 'anonymous',
 
   mounted () {
     this.$store.commit('FORGET_USER_IDENTITY')

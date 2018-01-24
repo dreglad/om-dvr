@@ -33,7 +33,7 @@
       dense
     >
       <v-toolbar-side-icon @click="drawer = !drawer"></v-toolbar-side-icon>
-      <v-toolbar-title>
+      <v-toolbar-title class="hidden-sm-and-down">
         <v-btn icon large class="hidden-sm-and-down" to="/about">
           <v-avatar size="32px" tile>
             <img src="@/assets/logo_white.png">
@@ -152,15 +152,15 @@ import { mapGetters, mapState } from 'vuex'
 
 export default {
 
-  name: 'default',
+  name: 'LayoutAuthenticated',
 
   data () {
     return {
       items: [
         // { icon: 'apps', title: 'links.dashboard', to: '/' },
-        { icon: 'av_timer', title: 'links.recorder', to: '/recorder' },
-        { icon: 'fiber_smart_record', title: 'links.conversions', to: '/conversions' },
-        { icon: 'lightbulb_outline', title: 'links.about', to: '/about' }
+        { icon: 'av_timer', title: 'links.recorder', to: { name: 'Recorder' } },
+        { icon: 'fiber_smart_record', title: 'links.conversions', to: { name: 'Conversions' } },
+        { icon: 'lightbulb_outline', title: 'links.about', to: { name: 'About' } }
       ],
       rightDrawer: false,
       title: 'Open Multimedia',

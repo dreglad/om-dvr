@@ -1,22 +1,21 @@
 // The Vue build version to load with the `import` command
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import Vue from 'vue'
-import Vuex, { mapGetters } from 'vuex'
+import { mapGetters } from 'vuex'
 import Vuetify from 'vuetify'
 import VueI18n from 'vue-i18n'
-import { VueExtendLayout, layout } from 'vue-extend-layout'
+import { sync } from 'vuex-router-sync'
 import router from './router'
 import store from './store'
 import AppLogo from '@/components/AppLogo'
+import App from '@/App.vue'
 import en from '@/locales/en.json'
 import es from '@/locales/es.json'
 
 Vue.config.productionTip = false
 
 Vue.use(Vuetify)
-Vue.use(Vuex)
 Vue.use(VueI18n)
-Vue.use(VueExtendLayout)
 
 const i18n = new VueI18n({
   locale: 'en',
@@ -26,12 +25,14 @@ const i18n = new VueI18n({
 })
 
 router.beforeEach((to, from, next) => {
-  console.log('cpon', store().getters, from)
-  if (to.meta.layout !== 'anonymous' && !store().getters.isAuthorized) {
-    next({ name: 'sign-in' })
+  // check if login requires and redirect accordingly
+  if (to.matched.some(route => route.meta.requiresAuth) && !store.getters.isAuthorized) {
+    next({ name: 'SignIn' })
   }
   next()
 })
+
+sync(store, router)
 
 Vue.component('AppLogo', AppLogo)
 
@@ -41,7 +42,6 @@ new Vue({
   i18n,
   router,
   store,
-  ...layout,
   computed: mapGetters(['locale']),
   watch: {
     locale: {
@@ -51,5 +51,6 @@ new Vue({
       },
       immediate: true
     }
-  }
+  },
+  render: h => h(App)
 })
