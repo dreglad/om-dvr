@@ -9,7 +9,6 @@ const moment = extendMoment(Moment)
 export default {
 
   requestStreams ({ commit, state, dispatch }, { poll = 0 } = {}) {
-    console.log('requesting streams')
     const promise = backend.getStreams(streams => {
       commit('RECEIVE_STREAMS', streams)
       if (!state.streamId && streams.length) {
@@ -104,14 +103,16 @@ export default {
     //     }
   },
 
-  selectStream ({ commit, state, getters, dispatch }, stream) {
+  selectStream ({ commit, state, dispatch }, stream) {
     commit('RESET_DVRSORE_DETAILS')
     commit('RESET_CONVERSIONS')
+    commit('RESET_MULTIMEDIAITEMS')
     commit('SET_VIDEO_TIME', 0)
     commit('SET_STREAMID', stream.id)
     commit('SET_PREVIOUS_STREAMID', stream.id)
-    commit('RESET_FRAGMENTS', [])
+    // commit('RESET_FRAGMENTS', [])
     dispatch('requestStreamDetails', stream).then(() => {
+      dispatch('requestMultimediaItems')
       if (!state.fragments.length) {
         dispatch('addFragment')
       }
@@ -140,7 +141,7 @@ export default {
     if (getters.activeItem) {
       commit('UPDATE_FRAGMENT', { fragment: getters.activeItem, start })
     } else {
-      console.log('ERROR:  tried to set dvr start with no active item')
+      console.log('ERROR: tried to set dvr start with no active item')
     }
     // console.log(getters.activeItem.start.format())
     // if (getters.dvrAvailableMax.isBefore(moment(getters.dvrStart).add(getters.dvrDuration, 'seconds'))) {
@@ -149,13 +150,10 @@ export default {
   },
 
   setDvr ({ commit, getters }, { start, duration }) {
-    console.log('setdvr')
-    console.log(getters.activeItem)
     commit('UPDATE_FRAGMENT', { fragment: getters.activeItem, start, duration })
-    console.log(getters.activeItem)
   },
 
-  requestWowzaConversion ({ commit, state, getters }, options) {
+  requestWowzaConversion ({ getters }, options) {
     return wowzaApi.doConversionRequest({
       store: getters.dvrStoreDetails.dvrStoreName,
       start: getters.dvrStart.format('x'),
@@ -167,7 +165,6 @@ export default {
   },
 
   requestConversions ({ commit, getters, dispatch }, { poll = 0 } = {}) {
-    console.log('requesting convs')
     if (!getters.selectedStream) return
     const promise = backend.requestConversions(getters.selectedStream, convs => {
       commit('RECEIVE_CONVERSIONS', convs)
@@ -188,12 +185,12 @@ export default {
     }
   },
 
-  requestConversion ({ commit, state, getters }, options) {
+  requestConversion ({ getters }, fragment) {
     return backend.requestConversion({
       stream: getters.selectedStream,
       store: getters.selectedStoreDetails.dvrStoreName,
-      start: getters.dvrStart,
-      duration: getters.dvrDuration
+      start: moment(fragment.start),
+      duration: fragment.duration
     }, result => {
       console.log(result)
     })

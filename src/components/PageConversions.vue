@@ -1,4 +1,5 @@
 <template>
+  <v-container style="max-width: 1290px;">
   <v-layout>
     <v-flex lg12>
       <v-data-table
@@ -187,6 +188,7 @@
       </v-card>
     </v-dialog>
   </v-layout>
+  </v-container>
 </template>
 
 <script>
@@ -377,18 +379,18 @@ export default {
   },
 
   activated () {
-    this.requestConversions().then(() => {
-      this.$store.commit('RESET_SEEN_CONVERSIONS')
-      this.intervalId = setInterval(() => {
-        this.requestConversions().then(() => {
-          this.$store.commit('RESET_SEEN_CONVERSIONS')
-        })
-      }, 2000)
-    })
+    // this.requestConversions().then(() => {
+    //   this.$store.commit('RESET_SEEN_CONVERSIONS')
+    //   this.intervalId = setInterval(() => {
+    //     this.requestConversions().then(() => {
+    //       this.$store.commit('RESET_SEEN_CONVERSIONS')
+    //     })
+    //   }, 2000)
+    // })
   },
 
   deactivated () {
-    clearInterval(this.intervalId)
+    // clearInterval(this.intervalId)
   },
 
   beforeDestroy () {

@@ -7,13 +7,13 @@ const moment = extendMoment(Moment)
 export default {
 
   ADD_FRAGMENT (state, { start, duration, selected = false }) {
-    state.fragments.push({ start, duration, selected })
+    state.fragments.push({ start: moment(start).toISOString(), duration, selected })
   },
 
   UPDATE_FRAGMENT (state, { fragment, start = null, duration = null, selected = null }) {
-    console.log(fragment, 'aa')
+    // console.log(fragment, 'aa')
     // const old = { ...fragment }
-    if (start) fragment.start = start
+    if (start) fragment.start = moment(start).toISOString()
     if (duration) fragment.duration = duration
     if (selected) fragment.selected = selected
     // if (state.dvrItem === fragment) {
@@ -73,6 +73,10 @@ export default {
 
   RECEIVE_MULTIMEDIA_ITEMS (state, items) {
     state.multimediaItems = items
+  },
+
+  RESET_MULTIMEDIAITEMS (state, items) {
+    state.multimediaItems = []
   },
 
   RECEIVE_SCENE_CHANGES (state, sceneChanges) {
@@ -162,7 +166,7 @@ export default {
     state.seekTo = seekTo
   },
 
-  SET_HOVER_TIME (state, time) {
+  SET_HOVERTIME (state, time) {
     state.hoverTime = time
   },
 
@@ -171,7 +175,7 @@ export default {
   },
 
   SET_PLAYERDURATION (state, duration) {
-    state.platerDuration = duration
+    state.playerDuration = duration
   },
 
   SET_PLAYING (state, playing) {

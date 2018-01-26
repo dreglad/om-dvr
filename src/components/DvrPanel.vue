@@ -25,16 +25,16 @@
         </v-btn>
       </v-tab>
       <v-tab color="grey" href="#dvr-new">
-        <v-btn class="" icon small>
+        <v-btn icon class="px-1 mx-1">
           <v-icon>add</v-icon>
         </v-btn>
       </v-tab>
     </v-tabs>
 
     <v-card-text>
-      <div class="subheading">{{ dvrRange.start.format('LL') }}</div>
-      <div class="display-2">{{ $store.getters.dvrMomentDuration.format('hh:mm:ss', { trim: false }) }}</div>
-      <div class="headline"><v-icon>query_builder</v-icon> {{ dvrRange.start.format('HH:mm:ss') }} a {{ dvrRange.end.format('HH:mm:ss') }}</div>
+      <div class="subheading">{{ selectedFragmentStart.format('LL') }}</div>
+      <div class="display-2">{{ selectedDuration.format('hh:mm:ss', { trim: false }) }}</div>
+      <div class="headline"><v-icon>query_builder</v-icon> {{ selectedFragmentStart.format('HH:mm:ss') }} a {{ selectedFragmentEnd.format('HH:mm:ss') }}</div>
     </v-card-text>
     <!-- <v-card-text v-if="dvrRange">
         <div class="grey--text">{{ $t('dvr.duration ')}}: </div>
@@ -43,16 +43,16 @@
     </v-card-text> -->
     <v-card-actions>
       <v-btn
-      v-if="allSelected"
-      @click=""
-    >
-      {{ $t('labels.convert') }} {{ fragments.length }} fragmentos <v-icon right>fiber_smart_record</v-icon>
+        v-if="allSelected"
+        @click="doRequestConversionBatch"
+      >
+        {{ $t('labels.convert') }} {{ fragments.length }} <v-icon right>fiber_smart_record</v-icon>
       </v-btn>
       <v-btn
       v-if="allSelected"
-      @click=""
-    >
-      Convertir en uno solo <v-icon right>fiber_manual_record</v-icon>
+        @click="doRequestConversionBatchJoin"
+      >
+        Unión de todos <v-icon right>fiber_manual_record</v-icon>
       </v-btn>
       <v-btn
         v-else
@@ -78,6 +78,8 @@
 
 <script>
 import { mapActions, mapGetters, mapState } from 'vuex'
+import moment from 'moment'
+require('moment-duration-format')
 
 export default {
   name: 'DvrPanel',
@@ -93,19 +95,43 @@ export default {
 
   computed: {
     ...mapState([
-      'fragments',
-      'dvrItem'
+      'fragments'
     ]),
     ...mapGetters([
       'selectedStream',
       'dvrRange',
       'currentConversions',
-      'selectedItems'
+      'selectedItems',
+      'activeItem'
     ]),
+
+    selectedDuration () {
+      if (this.allSelected) {
+        return moment.duration(this.fragments.reduce((total, frag) => total + frag.duration, 0), 'seconds')
+      } else {
+        return moment.duration(this.activeItem.duration, 'seconds')
+      }
+    },
+
+    selectedFragmentStart () {
+      if (this.allSelected) {
+        return moment(Math.min(...this.fragments.map(frag => moment(frag.start).valueOf())))
+      } else {
+        return moment(this.activeItem.start)
+      }
+    },
+
+    selectedFragmentEnd () {
+      if (this.allSelected) {
+        return moment(Math.max(...this.fragments.map(frag => moment(frag.start).add(frag.duration, 'seconds').valueOf())))
+      } else {
+        return moment(this.activeItem.start).add(this.activeItem.duration, 'seconds')
+      }
+    },
 
     selectedTab: {
       get () {
-        const [frags, active] = [this.fragments, this.dvrItem]
+        const [frags, active] = [this.fragments, this.activeItem]
         if (this.allSelected && frags.length > 1) {
           return 'dvr-all'
         } else if (active) {
@@ -113,7 +139,7 @@ export default {
         }
       },
       set (value) {
-        console.log(value)
+        // console.log(value)
         this.allSelected = (value === 'dvr-all')
         if (value === 'dvr-new') {
           this.$store.dispatch('addFragment').then(() => {
@@ -122,11 +148,11 @@ export default {
             })
           })
         } else {
-          console.log('por', this.allSelected)
+          // console.log('por', this.allSelected)
           if (!this.allSelected) {
             const match = value.match(/dvr-(\d+)/)
             if (match) {
-              console.log('matched!', this.fragments, match[1])
+              // console.log('matched!', this.fragments, match[1])
               this.$store.commit('SET_DVRITEM', this.fragments[match[1]])
             }
           }
@@ -146,8 +172,29 @@ export default {
       'requestConversion'
     ]),
 
+    doRequestConversionBatchJoin () {
+      return Promise.all(this.doRequestConversionBatch()).then(() => {
+        console.log('CREAR JOIN!!!!!!!  ')
+      })
+    },
+
+    doRequestConversionBatch () {
+      return this.fragments.map(frag => {
+        this.requestConversion(frag).then(() => {
+          this.snackbarText = 'Conversión creada'
+          this.snackbarColor = 'success'
+          this.snackbar = true
+          this.$store.dispatch('requestConversions')
+        }).catch(e => {
+          this.snackbarText = 'Error creando conversión'
+          this.snackbarColor = 'error'
+          this.snackbar = true
+        })
+      })
+    },
+
     doRequestConversion () {
-      this.requestConversion().then(() => {
+      return this.requestConversion(this.activeItem).then(() => {
         this.snackbarText = 'Conversión creada'
         this.snackbarColor = 'success'
         this.snackbar = true

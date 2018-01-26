@@ -3,7 +3,7 @@
     @click="clicked"
     @dblclick="dblClicked"
     @mousemove="hover"
-    @mouseout="$emit('hover', null)"
+    @mouseout="() => { $emit('hover', null) }"
     class="progressbar-wrapper"
   >
     <v-progress-linear
@@ -68,7 +68,7 @@ export default {
   .progressbar-wrapper {
     position: absolute;
     bottom: 0;
-    z-index: 1;
+    /*z-index: 1;*/
     cursor: pointer;
     background-color: #555;
     width: 100%;

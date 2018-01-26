@@ -6,7 +6,7 @@
       :controls="!!controls"
       :poster="poster"
       :autoplay="autoplay"
-      :style="{ width: width, height: height, maxHeight: '85vh' }"
+      :style="{ width: width, height: height }"
       :class="classObject"
       @timeupdate="(e) => { $emit('time', e.target.currentTime ) }"
       @playing="() => { $emit('playing') }"
@@ -19,9 +19,8 @@
       :muted="$vuetify.breakpoint.smAndDown"
     >
       <source
-        v-for="src in sources"
-        :type="getSrcType(src)"
-        :src="src.src || src"
+        :type="getSrcType(hlsSource)"
+        :src="hlsSource.src"
       />
     {{ $t('unsupported') }}
     </video>
@@ -103,7 +102,8 @@ export default {
       return Object.values(this.dependenciesLoaded).every(dep => dep)
     },
     hlsSource () {
-      return this.sources.find(src => this.getSrcType(src) === 'application/x-mpegURL')
+      return this.sources[0]
+      // return this.sources.find(src => this.getSrcType(src) === 'application/x-mpegURL')
     }
   },
 

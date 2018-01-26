@@ -46,13 +46,14 @@
 
       <!-- Select time widget -->
       <v-menu offset-y full-width right
-        v-if="$route.path == '/recorder'"
+        v-if="$route.name == 'Recorder'"
         :close-on-click="false"
         :close-on-content-click="false"
         transition="slide-y-transition"
         :nudge-top="-10"
         v-model="timePickerOpened"
-        z-index="1"
+        :z-index="1"
+        lazy
       >
         <v-btn slot="activator" icon
           :outline="timePickerOpened"
@@ -63,12 +64,12 @@
             <span>Elegir hora</span>
           </v-tooltip>
         </v-btn>
-        <DvrTimePicker type="time" />
+        <DvrTimePicker v-if="timePickerOpened" type="time" />
       </v-menu>
 
       <!-- Select date widget -->
       <v-menu offset-y full-width right
-        v-if="$route.path == '/recorder'"
+        v-if="$route.name == 'Recorder'"
         :close-on-click="false"
         :close-on-content-click="false"
         transition="slide-y-transition"
@@ -166,8 +167,31 @@ export default {
       title: 'Open Multimedia',
       timePickerOpened: false,
       datePickerOpened: false,
-      liveTime: null
+      liveTime: null,
+      multimediaItemsInterval: null,
+      streamDetailsInterval: null
     }
+  },
+
+  created () {
+    this.$store.dispatch('requestStreams').then(() => {
+      this.$store.dispatch('requestConversions', { poll: 5000 })
+
+      this.$store.dispatch('requestSceneChanges')
+
+      this.multimediaItemsInterval = setInterval(() => {
+        this.$store.dispatch('requestMultimediaItems')
+      }, 60000)
+
+      this.streamDetailsInterval = setInterval(() => {
+        this.$store.dispatch('requestStreamDetails', this.$store.getters.selectedStream)
+      }, 13000)
+    })
+  },
+
+  beforeDestroy () {
+    clearInterval(this.multimediaItemsInterval)
+    clearInterval(this.streamDetailsInterval)
   },
 
   computed: {
@@ -211,15 +235,6 @@ export default {
     }
   },
 
-  created () {
-    console.log('created default')
-    this.$store.dispatch('requestStreams').then(() => {
-      this.$store.dispatch('requestConversions', { poll: null })
-      this.$store.dispatch('requestSceneChanges')
-      this.$store.dispatch('requestMultimediaItems')
-    })
-  },
-
   methods: {
     activateDatePicker () {
       this.timePickerOpened = false
@@ -229,12 +244,6 @@ export default {
     activateTimePicker () {
       this.datePickerOpened = false
       this.timePickerOpened = !this.timePickerOpened
-    }
-  },
-
-  watch: {
-    locale (value) {
-      this.$i18n.locale = value
     }
   },
 

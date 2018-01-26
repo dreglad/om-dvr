@@ -21,7 +21,7 @@
     <div class="current" style="background: none; border:none;">
       <span>{{ formattedCurrentTime }}</span>
       <transition name="fade">
-        <!-- <VideoThumbnail :width="200" v-if="!isNaN(hoverTime)" :date="overlayCurrentDate" /> -->
+        <VideoThumbnail :width="200" v-if="hoverTime" :date="overlayCurrentDate" />
       </transition>
     </div> 
     <Drag
@@ -56,15 +56,17 @@ export default {
     }
   },
 
+  props: ['duration'],
+
   computed: {
     ...mapState([
       'hoverTime',
-      'videoTime'
+      'videoTime',
+      'dvrItem'
     ]),
 
     ...mapGetters([
-      'dvrStart',
-      'dvrDuration'
+      'dvrStart'
     ]),
 
     formattedStart () {
@@ -82,7 +84,7 @@ export default {
 
     formattedDuration () {
       return moment
-        .duration(this.dvrDuration + this.overlayEndDragged, 'seconds')
+        .duration(this.duration + this.overlayEndDragged, 'seconds')
         .format('HH:mm:ss', { trim: false })
     },
 
@@ -96,7 +98,7 @@ export default {
     },
 
     overlayEndDate () {
-      return moment(this.dvrStart).add(this.dvrDuration + this.overlayEndDragged, 'seconds')
+      return moment(this.dvrStart).add(this.duration + this.overlayEndDragged, 'seconds')
     }
   },
 
@@ -104,7 +106,7 @@ export default {
     overlayDragging (side, transferData, { offsetX, x }) {
       console.log(event.offsetX, 'drag')
       if (x) {
-        const time = (event.offsetX / this.$refs.overlays.offsetWidth) * this.dvrDuration
+        const time = (event.offsetX / this.$refs.overlays.offsetWidth) * this.duration
         const prop = (side === 'start') ? 'overlayStartDragged' : 'overlayEndDragged'
         this.$set(prop, time)
       }
@@ -115,9 +117,9 @@ export default {
         const time = side === 'start' ? this.overlayStartDragged : this.overlayEndDragged
         console.log('commiting', time)
         if (side === 'start' && time < 0) {
-          this.$emit('expandDuration', time)
+          this.$emit('expand', time)
         } else {
-          this.$emit('truncatePosition', { side, time: this.dvrDuration + time })
+          this.$emit('truncatePosition', { side, time: this.duration + time })
         }
         // reset drags
         this.$set(['overlayStartDragged', 'overlayEndDragged'], 0)
@@ -128,8 +130,8 @@ export default {
       this.clickTimer = setTimeout(() => {
         if (!this.clickPrevent) {
           side === 'start'
-            ? this.rewind()
-            : this.forward()
+            ? this.$emit('rewind')
+            : this.$emit('forward')
         }
         this.clickPrevent = false
       }, 200)

@@ -20,9 +20,8 @@ export default {
 
   watch: {
     hlsSource (source) {
-      // console.log('Watched hlsSource, re-attaching new source')
       const media = this.hls.media
-      if (media) {
+      if (media && (!this.hls.url || this.hls.url !== source.src)) {
         this.hls.detachMedia()
         this.hls.attachMedia(media)
       }

@@ -2,7 +2,7 @@
   <div>
     <!-- timeline -->
     <timeline
-      v-if="!!streamId && currentConversions && fragmentItems.length"
+      v-if="videoSource"
       ref="timeline"
       :items="allItems"
       :options="options"
@@ -11,7 +11,6 @@
       @select="(items, e) => { selected(items) }"
       @delete="(items, e) => { deleted(item) }"
       @timechanged="endSelected($event)"
-      @mouseOver="mouseOver($event)"
     />
   </div>
 </template>
@@ -55,7 +54,8 @@ export default {
       'streamId',
       'sceneChanges',
       'userSettings',
-      'fragments'
+      'fragments',
+      'dvrStoreDetails'
     ]),
 
     groups () {
@@ -90,7 +90,7 @@ export default {
       return [{
         id: 'multimedia-clips',
         content: 'Multimedia Clips',
-        className: 'multimedi-clips'
+        className: 'multimedia-clips'
       }]
     },
 
@@ -116,12 +116,13 @@ export default {
         selectable: true,
         multiselect: true,
         multiselectPerGroup: true,
-        stackSubgroups: true,
+        // stackSubgroups: true,
         stack: true,
         configure: false,
         groupEditable: true,
         max: moment(this.dvrAvailableMax).add(15, 'minutes'),
         min: moment(this.dvrAvailableMin).subtract(1, 'hours'),
+        // start: moment(this.dvrAvailableMax).subtract(4, 'hours'),
         itemsAlwaysDraggable: true,
         zoomMin: 10000,
         zoomMax: 172800000,
@@ -134,17 +135,12 @@ export default {
           item: 0
         },
         moment: moment,
-        start: this.dvrAvailableMax,
         onInitialDrawComplete: () => {
           this.timeline = this.$refs.timeline
 
           this.currentBar = null
           this.endBar = null
           this.startBar = null
-
-          if (this.dvrStart) {
-            this.timeline.setCurrentTime(this.videoTime)
-          }
 
           this.$watch('videoSource', this.watchVideoSource)
           this.$watch('videoTime', this.watchVideoTime)
@@ -155,7 +151,6 @@ export default {
           this.setTimeBars()
         },
         onUpdate: (item, callback) => {
-          console.log('edit')
           if (this.timeline.getSelection() !== [item.id]) {
             this.timeline.setSelection(item.id, {
               focus: true
@@ -164,7 +159,6 @@ export default {
           callback(item)
         },
         onAdd: (item, callback) => {
-          console.log(item, 'addding...')
           item.className = 'fragment'
           item.group = 'fragments'
           item.end = moment(item.start).add(15, 'minutes')
@@ -173,7 +167,6 @@ export default {
           callback(null)
         },
         onRemove: (item, callback) => {
-          console.log('siii', item)
           this.$store.commit('DELETE_FRAGMENT', item.fragment)
           callback(null)
         },
@@ -239,10 +232,12 @@ export default {
             id: `multimedia-clip-${clip.id}`,
             type: 'point',
             start: moment(clip.fecha),
-            content: '<img style="vertical-align: middle;" src="' + clip.thumbnail_pequeno + '" width="40">',
-            title: clip.titulo || '',
+            content: `<a target="_blank" href="http://captura-telesur.openmultimedia.biz/admin/clips/clip/${clip.id}"><img style="vertical-align: middle;" src="${clip.thumbnail_pequeno}" height="20" width="35"></a>`,
+            title: clip.titulo || 'Agregado por: ' + clip.usuario_creacion,
+            selectable: false,
             group: 'multimedia-clips',
-            limitSize: true
+            limitSize: true,
+            className: 'multimedia-clip ' + (clip.publicado ? 'published' : 'unpublished')
           }
         })
     },
@@ -258,10 +253,12 @@ export default {
             id: `multimedia-programa-${clip.id}`,
             type: 'point',
             start: moment(clip.fecha),
-            content: '<img style="vertical-align: middle;" src="' + clip.programa.imagen_url + '" width="40">',
+            content: `<a target="_blank" href="http://captura-telesur.openmultimedia.biz/admin/clips/clip/${clip.id}"><img style="vertical-align: middle;" src="${clip.programa.imagen_url}" height="20" width="35"></a>`,
             title: clip.titulo || clip.programa.nombre,
+            selectable: false,
             group: 'multimedia-programas',
-            limitSize: true
+            limitSize: true,
+            className: 'multimedia-programa ' + (clip.publicado ? 'published' : 'unpublished')
           }
         })
     },
@@ -282,7 +279,7 @@ export default {
             start: change.time,
             content: '',
             group: 'sceneChanges',
-            className: 'sceneChange',
+            className: 'scene-change',
             type: 'point',
             editable: false
           }
@@ -293,6 +290,7 @@ export default {
     },
 
     conversionItems () {
+      if (!this.currentConversions) return []
       return this.currentConversions
         .filter(conv => this.dvrAvailableMin.isBefore(conv.start))
         .map(conv => {
@@ -312,7 +310,8 @@ export default {
     },
 
     storeBackgroundItems () {
-      return Object.values(this.$store.state.dvrStoreDetails).map(store => {
+      if (!this.dvrStoreDetails) return []
+      return Object.values(this.dvrStoreDetails).map(store => {
         return {
           id: 'block_' + store.dvrStoreName,
           start: moment(store.utcStart, 'x'),
@@ -320,7 +319,6 @@ export default {
           type: 'background',
           group: 'fragments',
           className: 'store',
-          subgroup: store.dvrStoreName,
           content: 'Bloque ' + store.dvrStoreName.split('.').pop()
         }
       })
@@ -332,8 +330,7 @@ export default {
         return {
           fragment: frag,
           id: index,
-          start: frag.start,
-          subgroup: this.dvrStore.dvrStoreName,
+          start: moment(frag.start),
           end: moment(frag.start).add(moment.duration(frag.duration, 'seconds')),
           editable: { updateTime: true, remove: this.fragments.length > 1, add: true },
           className: 'fragment' + (frag === this.activeItem ? ' active' : ''),
@@ -346,11 +343,6 @@ export default {
   },
 
   methods: {
-
-    mouseOver (event) {
-      // console.log(event)
-    },
-
     doubleClick (e) {
       if (e.what === 'axis') {
         if (this.dvrRange.contains(moment(e.time))) { // inside currently playing video
@@ -401,7 +393,7 @@ export default {
           // timeline.setCurrentTime(this.dvrStart)
           const { start, end } = this.timeline.getWindow()
           if (!moment.range(start, end).contains(this.dvrStart)) {
-            // this.timeline.moveTo(this.dvrStart)
+            this.timeline.moveTo(this.dvrStart)
             this.timeline.focus(this.fragmentItems.map(i => i.id))
           }
           this.setTimeBars()
@@ -427,7 +419,6 @@ export default {
     },
 
     selected ({ items }) {
-      console.log('selected', items)
       if (items.length === 1) {
         this.$store.commit('SET_DVRITEM', this.$store.state.fragments[items[0]])
       }
@@ -497,7 +488,7 @@ export default {
       margin-right: 6px;
     }
 
-    .vis-item.sceneChange {
+    .vis-item.scene-change {
       background-color: white;
       width: 1px;
       border:none;
@@ -538,6 +529,20 @@ export default {
 
     .vis-item.conversion.SUCCESS {
       background-color: green;
+    }
+
+    .vis-dot {
+      border-width: 1px;
+    }
+
+    .vis-dot.multimedia-clip.published,
+    .vis-dot.multimedia-programa.published {
+      border-color: green;
+    }
+
+    .vis-dot.multimedia-clip.unpublished,
+    .vis-dot.multimedia-programa.unpublished {
+      border-color: red;
     }
 
    .vis-custom-time.current {

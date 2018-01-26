@@ -27,22 +27,31 @@
         <VideoProgressBar
           ref="progressBar"
           v-if="!userSettings.nativeVideoControls"
-          :duration="dvrDuration"
+          :duration="duration"
           :currentTime="videoTime"
           :buffer="buffer"
           @seek="seek"
-          @hover="hoverTime = $event"
+          @hover="$store.commit('SET_HOVERTIME', $event)"
           @dblClick="playing = !playing"
         />
         <DvrPlayerOverlay
           v-if="!userSettings.nativeVideoControls && videoSource"
-          @expandDuration="expandDuration"
-          @
+          :duration="duration"
+          @expand="expand"
+          @forward="forward"
+          @rewind="rewind"
         />
       </div>
     </v-card-media>
     
-    <DvrPlayerControls />
+    <DvrPlayerControls
+      @forward="forward"
+      @rewind="rewind"
+      @expand="expand"
+      @truncate="truncate"
+      @play="playing = true"
+      @pause="playing = false"
+    />
   </v-card>
 </template>
 
@@ -82,7 +91,8 @@ export default {
       'videoTime',
       'seekTo',
       'userSettings',
-      'isLive'
+      'isLive',
+      'playerDuration'
     ]),
 
     ...mapGetters([
@@ -93,14 +103,22 @@ export default {
       'dvrRange'
     ]),
 
+    duration () {
+      const [playerDuration, dvrDuration] = [this.playerDuration, this.dvrDuration]
+      return playerDuration || dvrDuration
+    },
+
     playerSources () {
       if (!this.videoSource) return []
       else return [{ src: this.videoSource, type: 'application/x-mpegURL' }]
     },
 
     player () {
+      console.log(this.videoSource)
       if (this.$refs.player) {
-        return this.$refs.player.$refs.video
+        const player = this.$refs.player.$refs.video
+        this.$store.commit('SET_PLAYERDURATION', player.duration)
+        return player
       }
     },
 
@@ -128,30 +146,33 @@ export default {
     },
 
     durationChanged ($event) {
-      console.log('duration: ', $event)
       this.$store.commit('SET_PLAYERDURATION', $event)
     },
 
     seek (time) {
       this.$nextTick(() => {
-        if (!isNaN(time)) {
+        if (this.player && time >= 0) {
           this.player.currentTime = time
         }
       })
     },
 
     forward () {
-      if (this.player) {
+      console.log('forwarded')
+      this.$nextTick(() => {
         this.player.currentTime = this.player.duration - 1.0
-      }
+      })
     },
 
     rewind () {
-      this.player.currentTime = 0
+      this.$nextTick(() => {
+        this.player.currentTime = 0
+      })
     },
 
     bufferUpdated () {
-      if (this.player) {
+      this.$nextTick(() => {
+        if (!this.player) return
         const buffered = this.player.buffered
         for (var i = 0; i < buffered.length; i++) {
           if (buffered.start(buffered.length - 1 - i) < this.player.currentTime) {
@@ -159,37 +180,41 @@ export default {
             break
           }
         }
+      })
+    },
+
+    truncate (time) {
+      if (time < 0) {
+        time = Math.abs(time)
+        // truncate to start
+        this.setDvr({
+          start: moment(this.dvrStart).add(time, 'seconds'),
+          duration: this.duration - time
+        })
+        this.playerStartPosition = 0
+      } else {
+        // truncate to end
+        this.setDvrDuration(time)
+        this.playerStartPosition = time - 2
       }
     },
 
-    truncatePosition ({ side, time = null }) {
-      switch (side) {
-        case 'start':
-          this.setDvr({
-            start: moment(this.dvrStart).add(time || this.player.currentTime, 'seconds'),
-            duration: this.dvrDuration - (time || this.player.currentTime)
-          })
-          this.playerStartPosition = 0
-          break
-        case 'end':
-          this.setDvrDuration(time || this.player.currentTime)
-          this.playerStartPosition = this.dvrDuration - 2
-          break
-      }
-    },
-
-    expandDuration (time) {
-      this.setDvrDuration(this.dvrDuration + Math.abs(time))
+    expand (time) {
+      console.log('expanded')
+      this.setDvrDuration(this.duration + Math.abs(time))
       if (time < 0) {
         this.setDvrStart(moment(this.dvrStart).subtract(Math.abs(time), 'seconds'))
       } else {
-        this.playerStartPosition = this.dvrDuration - 2
+        this.playerStartPosition = this.duration - 2
       }
     }
 
   },
 
   watch: {
+    playerSources (val, val2) {
+      console.log(val, val2, 'aaaa')
+    },
     seekTo (val) {
       if (this.player) {
         this.player.currentTime = val
@@ -226,6 +251,7 @@ export default {
     padding-bottom: 56.25%; /* 16:9 */
     height: 0;
     width: 100%;
+    /*z-index: -1;*/
   }
 
   .video-wrapper.hover-shadow video {

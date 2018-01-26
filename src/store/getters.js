@@ -21,7 +21,7 @@ export default {
 
   dvrStart (state, getters) {
     if (getters.activeItem) {
-      return getters.activeItem.start
+      return moment(getters.activeItem.start)
     }
   },
 
@@ -41,15 +41,12 @@ export default {
   locale (state) {
     if (state.userSettings.preferredLanguage) {
       // user has specified their preferred language
-      console.log('User settings locale')
       return state.userSettings.preferredLanguage
     } else if (state.user && state.user.locale in state.locales) {
       // preferred locale found in user profile
-      console.log('user profile locale')
       return state.user.locale
     } else {
       // default locale
-      console.log('default locale')
       return state.defaultLocale
     }
   },
@@ -129,7 +126,6 @@ export default {
       case 'video':
       case 'dvr':
       default:
-        console.log('vieosdource')
         if (getters.selectedStoreDetails) {
           return WowzaApi.getPlaylistUrl({
             stream: getters.selectedStream,

@@ -1,11 +1,11 @@
 <template>
   <div>
-  <v-container>
+  <v-container style="max-width: 1290px;">
     <v-layout row wrap>
-      <v-flex lg5 md6 d-flex class="pa-3 pb-0">
+      <v-flex lg5 md5 sm7 d-flex class="pa-2 pb-0">
         <DvrPlayer />
       </v-flex>
-      <v-flex lg7 md6 d-flex class="pa-3 pb-0">
+      <v-flex lg7 md7 sm5 d-flex class="pa-2 pb-0">
         <DvrPanel />
       </v-flex>
     </v-layout>

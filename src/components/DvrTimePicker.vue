@@ -9,7 +9,7 @@
   />
   <div v-else style="position:relative;">
     <div style="position:absolute;z-index:1" class="pl-1 pt-3">
-      <v-btn-toggle mandatory v-model="pickerSide">
+      <v-btn-toggle mandatory v-model="timeMode">
         <v-tooltip bottom>
           <v-btn slot="activator" flat><v-icon>first_page</v-icon></v-btn>
           <span>Elegir tiempo inicial</span>
@@ -50,6 +50,12 @@ const moment = extendMoment(Moment)
 export default {
   name: 'DvrTimePicker',
 
+  data () {
+    return {
+      timeMode: 0
+    }
+  },
+
   props: {
     type: String,
     default: 'date'
@@ -58,7 +64,6 @@ export default {
   computed: {
     ...mapState([
       'dvrStoreDetails',
-      'pickerSide',
       'videoTime'
     ]),
 
@@ -69,7 +74,7 @@ export default {
 
     selectedTime: {
       get () {
-        switch (this.pickerSide) {
+        switch (this.timeMode) {
           case 0: // left
           case 2: // left & right pinned
             // return moment(this.dvrStart).add(this.videoTime, 'seconds').format('HH:mm')
@@ -79,9 +84,10 @@ export default {
             return moment(this.dvrStart).add(this.dvrDuration, 'seconds').format('HH:mm')
         }
       },
-      set (val) {
-        const selectedMoment = moment(`${this.selectedDate} ${val}:0`, 'YYYY-MM-DD HH:mm:s')
-        switch (this.pickerSide) {
+      set (value) {
+        const selectedMoment = moment(`${this.selectedDate} ${value}:0`, 'YYYY-MM-DD HH:mm:s')
+        // console.log('setting time to: ' + value, selectedMoment)
+        switch (this.timeMode) {
           case 0: // left
             this.setDvrStart(selectedMoment)
             break
@@ -126,17 +132,19 @@ export default {
     ]),
 
     allowedDates (date) {
+      // console.log('allowed dates for ', date)
       return Object.values(this.dvrStoreDetails).some(store => {
         return moment(date, 'YYYY-MM-DD').range('day').overlaps(store.utcRange)
       })
     },
 
     allowedHours (hour) {
+      console.log('allowed hours for ', hour)
       const selectedMoment = moment(`${this.selectedDate} ${hour}:0`, 'YYYY-MM-DD H:m')
       const inRange = Object.values(this.dvrStoreDetails).some(store => {
         return selectedMoment.range('hour').overlaps(store.utcRange)
       })
-      switch (this.pickerSide) {
+      switch (this.timeMode) {
         case 0: // left
         case 1: // right
           return inRange
@@ -148,13 +156,14 @@ export default {
     },
 
     allowedMinutes (minute) {
+      // console.log('allowed dates minute ', minute
       if (this.selectedDate && this.selectedTime) {
         const [ hour, , ] = this.selectedTime.split(':')
         const selectedMoment = moment(`${this.selectedDate} ${hour}:${minute}`, 'YYYY-MM-DD HH:m')
         const inRange = Object.values(this.dvrStoreDetails).some(store => {
           return store.utcRange.contains(selectedMoment)
         })
-        switch (this.pickerSide) {
+        switch (this.timeMode) {
           case 0: // left
           case 1: // right
             return inRange
