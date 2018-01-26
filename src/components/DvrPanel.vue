@@ -1,7 +1,7 @@
 <template>
   <v-card v-if="selectedStream" class="elevation-6">
 
-    <v-tabs v-model="selectedTab" show-arrows color="grey darken-3">
+    <v-tabs v-model="selectedTab" show-arrows color="grey darken-4">
       <v-tabs-slider></v-tabs-slider>
       <v-tab
         v-if="fragments.length > 1"
