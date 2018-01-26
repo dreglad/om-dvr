@@ -40,7 +40,11 @@ export default {
 
   requestSceneChanges (stream, cb) {
     return axios.get(urljoin(apiBase, 'scene_changes/'), {
-      params: { scene_analysis__stream: stream.id, value__gte: 0.7 }
+      params: {
+        scene_analysis__stream: stream.id,
+        value__gte: 0.7,
+        created_at__gt: moment().subtract(2, 'days').toISOString()
+      }
     }).then(({ data }) => { cb(data) })
       .catch(e => error(e))
   },
