@@ -50,10 +50,17 @@ export default {
       expanded: [ true ],
       versions: [
         {
+          version: '0.3.2',
+          date: moment('2018-01-25 00:01:24'),
+          changes: [
+            'Se activó función para ajustar inicio y dutación de video arrastrando las pestañas flotantes dentro del reproductor de video'
+          ]
+        },
+        {
           version: '0.3.1',
           date: moment('2018-01-25 00:01:24'),
           changes: [
-            'Se agregó la noción de múltiples fragmentos en la línea de tiempo y en el panel de información'
+            'Se agregó la noción de múltiples fragmentos en la línea de tiempo y en el panel de información',
             'Se agregó -polling- periódico automático de datos',
             'Se agregaron al Timeline los grupos "Multimedia clips" y "Multimedia programas"'
           ]

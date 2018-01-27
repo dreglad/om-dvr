@@ -1,10 +1,7 @@
 <template>
   <v-card class="elevation-6">
     <v-card-media>
-      <div
-        class="video-wrapper"
-        :class="{ 'hover-shadow': userSettings.videoHoverShadow && !userSettings.nativeVideoControls }"
-      >
+      <div class="video-wrapper" :class="playerWrapperClasses">
         <VideoPlayer
           v-if="playerSources.length"
           ref="player"
@@ -38,6 +35,7 @@
           v-if="!userSettings.nativeVideoControls && videoSource"
           :duration="duration"
           @expand="expand"
+          @truncate="truncate"
           @forward="forward"
           @rewind="rewind"
         />
@@ -103,6 +101,12 @@ export default {
       'dvrRange'
     ]),
 
+    playerWrapperClasses () {
+      return {
+        'hover-shadow': this.userSettings.videoHoverShadow && !this.userSettings.nativeVideoControls
+      }
+    },
+
     duration () {
       const [playerDuration, dvrDuration] = [this.playerDuration, this.dvrDuration]
       return playerDuration || dvrDuration
@@ -160,7 +164,7 @@ export default {
     forward () {
       console.log('forwarded')
       this.$nextTick(() => {
-        this.player.currentTime = this.player.duration - 1.0
+        this.player.currentTime = this.player.duration - 1.8
       })
     },
 
@@ -184,19 +188,21 @@ export default {
     },
 
     truncate (time) {
-      if (time < 0) {
-        time = Math.abs(time)
-        // truncate to start
-        this.setDvr({
-          start: moment(this.dvrStart).add(time, 'seconds'),
-          duration: this.duration - time
-        })
-        this.playerStartPosition = 0
-      } else {
-        // truncate to end
-        this.setDvrDuration(time)
-        this.playerStartPosition = time - 2
-      }
+      this.$nextTick(() => {
+        if (time < 0) {
+          time = Math.abs(time)
+          // truncate to start
+          this.playerStartPosition = 0
+          this.setDvr({
+            start: moment(this.dvrStart).add(time, 'seconds'),
+            duration: this.duration - time
+          })
+        } else {
+          // truncate to end
+          this.playerStartPosition = time - 4.0
+          this.setDvrDuration(time)
+        }
+      })
     },
 
     expand (time) {

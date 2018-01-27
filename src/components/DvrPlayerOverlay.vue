@@ -84,7 +84,7 @@ export default {
 
     formattedDuration () {
       return moment
-        .duration(this.duration + this.overlayEndDragged, 'seconds')
+        .duration(this.duration + this.overlayEndDragged - this.overlayStartDragged, 'seconds')
         .format('HH:mm:ss', { trim: false })
     },
 
@@ -104,11 +104,12 @@ export default {
 
   methods: {
     overlayDragging (side, transferData, { offsetX, x }) {
-      console.log(event.offsetX, 'drag')
-      if (x) {
-        const time = (event.offsetX / this.$refs.overlays.offsetWidth) * this.duration
+      if (x && offsetX) {
+        // x -> relative to screen, possitiveZ
+        // offsetX -> relative to element, can be negative
+        const time = (offsetX / this.$refs.overlays.offsetWidth) * this.duration
         const prop = (side === 'start') ? 'overlayStartDragged' : 'overlayEndDragged'
-        this.$set(prop, time)
+        this.$set(this, prop, time)
       }
     },
 
@@ -119,10 +120,15 @@ export default {
         if (side === 'start' && time < 0) {
           this.$emit('expand', time)
         } else {
-          this.$emit('truncatePosition', { side, time: this.duration + time })
+          if (side === 'start') {
+            this.$emit('truncate', -time)
+          } else {
+            this.$emit('truncate', this.duration + time)
+          }
         }
         // reset drags
-        this.$set(['overlayStartDragged', 'overlayEndDragged'], 0)
+        this.overlayStartDragged = 0
+        this.overlayEndDragged = 0
       }
     },
 
