@@ -26,7 +26,7 @@
     "vue": "^2.5.2",
     "vue-drag-drop": "^0.2.3",
     "vue-extend-layout": "^1.0.1",
-    "vue-i18n": "^7.4.0",
+    "vue-i18n": "^7.4.1",
     "vue-meta": "^1.4.2",
     "vue-router": "^3.0.1",
     "vue2vis": "0.0.9",
