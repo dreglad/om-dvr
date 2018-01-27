@@ -2,7 +2,7 @@
   <v-layout column justify-center align-center>
     <v-flex xs12 sm10 md9>
       <div class="text-xs-center mb-4">
-        <h1>v0.3.0</h1>
+        <h1>v{{ $store.state.version }}</h1>
         <AppLogo />
         <h2>Open Multimedia</h2>
       </div>
@@ -49,6 +49,15 @@ export default {
     return {
       expanded: [ true ],
       versions: [
+        {
+          version: '0.3.1',
+          date: moment('2018-01-25 00:01:24'),
+          changes: [
+            'Se agregó la noción de múltiples fragmentos en la línea de tiempo y en el panel de información'
+            'Se agregó -polling- periódico automático de datos',
+            'Se agregaron al Timeline los grupos "Multimedia clips" y "Multimedia programas"'
+          ]
+        },
         {
           version: '0.3.0',
           date: moment('2018-01-18 02:59:47'),
