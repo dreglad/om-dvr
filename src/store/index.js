@@ -9,7 +9,7 @@ Vue.use(Vuex)
 
 const debug = process.env.NODE_ENV !== 'production'
 
-const version = '0.3.2'
+const version = '0.3.3'
 
 const state = {
   // i18n
@@ -34,6 +34,7 @@ const state = {
   dvrStores: {},
   dvrStoreDetails: {},
   conversions: [],
+  videos: [],
   sceneChanges: [],
   currentStoreName: null,
   multimediaItems: [],
@@ -92,7 +93,7 @@ export default new Vuex.Store({
         'userSettings',
         'seenConversions',
         'previousStreamId',
-        'fragments',
+        // 'fragments',
         // Auth
         'user', 'accessToken', 'idToken', 'authExpirationDate'
       ]

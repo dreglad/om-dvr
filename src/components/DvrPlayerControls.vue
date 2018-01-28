@@ -25,7 +25,7 @@
       @click="() => { $emit('play') }" 
       :disabled="!videoSource"
     >
-      <v-icon dark v-if="videoTime >= dvrDuration">replay</v-icon>
+      <v-icon dark v-if="videoTime >= duration">replay</v-icon>
       <v-icon dark v-else >play_arrow</v-icon>
     </v-btn>
     <v-btn dark fab color="default" small
@@ -37,14 +37,14 @@
     </v-btn>
 
     <v-btn small
-      :disabled="!videoSource || Math.floor(videoTime) >= dvrDuration"
+      :disabled="!videoSource || Math.floor(videoTime) >= duration"
       @click="() => { $emit('forward') }"
       style="min-width: 52px"
     >
       <v-icon dark>fast_forward</v-icon>
     </v-btn>
     <v-btn small
-      :disabled="Math.floor(videoTime) >= dvrDuration || !videoTime"
+      :disabled="Math.floor(videoTime) >= duration || !videoTime"
       @click="() => { $emit('truncate', videoTime) }"
       style="min-width: 52px"
     >
@@ -73,13 +73,8 @@ import { mapGetters, mapState } from 'vuex'
 export default {
   name: 'DvrPlayerControls',
 
-  data () {
-    return {
-      expandOptionsEnd: [
-        { text: ' 5 seg >>', callback: () => console.log('a') },
-        { value: +60, text: ' 1 min >>' }
-      ]
-    }
+  props: {
+    duration: Number
   },
 
   computed: {
@@ -87,9 +82,9 @@ export default {
       'videoTime',
       'playing'
     ]),
+
     ...mapGetters([
-      'videoSource',
-      'dvrDuration'
+      'videoSource'
     ]),
 
     canExpandStart () {

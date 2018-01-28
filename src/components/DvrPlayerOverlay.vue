@@ -76,9 +76,9 @@ export default {
     },
 
     formattedCurrentTime () {
-      const [hover, current] = [this.hoverTime, this.videoTime]
+      const [hover, current, dragStart, dragEnd, duration] = [this.hoverTime, this.videoTime, this.overlayStartDragged, this.overlayEndDragged, this.duration]
       return moment
-        .duration(hover || current || 0, 'seconds')
+        .duration(hover || (dragStart && (duration + dragStart)) || (dragEnd && (duration + dragEnd)) || current || 0, 'seconds')
         .format('HH:mm:ss', { trim: false })
     },
 
@@ -116,7 +116,6 @@ export default {
     overlayDragged (side) {
       if (this.overlayStartDragged || this.overlayEndDragged) {
         const time = side === 'start' ? this.overlayStartDragged : this.overlayEndDragged
-        console.log('commiting', time)
         if (side === 'start' && time < 0) {
           this.$emit('expand', time)
         } else {
@@ -146,7 +145,8 @@ export default {
     overlayDblClicked (side) {
       clearTimeout(this.clickTimer)
       this.clickPrevent = true
-      this.truncatePosition(side)
+      const factor = (side === 'start') ? -1 : 1
+      this.$emit('truncate', factor * this.videoTime)
     }
   },
 

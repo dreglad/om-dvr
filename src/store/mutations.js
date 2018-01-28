@@ -71,6 +71,10 @@ export default {
     state.conversions = conversions
   },
 
+  RECEIVE_VIDEOS (state, videos) {
+    state.videos = videos
+  },
+
   RECEIVE_MULTIMEDIA_ITEMS (state, items) {
     state.multimediaItems = items
   },

@@ -11,7 +11,7 @@
   },
   "links": {
     "recorder": "Recorder",
-    "conversions": "Conversions",
+    "videos": "Videos",
     "dashboard": "Dashboard",
     "about": "About"
   },
@@ -22,6 +22,12 @@
   "footer": {
     "copyright": "Open Multimedia &copy; 2018",
     "introduction": "This page is made to give you more informations."
+  },
+  "video_status": {
+    "SUCCESS": "Success",
+    "FAILURE": "Failure",
+    "PENDING": "Pending",
+    "QUEUED": "Queued"
   },
   "labels": {
     "thumbnail": "Thumbnail",

@@ -160,7 +160,7 @@ export default {
       items: [
         // { icon: 'apps', title: 'links.dashboard', to: '/' },
         { icon: 'av_timer', title: 'links.recorder', to: { name: 'Recorder' } },
-        { icon: 'fiber_smart_record', title: 'links.conversions', to: { name: 'Conversions' } },
+        { icon: 'fiber_smart_record', title: 'links.videos', to: { name: 'Videos' } },
         { icon: 'lightbulb_outline', title: 'links.about', to: { name: 'About' } }
       ],
       rightDrawer: false,
@@ -175,7 +175,7 @@ export default {
 
   created () {
     this.$store.dispatch('requestStreams').then(() => {
-      this.$store.dispatch('requestConversions', { poll: 5000 })
+      this.$store.dispatch('requestVideos', { poll: 6000 })
 
       this.$store.dispatch('requestSceneChanges')
 

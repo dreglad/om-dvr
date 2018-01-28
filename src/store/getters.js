@@ -121,20 +121,17 @@ export default {
 
   videoSource (state, getters) {
     switch (state.selectedSource) {
-      case 'live':
-      case 'conversion':
       case 'video':
+        return getters.selectedVideo.file.url
+      case 'live':
+        return getters.liveUrl
       case 'dvr':
       default:
-        if (getters.selectedStoreDetails) {
-          return WowzaApi.getPlaylistUrl({
+        return getters.selectedStoreDetails && WowzaApi
+          .getPlaylistUrl({
             stream: getters.selectedStream,
-            store: getters.selectedStoreDetails,
-            currentStoreName: state.currentStoreName,
-            start: getters.dvrStart,
-            duration: getters.dvrDuration
+            fragment: getters.activeItem
           })
-        }
     }
   },
 

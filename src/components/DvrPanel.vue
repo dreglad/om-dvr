@@ -44,21 +44,20 @@
     <v-card-actions>
       <v-btn
         v-if="allSelected"
-        @click="doRequestConversionBatch"
+        @click="createVideo(false)"
       >
-        {{ $t('labels.convert') }} {{ fragments.length }} <v-icon right>fiber_smart_record</v-icon>
+        Generar {{ fragments.length }} videos <v-icon right>fiber_smart_record</v-icon>
       </v-btn>
       <v-btn
-      v-if="allSelected"
-        @click="doRequestConversionBatchJoin"
+        v-if="allSelected"
+        @click="createVideo(true)"
       >
-        Unión de todos <v-icon right>fiber_manual_record</v-icon>
+        Generar un video con {{ fragments.length }} fragmentos <v-icon right>fiber_manual_record</v-icon>
       </v-btn>
       <v-btn
         v-else
-        @click="doRequestConversion"
-        :disabled="!canConvert"
-      >
+        @click="createVideo(false)"
+      >         <!-- :disabled="!canConvert" -->
         {{ $t('labels.convert') }}
         <v-icon right>fiber_smart_record</v-icon>
       </v-btn>
@@ -100,7 +99,6 @@ export default {
     ...mapGetters([
       'selectedStream',
       'dvrRange',
-      'currentConversions',
       'selectedItems',
       'activeItem'
     ]),
@@ -158,13 +156,12 @@ export default {
           }
         }
       }
-    },
-
-    canConvert () {
-      return this.dvrRange && !this.currentConversions.some(conv => {
-        return conv.start.utc().isSame(this.dvrStart) && this.dvrMomentDuration === conv.duration
-      })
     }
+    // canConvert () {
+    //   return this.dvrRange && !this.videos.some(video => {
+    //     return video.start.utc().isSame(this.dvrStart) && this.dvrMomentDuration === video.duration
+    //   })
+    // }
   },
 
   methods: {
@@ -172,25 +169,19 @@ export default {
       'requestConversion'
     ]),
 
-    doRequestConversionBatchJoin () {
-      return Promise.all(this.doRequestConversionBatch()).then(() => {
-        console.log('CREAR JOIN!!!!!!!  ')
-      })
-    },
-
-    doRequestConversionBatch () {
-      return this.fragments.map(frag => {
-        this.requestConversion(frag).then(() => {
-          this.snackbarText = 'Conversión creada'
+    createVideo (join) {
+      this.$store
+        .dispatch('createVideo', join ? this.fragments : [this.activeItem])
+        .then(video => {
+          this.snackbarText = 'Video creado'
           this.snackbarColor = 'success'
           this.snackbar = true
-          this.$store.dispatch('requestConversions')
-        }).catch(e => {
-          this.snackbarText = 'Error creando conversión'
+        })
+        .catch(e => {
+          this.snackbarText = 'Error creando video'
           this.snackbarColor = 'error'
           this.snackbar = true
         })
-      })
     },
 
     doRequestConversion () {

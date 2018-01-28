@@ -5,7 +5,8 @@
         <VideoPlayer
           v-if="playerSources.length"
           ref="player"
-          autoplay
+          :autoplay="true"
+          :playsInline="true"
           :sources="playerSources"
           :controls="userSettings.nativeVideoControls"
           :startPosition="playerStartPosition"
@@ -22,8 +23,8 @@
           <v-progress-circular indeterminate />
         </div>
         <VideoProgressBar
-          ref="progressBar"
           v-if="!userSettings.nativeVideoControls"
+          ref="progressBar"
           :duration="duration"
           :currentTime="videoTime"
           :buffer="buffer"
@@ -43,6 +44,7 @@
     </v-card-media>
     
     <DvrPlayerControls
+      :duration="duration"
       @forward="forward"
       @rewind="rewind"
       @expand="expand"
@@ -87,7 +89,6 @@ export default {
   computed: {
     ...mapState([
       'videoTime',
-      'seekTo',
       'userSettings',
       'isLive',
       'playerDuration'
@@ -118,7 +119,6 @@ export default {
     },
 
     player () {
-      console.log(this.videoSource)
       if (this.$refs.player) {
         const player = this.$refs.player.$refs.video
         this.$store.commit('SET_PLAYERDURATION', player.duration)
@@ -149,8 +149,9 @@ export default {
       })
     },
 
-    durationChanged ($event) {
-      this.$store.commit('SET_PLAYERDURATION', $event)
+    durationChanged (value) {
+      this.playerStartPosition = 0
+      this.$store.commit('SET_PLAYERDURATION', value)
     },
 
     seek (time) {
@@ -162,7 +163,6 @@ export default {
     },
 
     forward () {
-      console.log('forwarded')
       this.$nextTick(() => {
         this.player.currentTime = this.player.duration - 1.8
       })
@@ -188,44 +188,31 @@ export default {
     },
 
     truncate (time) {
-      this.$nextTick(() => {
-        if (time < 0) {
-          time = Math.abs(time)
-          // truncate to start
-          this.playerStartPosition = 0
-          this.setDvr({
-            start: moment(this.dvrStart).add(time, 'seconds'),
-            duration: this.duration - time
-          })
-        } else {
-          // truncate to end
-          this.playerStartPosition = time - 4.0
-          this.setDvrDuration(time)
-        }
-      })
+      if (time < 0) {
+        time = Math.abs(time)
+        // truncate to start
+        this.playerStartPosition = 0
+        this.setDvr({
+          start: moment(this.dvrStart).add(time, 'seconds'),
+          duration: this.duration - time
+        })
+      } else {
+        // truncate to end
+        this.playerStartPosition = time - 4.0
+        this.setDvrDuration(time)
+      }
     },
 
     expand (time) {
-      console.log('expanded')
       this.setDvrDuration(this.duration + Math.abs(time))
       if (time < 0) {
+        this.playerStartPosition = 0
         this.setDvrStart(moment(this.dvrStart).subtract(Math.abs(time), 'seconds'))
       } else {
         this.playerStartPosition = this.duration - 2
       }
     }
 
-  },
-
-  watch: {
-    playerSources (val, val2) {
-      console.log(val, val2, 'aaaa')
-    },
-    seekTo (val) {
-      if (this.player) {
-        this.player.currentTime = val
-      }
-    }
   },
 
   components: {

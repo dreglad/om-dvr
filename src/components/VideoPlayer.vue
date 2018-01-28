@@ -3,6 +3,7 @@
     <video
       v-if="allDependenciesLoaded && !noVideoTag"
       ref="video"
+      :playsInline="true"
       :controls="!!controls"
       :poster="poster"
       :autoplay="autoplay"

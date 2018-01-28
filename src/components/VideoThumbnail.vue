@@ -35,7 +35,7 @@ export default {
     height: [Number, String],
     maxRetries: {
       type: Number,
-      default: 2,
+      default: 3,
       validator (value) {
         return value > 0
       }
@@ -63,7 +63,7 @@ export default {
 
   methods: {
     error () {
-      console.log('Thumbnail error, retrying')
+      console.debug('Thumbnail error, retrying')
       if (this.retries < this.maxRetries) {
         this.retries++
       }

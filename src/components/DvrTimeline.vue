@@ -23,6 +23,7 @@ import backend from '@/api/backend'
 import Moment from 'moment'
 import { extendMoment } from 'moment-range'
 const moment = extendMoment(Moment)
+require('moment-duration-format')
 
 export default {
 
@@ -37,9 +38,14 @@ export default {
     }
   },
 
+  activated () {
+    this.$nextTick(() => {
+      this.$refs.timeline.redraw()
+    })
+  },
+
   computed: {
     ...mapGetters([
-      'currentConversions',
       'dvrStart',
       'dvrDuration',
       'dvrAvailableMax',
@@ -55,7 +61,8 @@ export default {
       'sceneChanges',
       'userSettings',
       'fragments',
-      'dvrStoreDetails'
+      'dvrStoreDetails',
+      'videos'
     ]),
 
     groups () {
@@ -67,9 +74,9 @@ export default {
           className: 'fragments'
         },
         {
-          id: 'conversions',
-          content: 'Conversiones',
-          className: 'conversions'
+          id: 'videos',
+          content: 'Videos',
+          className: 'videos'
         },
         ...this.multimediaClipsGroup,
         ...this.multimediaProgramasGroup
@@ -114,15 +121,15 @@ export default {
           updateTime: true
         },
         selectable: true,
-        multiselect: true,
-        multiselectPerGroup: true,
+        multiselect: false,
+        multiselectPerGroup: false,
         // stackSubgroups: true,
         stack: true,
         configure: false,
         groupEditable: true,
         max: moment(this.dvrAvailableMax).add(15, 'minutes'),
         min: moment(this.dvrAvailableMin).subtract(1, 'hours'),
-        // start: moment(this.dvrAvailableMax).subtract(4, 'hours'),
+        start: moment(this.dvrAvailableMax).subtract(6, 'hours'),
         itemsAlwaysDraggable: true,
         zoomMin: 10000,
         zoomMax: 172800000,
@@ -184,6 +191,7 @@ export default {
         //   // }
         // },
         onMove: (item, callback) => {
+          callback(item)
           if (this.dvrAvailableMin.isBefore(item.start) && this.dvrAvailableMax.isAfter(item.end)) {
             this.$store.dispatch('setDvr', {
               start: item.start,
@@ -208,7 +216,6 @@ export default {
     allItems () {
       return [
         ...this.videoItems,
-        ...this.conversionItems,
         ...this.storeBackgroundItems,
         ...this.fragmentItems,
         ...this.sceneChangeItems,
@@ -218,7 +225,31 @@ export default {
     },
 
     videoItems () {
-      return []
+      return this.videos.map(video => {
+        return {
+          id: `video-${video.id}`,
+          start: moment(video.start),
+          end: moment(video.end),
+          group: 'videos',
+          className: `video ${video.status}`,
+          selectable: true,
+          content: video.status === 'STARTED'
+            ? Math.round(video.progress * 100) + '%'
+            : moment.duration(video.duration, 'seconds').format('HH:mm:ss', { trim: false })
+        }
+        // {
+        //     id: 'conv_' + conv.id,
+        //     start: conv.start,
+        //     end: conv.end,
+        //     content: conv.status === 'STARTED'
+        //       ? Math.round(conv.progress * 100) + '%'
+        //       : conv.duration.format('HH:mm:ss') + ' ' + conv.id,
+        //     group: 'conversions',
+        //     className: `conversion ${conv.status}`,
+        //     editable: false,
+        //     selectable: true
+        //   }
+      })
     },
 
     multimediaClipItems () {
@@ -249,12 +280,13 @@ export default {
           return clip.tipo.slug === 'programa' && moment(clip.fecha).isAfter(moment(this.dvrAvailableMin).subtract(1, 'hours'))
         })
         .map(clip => {
+          const img = clip.programa ? clip.programa.imagen_url : clip.thumbnail_pequeno
           return {
             id: `multimedia-programa-${clip.id}`,
             type: 'point',
             start: moment(clip.fecha),
-            content: `<a target="_blank" href="http://captura-telesur.openmultimedia.biz/admin/clips/clip/${clip.id}"><img style="vertical-align: middle;" src="${clip.programa.imagen_url}" height="20" width="35"></a>`,
-            title: clip.titulo || clip.programa.nombre,
+            content: `<a target="_blank" href="http://captura-telesur.openmultimedia.biz/admin/clips/clip/${clip.id}"><img style="vertical-align: middle;" src="${img}" height="20" width="35"></a>`,
+            title: clip.titulo || (clip.programa && clip.programa.nombre) || clip.id,
             selectable: false,
             group: 'multimedia-programas',
             limitSize: true,
@@ -287,26 +319,6 @@ export default {
       } else {
         return []
       }
-    },
-
-    conversionItems () {
-      if (!this.currentConversions) return []
-      return this.currentConversions
-        .filter(conv => this.dvrAvailableMin.isBefore(conv.start))
-        .map(conv => {
-          return {
-            id: 'conv_' + conv.id,
-            start: conv.start,
-            end: conv.end,
-            content: conv.status === 'STARTED'
-              ? Math.round(conv.progress * 100) + '%'
-              : conv.duration.format('HH:mm:ss') + ' ' + conv.id,
-            group: 'conversions',
-            className: `conversion ${conv.status}`,
-            editable: false,
-            selectable: true
-          }
-        })
     },
 
     storeBackgroundItems () {
@@ -419,8 +431,14 @@ export default {
     },
 
     selected ({ items }) {
+      console.log(items, 'selected')
       if (items.length === 1) {
-        this.$store.commit('SET_DVRITEM', this.$store.state.fragments[items[0]])
+        const item = items[0]
+        if (item.group === 'fragments') {
+          this.$store.commit('SET_DVRITEM', this.$store.state.fragments[item])
+        } else if (item.group === 'videos') {
+          console.log('VIDEOSSSSSS!!!!')
+        }
       }
     },
 
@@ -442,11 +460,11 @@ export default {
     // },
 
     setDvrItem (itemId) {
-      const conv = this.currentConversions.find(conv => conv.id === itemId)
-      if (conv && this.timeline) {
-        this.$store.dispatch('setDvr', conv)
-        // timeline.setCurrentTime(conv.start)
-      }
+      // const conv = this.currentConversions.find(conv => conv.id === itemId)
+      // if (conv && this.timeline) {
+      //   this.$store.dispatch('setDvr', conv)
+      // timeline.setCurrentTime(conv.start)
+      // }
     }
   },
 
@@ -519,16 +537,20 @@ export default {
       color: #444;
     }
 
-    .vis-item.conversion {
+    .vis-item.video {
       background-color: yellow;
     }
 
-    .vis-item.conversion.vis-selected {
+    .vis-item.video.vis-selected {
       border-color: #90CAF9;
     }
 
-    .vis-item.conversion.SUCCESS {
+    .vis-item.video.SUCCESS {
       background-color: green;
+    }
+
+    .vis-item.video.SUCCESS.vis-selected {
+      background-color: darkgreen;
     }
 
     .vis-dot {
@@ -592,7 +614,7 @@ export default {
       border: none;
     }
 
-    /*.vis-group.conversions {
+    /*.vis-group.videos {
       min-height: 120px;
     }*/
 

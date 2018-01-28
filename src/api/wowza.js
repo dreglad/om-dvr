@@ -93,16 +93,14 @@ export default {
   //     return `${streamingBase}/${_conf.application}/ngrp:${stream}${ngrp}/playlist.m3u8` + (qs ? `?${qs}` : '')
   //   }
   // },
-  getPlaylistUrl ({ stream, store, currentStoreName, start, duration }) {
-    const streamName = (store.dvrStoreName === currentStoreName)
-      ? `smil:${stream.metadata.wseStream}.smil` : store.dvrStoreName
-    // const streamName = store.dvrStoreName
-    const url = urljoin(
-      stream.metadata.wseStreamingUrl, stream.metadata.wseApplication, streamName, 'playlist.m3u8')
+  getPlaylistUrl ({ stream, fragment, adaptive = true }) {
+    const origin = adaptive ? stream.metadata.wseStreamingUrl : stream.metadata.wseStreamingUrlSecondary
+    const store = adaptive ? `smil:${stream.metadata.wseStream}.smil` : `${stream.metadata.wseStream}_1080p`
+    const url = urljoin(origin, stream.metadata.wseApplication, store, 'playlist.m3u8')
     const qs = querystring.stringify({
-      wowzadvrplayliststart: moment.utc(start).format('YYYYMMDDHHmmss'),
-      wowzadvrplaylistduration: Math.round(duration * 1000)
+      wowzadvrplayliststart: moment.utc(fragment.start).format('YYYYMMDDHHmmss'),
+      wowzadvrplaylistduration: Math.round(fragment.duration * 1000)
     })
-    return url + '?DVR&' + qs
+    return `${url}?DVR&${qs}`
   }
 }

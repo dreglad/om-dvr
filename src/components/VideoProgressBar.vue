@@ -57,7 +57,6 @@ export default {
       this.$emit('hover', (offsetX / offsetWidth) * this.duration)
     },
     emitHover: _.debounce(function (val) {
-      console.log(val)
       this.$emit('hover', val)
     }, 50)
   }

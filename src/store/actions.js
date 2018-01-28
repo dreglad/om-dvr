@@ -177,6 +177,29 @@ export default {
     return promise
   },
 
+  requestVideos ({ commit, getters, dispatch }, { poll = 0 } = {}) {
+    console.log('req vid')
+    if (!getters.selectedStream) return
+    const promise = backend.requestVideos(getters.selectedStream, videos => {
+      commit('RECEIVE_VIDEOS', videos)
+    })
+    if (poll) {
+      promise
+        .then(() => { setTimeout(() => dispatch('requestVideos', { poll }), poll) })
+        .catch(() => { setTimeout(() => dispatch('requestVideos', { poll }), poll) })
+    }
+    return promise
+  },
+
+  createVideo ({ dispatch, state, getters }, fragments) {
+    return backend.createVideo({
+      stream: getters.selectedStream,
+      fragments: fragments
+    }, video => {
+      dispatch('requestVideos')
+    })
+  },
+
   requestSceneChanges ({ commit, getters }) {
     if (getters.selectedStream) {
       return backend.requestSceneChanges(getters.selectedStream, sceneChanges => {
@@ -185,19 +208,23 @@ export default {
     }
   },
 
-  requestConversion ({ getters }, fragment) {
-    return backend.requestConversion({
-      stream: getters.selectedStream,
-      store: getters.selectedStoreDetails.dvrStoreName,
-      start: moment(fragment.start),
-      duration: fragment.duration
-    }, result => {
-      console.log(result)
-    })
+  // requestVideo ({ getters }, fragment) {
+  //   return backend.requestConversion({
+  //     stream: getters.selectedStream,
+  //     store: getters.selectedStoreDetails.dvrStoreName,
+  //     start: moment(fragment.start),
+  //     duration: fragment.duration
+  //   }, result => {
+  //     console.log(result)
+  //   })
+  // },
+
+  removeVideo ({ dispatch }, video) {
+    return backend.removeVideo(video, () => dispatch('requestVideos'))
   },
 
-  removeConversion ({ dispatch }, conv) {
-    return backend.removeConversion(conv, () => dispatch('requestConversions'))
+  retryVideo ({ dispatch }, video) {
+    return backend.retryVideo(video, () => dispatch('requestVideos'))
   }
 
 }

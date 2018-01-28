@@ -50,8 +50,15 @@ export default {
       expanded: [ true ],
       versions: [
         {
+          version: '0.3.3',
+          date: moment('2018-01-28 02:04:33'),
+          changes: [
+            'Se cambiaron las conversiones por videos con nuevo método de extracción con descarga'
+          ]
+        },
+        {
           version: '0.3.2',
-          date: moment('2018-01-25 00:01:24'),
+          date: moment('2018-01-26 19:13:58'),
           changes: [
             'Se activó función para ajustar inicio y dutación de video arrastrando las pestañas flotantes dentro del reproductor de video'
           ]

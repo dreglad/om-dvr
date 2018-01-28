@@ -3,14 +3,14 @@
   <v-layout>
     <v-flex lg12>
       <v-data-table
-        :items="currentConversions"
+        :items="videos"
         :headers="headers"
         :pagination.sync="pagination"
         :rows-per-page-text="$t('data_table.items_per_page')"
         :no-data-text="$t('data_table.no_data')"
       >
         <template slot="items" slot-scope="props">
-          <td v-if="props.item.status == 'STARTED' || props.item.status == 'SUCCESS'">
+          <td v-if="['STARTED', 'SUCCESS', 'FAILURE'].includes(props.item.status)">
             <v-progress-circular :size="40" :width="2" class="ma-2"
               :value="props.item.progress * 100"
               :color="progressColor(props.item)"
@@ -18,15 +18,26 @@
               <!-- <span v-if="props.item.progress < 1">{{ Math.max(1, Math.ceil(props.item.progress * 100 )) }}%</span> -->
               <span><v-icon small :color="progressColor(props.item)">{{ progressIcon(props.item) }}</v-icon></span>
             </v-progress-circular>
+            <v-btn
+              small flat
+              v-if="props.item.status === 'FAILURE'"
+              @click="$store.dispatch('retryVideo', props.item)"
+            >
+              Reintentar
+            </v-btn>
           </td>
-          <td v-else>{{ props.item.status | converisonStatus }}</td>
+          <td v-else-if="props.item.status == 'FAILED'">
+              <span><v-icon small :color="progressColor(props.item)">{{ progressIcon(props.item) }}</v-icon></span>
+            </v-progress-circular>
+          </td>
+          <td v-else>{{ $t(`video_status.${props.item.status}`) }}</td>
           <!-- <td>{{ props.item.created_at.format('lll') }}</td> -->
           <td class="justify-center">
             <!-- <v-layout row justify-left align-center> -->
               <VideoThumbnail
                 :height="60"
                 class="px-1 py-2"
-                :date="props.item.start"
+                :date="moment(props.item.start).valueOf()"
               />
               <VideoThumbnail
                 :height="60"
@@ -34,12 +45,12 @@
                 :date="getProgressedTime(props.item)"
               />
           </td>
-          <td>{{ props.item.start.locale($store.getters.locale).format('dddd D [de] MMM [de] YYYY') }}</td>
+          <td>{{ moment(props.item.start).format('dddd D [de] MMM [de] YYYY') }}</td>
           <td>
-            {{ props.item.start.format('HH:mm:ss') }} - 
-            {{ props.item.end.format('HH:mm:ss') }}
+            {{ moment(props.item.start).format('HH:mm:ss') }} - 
+            {{ moment(props.item.end).format('HH:mm:ss') }}
           </td>
-          <td>{{ props.item.duration.locale($store.getters.locale).humanize() }}</td>
+          <td>{{ moment.duration(props.item.duration).humanize() }}</td>
           <td class="justify-center px-0">
             <v-menu offset-y
               transition="slide-y-transition"
@@ -71,7 +82,7 @@
               <v-btn icon class="mx-0"
                 slot="activator"
                 :disabled="props.item.status !== 'SUCCESS'"
-                :href="props.item.url"
+                :href="props.item.file"
                 target="_blank"
               >
                 <v-icon>attach_file</v-icon>
@@ -93,7 +104,7 @@
               <v-btn icon class="mx-0"
                 slot="activator"
                 :disabled="props.item.status === 'STARTED'"
-                @click="removeConversion(props.item)"
+                @click="removeVideo(props.item)"
               >
                 <v-icon v-if="props.item.status == 'PENDING'">cancel</v-icon>
                 <v-icon v-else>delete</v-icon>
@@ -192,21 +203,19 @@
 </template>
 
 <script>
-import { mapActions, mapGetters } from 'vuex'
+import { mapActions, mapState, mapGetters } from 'vuex'
 import VideoThumbnail from '@/components/VideoThumbnail'
 import backend from '@/api/backend'
 import moment from 'moment'
-
 // import _ from 'lodash'
 // import humanize from 'humanize'
 
 export default {
 
-  name: 'PageConversions',
+  name: 'PageVideos',
 
   data () {
     return {
-      intervalId: null,
       metadataTitle: '',
       metadataDescription: '',
       metadataPrograma: null,
@@ -222,7 +231,7 @@ export default {
       metadataDialog: false,
       confirmDialog: false,
       confirmed: false,
-      selectedConversionId: null,
+      selectedVideoId: null,
       selectedProfileId: null,
       error: false,
       distributionProfiles: [
@@ -273,35 +282,47 @@ export default {
 
   computed: {
     ...mapGetters([
-      'currentConversions',
-      'selectedStream'
-    ])
+      'selectedStream',
+      'locale'
+    ]),
+
+    ...mapState([
+      'videos'
+    ]),
+
+    moment () {
+      moment.locale(this.locale)
+      return moment
+    },
+
+    selectedVideo () {
+      return this.selectedVideoId && this.videos.find(video => video.id === this.selectedVideoId)
+    }
   },
 
   methods: {
     ...mapActions([
-      'removeConversion',
-      'requestConversions'
+      'removeVideo'
     ]),
 
-    getProgressedTime (conv) {
-      return moment(conv.start).add(conv.duration.asSeconds() * conv.progress, 'seconds')
+    getProgressedTime (video) {
+      return moment(video.start).add(moment.duration(video.duration).asSeconds() * video.progress, 'seconds')
     },
 
-    distribute ({ profileId, conversionId }) {
+    distribute ({ profileId, videoId }) {
       this.confirmed = false
       this.error = false
 
       if (profileId === 3 || profileId === 4) {
         this.confirmDialog = true
-        backend.distributeCaptura({ profileId, conversionId }).then(({ data }) => {
+        backend.distributeCaptura({ profileId, videoId }).then(({ data }) => {
           this.confirmed = true
         }).catch((err) => {
           this.error = true
           console.log(err)
         })
       } else if (profileId === 1 || profileId === 2) {
-        this.selectedConversionId = conversionId
+        this.selectedVideoId = videoId
         this.selectedProfileId = profileId
         this.metadataDialog = true
       }
@@ -310,7 +331,7 @@ export default {
     distributeMultimedia () {
       backend.distributeMultimedia({
         profileId: this.selectedProfileId,
-        conversionId: this.selectedConversionId,
+        url: this.selectedVideo.file,
         metadata: {
           titulo: this.metadataTitle,
           descripcion: this.metadataDescription,
@@ -327,14 +348,14 @@ export default {
       this.metadataDialog = false
     },
 
-    gotoDvr (conv) {
-      this.$router.push('/recorder', () => {
-        this.$store.dispatch('setDvr', conv)
+    gotoDvr (video) {
+      this.$router.push({ name: 'Recorder' }, () => {
+        this.$store.dispatch('setDvr', video)
       })
     },
 
-    progressColor (conv) {
-      switch (conv.status) {
+    progressColor (video) {
+      switch (video.status) {
         case 'STARTED':
           return 'blue'
         case 'SUCCESS':
@@ -347,8 +368,8 @@ export default {
       }
     },
 
-    progressIcon (conv) {
-      switch (conv.status) {
+    progressIcon (video) {
+      switch (video.status) {
         case 'STARTED':
           return 'build'
         case 'SUCCESS':
@@ -376,38 +397,6 @@ export default {
     backend.getMetadataOptions('tipo_clip', 'en').then(({ data }) => {
       this.$set(this.metadataTipoOptions, 'en', data)
     })
-  },
-
-  activated () {
-    // this.requestConversions().then(() => {
-    //   this.$store.commit('RESET_SEEN_CONVERSIONS')
-    //   this.intervalId = setInterval(() => {
-    //     this.requestConversions().then(() => {
-    //       this.$store.commit('RESET_SEEN_CONVERSIONS')
-    //     })
-    //   }, 2000)
-    // })
-  },
-
-  deactivated () {
-    // clearInterval(this.intervalId)
-  },
-
-  beforeDestroy () {
-    clearInterval(this.intervalId)
-  },
-
-  filters: {
-    converisonStatus (value) {
-      switch (value) {
-        case 'PENDING': return 'Pendiente'
-        case 'QUEUED': return 'En cola'
-        case 'SUCCESS': return 'Exitoso'
-        case 'STARTED': return 'En progreso'
-        case 'FAILURE': return 'Error'
-        default: return ''
-      }
-    }
   },
 
   components: {

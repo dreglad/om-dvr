@@ -31,7 +31,7 @@ export default {
         this.$store.commit('RECEIVE_USER_IDENTITY', userIdentity)
         this.$router.replace(this.$route.query.next || { name: 'Recorder' })
       })
-      .catch(() => {
+      .clusteratch(() => {
         this.webAuth.authorize()
       })
   },
@@ -39,7 +39,7 @@ export default {
   computed: {
     webAuth () {
       return getWebAuth({
-        lang: this.$store.state.userSettings.locale,
+        lang: this.$store.state.locale,
         redirectUri: `${this.$route.fullPath.split('#')[0]}`
       })
     }

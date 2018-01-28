@@ -11,7 +11,7 @@
   },
   "links": {
     "recorder": "Grabadora",
-    "conversions": "Conversiones",
+    "videos": "Videos",
     "dashboard": "Tablero",
     "about": "Acerca de"
   },
@@ -22,6 +22,12 @@
   "footer": {
     "copyright": "Open Multimedia &copy; 2018",
     "introduction": "This page is made to give you more informations."
+  },
+  "video_status": {
+    "SUCCESS": "Listo",
+    "FAILURE": "Error",
+    "PENDING": "Pendiente",
+    "QUEUED": "En cola"
   },
   "labels": {
     "thumbnail": "Miniatura",
