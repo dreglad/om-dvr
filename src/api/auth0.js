@@ -2,7 +2,6 @@ import Auth0 from 'auth0-js'
 import config from '@/../auth-config.json'
 
 export const getWebAuth = ({ redirectUri = '/', lang = 'en' }) => {
-  console.log(redirectUri, '1 p')
   return new Auth0.WebAuth({
     domain: config.AUTH0_CLIENT_DOMAIN,
     clientID: config.AUTH0_CLIENT_ID,
@@ -19,9 +18,7 @@ export const getWebAuth = ({ redirectUri = '/', lang = 'en' }) => {
 
 export const checkSession = (webAuth) => {
   return new Promise((resolve, reject) => {
-    console.log('executing checkSession')
     webAuth.checkSession({}, (err, authResult) => {
-      console.log(err, authResult)
       if (err) {
         return reject(new Error(err.errorDescription))
       } else if (authResult && authResult.accessToken && authResult.idToken) {
@@ -42,8 +39,8 @@ export const parseSession = (webAuth) => {
   return new Promise((resolve, reject) => {
     if (!window.location.hash) reject(new Error('No sesison data to process'))
     webAuth.parseHash({}, (err, authResult) => {
-      console.log(err, authResult)
       if (err) {
+        console.log(err, authResult)
         return reject(new Error(err.errorDescription))
       } else if (authResult && authResult.accessToken && authResult.idToken) {
         webAuth.client.userInfo(authResult.accessToken, (err, user) => {
