@@ -1,24 +1,37 @@
 <template>
   <v-card-actions>
+
     <v-spacer />
-    <v-btn icon
-       class="hidden-sm-and-down"
-      :disabled="!canExpandStart"
-      @click="() => { $emit('expand', -10 * 60) }"
-    >&lt; 60</v-btn>
-    <v-btn icon
-      class="hidden-sm-and-down"
-      :disabled="!canExpandStart"
-      @click="() => { $emit('expand', -5) }"
-    >&lt; 5</v-btn>
-    <v-btn style="min-width: 52px" small
-      :disabled="!videoSource || Math.floor(videoTime) === 0"
-      @click="() => { $emit('truncate', -videoTime) }"
-    ><v-icon dark>subdirectory_arrow_right</v-icon></v-btn>
+
+    <template v-if="playerMode === 'fragment'">
+      <v-btn icon
+         class="hidden-sm-and-down"
+        :disabled="!canExpandStart"
+        @click="() => { $emit('expand', -10 * 60) }"
+      >
+        &lt; 60
+      </v-btn>
+      <v-btn icon
+        class="hidden-sm-and-down"
+        :disabled="!canExpandStart"
+        @click="() => { $emit('expand', -5) }"
+      >
+        &lt; 5
+      </v-btn>
+      <v-btn style="min-width: 52px" small
+        :disabled="!videoSource || Math.floor(videoTime) === 0"
+        @click="() => { $emit('truncate', -videoTime) }"
+      >
+        <v-icon dark>subdirectory_arrow_right</v-icon>
+      </v-btn>
+    </template>
+
     <v-btn style="min-width: 52px" small
       :disabled="!videoSource || !videoTime"
       @click.native="() => { $emit('rewind') }"
-    ><v-icon dark>fast_rewind</v-icon></v-btn>
+    >
+      <v-icon dark>fast_rewind</v-icon>
+    </v-btn>
 
     <v-btn dark fab color="default" small 
       v-if="!playing"
@@ -43,25 +56,28 @@
     >
       <v-icon dark>fast_forward</v-icon>
     </v-btn>
-    <v-btn small
-      :disabled="Math.floor(videoTime) >= duration || !videoTime"
-      @click="() => { $emit('truncate', videoTime) }"
-      style="min-width: 52px"
-    >
-      <v-icon dark>subdirectory_arrow_left</v-icon>
-    </v-btn>
-    <v-btn icon class="hidden-sm-and-down"
-      @click="() => { $emit('expand', +5) }"
-      :disabled="!videoSource || !canExpandEnd"
-    >
-      5 &gt;
-    </v-btn>
-    <v-btn icon class="hidden-sm-and-down"
-      @click="() => { $emit('expand', +60) }"
-      :disabled="!videoSource || !canExpandEnd"
-    >
-      60 &gt;
-    </v-btn>
+
+    <template v-if="playerMode === 'fragment'">
+      <v-btn small
+        :disabled="Math.floor(videoTime) >= duration || !videoTime"
+        @click="() => { $emit('truncate', videoTime) }"
+        style="min-width: 52px"
+      >
+        <v-icon dark>subdirectory_arrow_left</v-icon>
+      </v-btn>
+      <v-btn icon class="hidden-sm-and-down"
+        @click="() => { $emit('expand', +5) }"
+        :disabled="!videoSource || !canExpandEnd"
+      >
+        5 &gt;
+      </v-btn>
+      <v-btn icon class="hidden-sm-and-down"
+        @click="() => { $emit('expand', +60) }"
+        :disabled="!videoSource || !canExpandEnd"
+      >
+        60 &gt;
+      </v-btn>
+    </template>
 
     <v-spacer />
   </v-card-actions>
@@ -80,7 +96,8 @@ export default {
   computed: {
     ...mapState([
       'videoTime',
-      'playing'
+      'playing',
+      'playerMode'
     ]),
 
     ...mapGetters([
@@ -96,4 +113,4 @@ export default {
     }
   }
 }
-</script>    
+</script>

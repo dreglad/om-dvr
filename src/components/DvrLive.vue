@@ -4,16 +4,14 @@
     v-model="isLive"
     :overlay="true"
     transition="fadein"
-    width="100%"
+    width="80%"
     >
     <v-card color="black">
-      <v-flex lg12 align-content-end align-end>
+      <v-flex lg12 align-content-end align-end fill-height>
         <VideoPlayer
           :sources="sources"
           brand="html5"
           autoplay
-          width="100%"
-          style="max-width: 100%;"
           :controls="false"
         />
       </v-flex>
@@ -43,6 +41,10 @@
           this.$store.commit('SET_ISLIVE', value)
         }
       }
+    },
+
+    mounted () {
+      this.$store.commit('SET_PLAYING', false)
     },
 
     components: {

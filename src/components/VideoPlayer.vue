@@ -22,8 +22,8 @@
       <source
         :type="getSrcType(hlsSource)"
         :src="hlsSource.src"
-      />
-    {{ $t('unsupported') }}
+      >
+      <div><img v-if="poster" :src="poster" :style="{ width: width, height: height }" /></div>
     </video>
     <div
       v-else-if="noVideoTag"

@@ -1,41 +1,39 @@
 <template>
   <v-date-picker
-    :landscape="$vuetify.breakpoint.smAndUp"
     v-if="type === 'date'"
     v-model="selectedDate"
     :allowed-dates="allowedDates"
-    locale="es"
+    :landscape="$vuetify.breakpoint.smAndUp"
+    :locale="$store.getters.locale"
     :scrollable="true"
+    class="elevation-11"
   />
-  <div v-else style="position:relative;">
+  <div v-else style="position:relative;" class="elevation-11">
     <div style="position:absolute;z-index:1" class="pl-1 pt-3">
-      <v-btn-toggle mandatory v-model="timeMode">
+      <v-btn-toggle v-model="timeMode" mandatory>
         <v-tooltip bottom>
           <v-btn slot="activator" flat><v-icon>first_page</v-icon></v-btn>
           <span>Elegir tiempo inicial</span>
         </v-tooltip>
-
         <v-tooltip bottom>
           <v-btn slot="activator" flat><v-icon>last_page</v-icon></v-btn>
           <span>Elegir tiempo final</span>
         </v-tooltip>
-
-        <v-tooltip bottom>
+        <!-- <v-tooltip bottom>
           <v-btn slot="activator" flat><v-icon>skip_previous</v-icon></v-btn>
           <span>Elegir tiempo inicial, fijando tiempo final</span>
         </v-tooltip>
-
         <v-tooltip bottom>
           <v-btn slot="activator" flat><v-icon>skip_next</v-icon></v-btn>
           <span>Elegir tiempo final, fijando tiempo incial</span>
-        </v-tooltip>
+        </v-tooltip> -->
       </v-btn-toggle>
     </div>
-    <v-time-picker
-      :landscape="$vuetify.breakpoint.smAndUp"
+    <TimePicker
       v-model="selectedTime"
       :allowed-hours="allowedHours"
       :allowed-minutes="allowedMinutes"
+      :landscape="$vuetify.breakpoint.smAndUp"
       format="24hr"
     />
   </div>
@@ -43,6 +41,7 @@
 
 <script>
 import { mapGetters, mapState, mapActions } from 'vuex'
+import TimePicker from './TimePicker'
 import Moment from 'moment'
 import { extendMoment } from 'moment-range'
 const moment = extendMoment(Moment)
@@ -85,8 +84,8 @@ export default {
         }
       },
       set (value) {
+        this.$store.commit('SET_PLAYERMODE', 'fragment')
         const selectedMoment = moment(`${this.selectedDate} ${value}:0`, 'YYYY-MM-DD HH:mm:s')
-        // console.log('setting time to: ' + value, selectedMoment)
         switch (this.timeMode) {
           case 0: // left
             this.setDvrStart(selectedMoment)
@@ -122,7 +121,6 @@ export default {
         this.setDvrStart(moment(`${val} ${this.selectedTime}:0`, 'YYYY-MM-DD HH:mm:s'))
       }
     }
-
   },
 
   methods: {
@@ -132,14 +130,12 @@ export default {
     ]),
 
     allowedDates (date) {
-      // console.log('allowed dates for ', date)
       return Object.values(this.dvrStoreDetails).some(store => {
         return moment(date, 'YYYY-MM-DD').range('day').overlaps(store.utcRange)
       })
     },
 
     allowedHours (hour) {
-      console.log('allowed hours for ', hour)
       const selectedMoment = moment(`${this.selectedDate} ${hour}:0`, 'YYYY-MM-DD H:m')
       const inRange = Object.values(this.dvrStoreDetails).some(store => {
         return selectedMoment.range('hour').overlaps(store.utcRange)
@@ -156,7 +152,6 @@ export default {
     },
 
     allowedMinutes (minute) {
-      // console.log('allowed dates minute ', minute
       if (this.selectedDate && this.selectedTime) {
         const [ hour, , ] = this.selectedTime.split(':')
         const selectedMoment = moment(`${this.selectedDate} ${hour}:${minute}`, 'YYYY-MM-DD HH:m')
@@ -175,7 +170,10 @@ export default {
       }
       return false
     }
+  },
 
+  components: {
+    TimePicker
   }
 
 }

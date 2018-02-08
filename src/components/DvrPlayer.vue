@@ -5,17 +5,18 @@
         <VideoPlayer
           v-if="playerSources.length"
           ref="player"
-          :autoplay="true"
-          :playsInline="true"
           :sources="playerSources"
-          :controls="userSettings.nativeVideoControls"
           :startPosition="playerStartPosition"
           :paused="!playing"
+          :poster="videoPoster"
+          :controls="userSettings.nativeVideoControls"
+          :autoplay="true"
+          :playsInline="true"
           @ended="playing = false"
           @pause="playing = false"
           @play="playing = true"
           @click.native="playing = !playing"
-          @time="$store.commit('SET_VIDEO_TIME', $event)"
+          @time="$store.commit('SET_VIDEOTIME', $event)"
           @progress="bufferUpdated"
           @durationchange="durationChanged"
         />
@@ -33,7 +34,7 @@
           @dblClick="playing = !playing"
         />
         <DvrPlayerOverlay
-          v-if="!userSettings.nativeVideoControls && videoSource"
+          v-if="!userSettings.nativeVideoControls && videoSource && playerMode === 'fragment'"
           :duration="duration"
           @expand="expand"
           @truncate="truncate"
@@ -68,7 +69,6 @@ export default {
 
   data () {
     return {
-      isActive: true,
       playerStartPosition: 0,
       buffer: 0,
       clickPrevent: false
@@ -76,30 +76,26 @@ export default {
   },
 
   activated () {
-    this.isActive = true
   },
 
   deactivated () {
-    this.$nextTick(() => {
-      this.playing = false
-      this.isActive = false
-    })
+    this.playing = false
   },
 
   computed: {
     ...mapState([
       'videoTime',
       'userSettings',
-      'isLive',
-      'playerDuration'
+      'playerDuration',
+      'playerMode',
+      'seekTo'
     ]),
 
     ...mapGetters([
       'dvrStart',
       'dvrDuration',
       'videoSource',
-      'selectedStream',
-      'dvrRange'
+      'videoPoster'
     ]),
 
     playerWrapperClasses () {
@@ -164,7 +160,7 @@ export default {
 
     forward () {
       this.$nextTick(() => {
-        this.player.currentTime = this.player.duration - 1.8
+        this.player.currentTime = this.player.duration - 1.5
       })
     },
 
@@ -188,16 +184,14 @@ export default {
     },
 
     truncate (time) {
-      if (time < 0) {
+      if (time < 0) { // truncate to start
         time = Math.abs(time)
-        // truncate to start
         this.playerStartPosition = 0
         this.setDvr({
           start: moment(this.dvrStart).add(time, 'seconds'),
-          duration: this.duration - time
+          duration: this.dvrDuration - time
         })
-      } else {
-        // truncate to end
+      } else { // truncate to end
         this.playerStartPosition = time - 4.0
         this.setDvrDuration(time)
       }
@@ -212,7 +206,14 @@ export default {
         this.playerStartPosition = this.duration - 2
       }
     }
+  },
 
+  watch: {
+    seekTo (val) {
+      this.$nextTick(() => {
+        this.seek(val)
+      })
+    }
   },
 
   components: {
@@ -260,74 +261,5 @@ export default {
     -webkit-transition: opacity 1s ease-in-out;
     -moz-transition: opacity 1s ease-in-out;
     transition: opacity 1s ease-in-out;
-  }
-
-  .video-wrapper .video-overlays {
-    opacity: 0.65;
-    -webkit-transition: opacity 1.2s ease-in-out;
-    -moz-transition: opacity 1.2s ease-in-out;
-    transition: opacity 1.2s ease-in-out;
-  }
-
-  .video-wrapper:hover .video-overlays {
-    opacity: 1;
-    -webkit-transition: opacity 1s ease-in-out;
-    -moz-transition: opacity 1s ease-in-out;
-    transition: opacity 1s ease-in-out;
-  }
-
-  .video-overlays {
-    position: absolute;
-    top: 0;
-    width: 100%;
-  }
-
-  .video-overlays > div {
-    opacity: 0.85;
-    letter-spacing: 2px;
-    width: 100px;
-    margin: 1px;
-    padding: 0 4px;
-  }
-
-  .video-overlays .current {
-    width: 150px;
-  }
-
-
-  .video-overlays > div,
-  .video-overlays .current span,
-  .video-overlays .current img {
-    background-color: #333;
-    text-align: center;
-    border: 1px solid #666;
-    display: block;
-  }
-
-  .video-overlays .current span {
-    border-bottom: none;
-  }
-
-  .video-overlays .current img {
-    border-top: none;
-    padding: 5px;
-  }
-  
-  .video-overlays > div.start {
-    position: absolute;
-    left: 0;
-  }
-
-  .video-overlays > div.current {
-    margin-right: auto;
-    margin-left: auto;
-    display: block;
-  }
-
-  .video-overlays > div.end {
-    position: absolute;
-    right: 0;
-    top: 0;
-    float: right;
   }
 </style>

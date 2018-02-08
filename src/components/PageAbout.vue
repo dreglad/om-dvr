@@ -2,9 +2,9 @@
   <v-layout column justify-center align-center>
     <v-flex xs12 sm10 md9>
       <div class="text-xs-center mb-4">
-        <h1>v{{ $store.state.version }}</h1>
-        <AppLogo />
+        <AppLogo :width="160" :height="160" class="mt-3" />
         <h2>Open Multimedia</h2>
+        <h1>v{{ $store.state.version }}</h1>
       </div>
 
       <v-card>
@@ -20,13 +20,20 @@
             v-model="expanded[index]"
             v-for="(log, index) in versions"
             :key="log.version"
-            >
+          >
             <div slot="header" class="pa-0">
-              <big><strong>{{ log.version }}</strong> <small class="pl-3">{{ log.date.locale($store.getters.locale).format('LLLL') }}</small></big>
+              <big>
+                <strong>{{ log.version }}</strong>
+                <small class="pl-3" v-if="log.date">{{ log.date.locale($store.getters.locale).format('LLLL') }}</small>
+                <small class="pl-3" v-else>Próximamente</small>
+              </big>
             </div>
             <v-list dense class="pt-0 pb-0">
               <v-list-tile v-for="(change, index) in log.changes" :key="index" class="pa-0 ma-0">
-                <v-list-tile-avatar><v-icon small>done</v-icon></v-list-tile-avatar>
+                <v-list-tile-avatar>
+                  <v-icon v-if="log.date" small>done</v-icon>
+                  <v-icon v-else small>alarm</v-icon>
+                </v-list-tile-avatar>
                 <v-list-tile-content>{{ change }}</v-list-tile-content>
               </v-list-tile>
             </v-list>
@@ -41,19 +48,75 @@
 import moment from 'moment'
 
 export default {
-
   name: 'PageAbout',
 
-  // 'Si el usuario no ha ajustado un idioma preferido, se usa el idioma reportado en el perfil del usuario autenticado
   data () {
     return {
-      expanded: [ true ],
+      expanded: [ true, true, true ],
       versions: [
+        {
+          version: '0.4.0',
+          date: null,
+          changes: [
+            'Administración de perfiles de distribución para distintos canales',
+            'Gestión de permisos de usuario'
+          ]
+        },
+        {
+          version: '0.3.8',
+          date: null,
+          changes: [
+            'Poder controlar con más agilidad los límites¸ novel de zoom y grados de libertad de la línea de tiempo en correspondencia con el reloj de pared para ayudar a transicionar a los usuarios habituados a trabajar en bloques discretos de 30 minutos'
+          ]
+        },
+        {
+          version: '0.3.7 [PRODUCCIÓN]',
+          date: moment('2018-02-07 01:03:29'),
+          changes: [
+            'Los campos de metadatos de videos ahora se sincronizan automáticamente con la BD',
+            'Ahora al seleccionar un video, se utiliza una URL única para poder giardar o compartir links dentro de la grabadora',
+            'Se reorganizó despliegue tabular de videos',
+            'Se corrigió error donde las conversiones comienzan reportando un progreso negativo ',
+            'Se actualiza ChangeLog para mostrar además de los cambios en producción, cambios en las ramas de desarrollo y de próximo milestone',
+            'Se agregó al reproductor de video un poster con la imagen previa del video que se muestra antes de reproducir mientras se descargan los primeros segmentos, en lugar de mostrar ruedita girando'
+          ]
+        },
+        {
+          version: '0.3.6',
+          date: moment('2018-02-06 19:07:36'),
+          changes: [
+            'Se agrega una alerta cuando la versión no se ejecuta la última versión.',
+            'Se agregaron las acciones de video (distribuir, descargar, eliminar) al panel de la grabadora',
+            'Se rehabilitaron los marcadores de dcambio de escena con mejoras de rendimiento',
+            'Se agregó pestaña flotante que aparece después de 5 minutos con opción a mandar preguntas y comentarios',
+            'Se mejoró la presición relativa de las imágenes de vidta previa con respecto a la posición que representan sobre la transmisión'
+          ]
+        },
+        {
+          version: '0.3.5',
+          date: moment('2018-02-03 23:00:14'),
+          changes: [
+            'Ahora al hacer doble click sobre un elemento dentro de la línea de tiempo, provoca que ésta enfoque dicho elemento',
+            'Ahora al hacer doble click sobre la escala de la línea de tiempo, provoca',
+            'Los recuadros flotantes arrastrables sobre el reproductor ahora muestran una imagen previa más grande para facilitar la navegación',
+            'Se mejoró estilo en la línea de tiempo',
+            'Se mejoró la presición relativa de las imágenes de vidta previa con respecto a la posición que representan sobre la transmisión'
+          ]
+        },
+        {
+          version: '0.3.4',
+          date: moment('2018-01-29 19:48:35'),
+          changes: [
+            'Se agregó la capacidad de seleccionar elementos en la línea de tiempo distintos a fragmentos (videos)',
+            'Se agregó panel de visualización de video diferenciado por barra de tabs color verde',
+            'Se mejoró estilo en la línea de tiempo'
+          ]
+        },
         {
           version: '0.3.3',
           date: moment('2018-01-28 02:04:33'),
           changes: [
-            'Se cambiaron las conversiones por videos con nuevo método de extracción con descarga'
+            'Se cambiaron las conversiones por videos con nuevo método de extracción por descarga remota de lista de reproducción HLS'
           ]
         },
         {
@@ -178,10 +241,6 @@ export default {
   }
 }
 </script>
-
-
-
-
 
 <style>
 .expansion-panel__header {

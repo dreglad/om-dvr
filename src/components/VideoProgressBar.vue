@@ -7,9 +7,10 @@
     class="progressbar-wrapper"
   >
     <v-progress-linear
-      :height="20"
       v-model="progress"
       :buffer-value="bufferValue"
+      :color="progressColor"
+      :height="20"
       buffer
       class="pa-0 ma-0"
     />
@@ -41,19 +42,26 @@ export default {
 
     bufferValue () {
       return (this.buffer / this.duration) * 100
+    },
+
+    progressColor () {
+      switch (this.$store.state.playerMode) {
+        case 'fragment':
+          return 'light-blue darken-4'
+        case 'video':
+          return 'light-green darken-4'
+      }
     }
   },
 
   methods: {
     clicked ({ offsetX, currentTarget: { offsetWidth } }) {
-      // console.log(this.duration)
       this.$emit('seek', (offsetX / offsetWidth) * this.duration)
     },
     dblClicked ({ offsetX, currentTarget: { offsetWidth } }) {
       this.$emit('dblClicked', (offsetX / offsetWidth) * this.duration)
     },
     hover ({ offsetX, currentTarget: { offsetWidth } }) {
-      // this.emitHover((offsetX / offsetWidth) * this.duration)
       this.$emit('hover', (offsetX / offsetWidth) * this.duration)
     },
     emitHover: _.debounce(function (val) {
@@ -67,10 +75,9 @@ export default {
   .progressbar-wrapper {
     position: absolute;
     bottom: 0;
-    /*z-index: 1;*/
     cursor: pointer;
-    background-color: #555;
     width: 100%;
     height: 20px;
+    background-color: #555;
   }
 </style>

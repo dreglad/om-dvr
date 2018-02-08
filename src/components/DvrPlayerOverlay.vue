@@ -6,13 +6,13 @@
     <Drag
       @drag="overlayDragging('start', ...arguments)"
       @dragend="overlayDragged('start', ...arguments)"
+      :class="{ dragging: !!overlayStartDragged }"
       class="start"
     >
       <v-icon large slot="image">move</v-icon>
       <div
-        @dblclick="overlayDblClicked('start')"
         @click="overlayClicked('start')"
-        class="elevation-7"
+        @dblclick="overlayDblClicked('start')"
       >
         <span>{{ formattedStart }}</span>
         <VideoThumbnail :date="overlayStartDate" />
@@ -21,16 +21,24 @@
     <div class="current" style="background: none; border:none;">
       <span>{{ formattedCurrentTime }}</span>
       <transition name="fade">
-        <VideoThumbnail :width="200" v-if="hoverTime" :date="overlayCurrentDate" />
+        <VideoThumbnail
+          v-if="hoverTime"
+          :date="overlayCurrentDate"
+          :width="300"
+        />
       </transition>
     </div> 
     <Drag
-      class="end"
       @drag="overlayDragging('end', ...arguments)"
       @dragend="overlayDragged('end', ...arguments)"
+      :class="{ dragging: !!overlayEndDragged }"
+      class="end"
     >
       <v-icon large slot="image">move</v-icon>
-      <div @dblclick="overlayDblClicked('end')" @click="overlayClicked('end')">
+      <div
+        @click="overlayClicked('end')"
+        @dblclick="overlayDblClicked('end')"
+      >
         <span>{{ formattedDuration }}</span>
         <VideoThumbnail :date="overlayEndDate" />
       </div>
@@ -61,8 +69,7 @@ export default {
   computed: {
     ...mapState([
       'hoverTime',
-      'videoTime',
-      'dvrItem'
+      'videoTime'
     ]),
 
     ...mapGetters([
@@ -70,9 +77,7 @@ export default {
     ]),
 
     formattedStart () {
-      return moment
-        .duration(this.overlayStartDragged, 'seconds')
-        .format('HH:mm:ss', { trim: false })
+      return moment.duration(this.overlayStartDragged, 'seconds').format('HH:mm:ss', { trim: false })
     },
 
     formattedCurrentTime () {
@@ -104,9 +109,7 @@ export default {
 
   methods: {
     overlayDragging (side, transferData, { offsetX, x }) {
-      if (x && offsetX) {
-        // x -> relative to screen, possitiveZ
-        // offsetX -> relative to element, can be negative
+      if (x && offsetX) { // x -> relative to screen, possitiveZ, offsetX -> relative to element, can be negative
         const time = (offsetX / this.$refs.overlays.offsetWidth) * this.duration
         const prop = (side === 'start') ? 'overlayStartDragged' : 'overlayEndDragged'
         this.$set(this, prop, time)
@@ -156,3 +159,88 @@ export default {
   }
 }
 </script>
+
+<style>
+.video-wrapper:hover .video-overlays {
+    opacity: 1;
+    -webkit-transition: opacity 1s ease-in-out;
+    -moz-transition: opacity 1s ease-in-out;
+    transition: opacity 1s ease-in-out;
+  }
+
+  .video-overlays {
+    position: absolute;
+    top: 0;
+    width: 100%;
+  }
+
+  .video-overlays > div {
+    opacity: 0.85;
+    letter-spacing: 2px;
+    width: 100px;
+    margin: 1px;
+    padding: 0 4px;
+  }
+
+  .video-overlays .start.dragging {
+    width: 300px;
+    text-align: left;
+  }
+
+  .video-overlays .end.dragging img {
+    margin-left: -200px;
+    /*text-align: right;*/
+    width: 300px;
+    /*overflow: visible !important;*/
+    /*z-index: 1000 !important;*/
+  }
+
+  .video-overlays .current {
+    width: 300px;
+    z-index: 2;
+  }
+
+
+  .video-overlays > div,
+  .video-overlays .current span,
+  .video-overlays .current img {
+    background-color: #333;
+    text-align: center;
+    border: 1px solid #666;
+    display: block;
+  }
+
+  .video-wrapper .video-overlays {
+    opacity: 0.65;
+    -webkit-transition: opacity 1.2s ease-in-out;
+    -moz-transition: opacity 1.2s ease-in-out;
+    transition: opacity 1.2s ease-in-out;
+  }
+
+  .video-overlays .current span {
+    border-bottom: none;
+  }
+
+  .video-overlays .current img {
+    border-top: none;
+    padding: 5px;
+  }
+  
+  .video-overlays > div.start {
+    position: absolute;
+    left: 0;
+  }
+
+  .video-overlays > div.current {
+    margin-right: auto;
+    margin-left: auto;
+    display: block;
+  }
+
+  .video-overlays > div.end {
+    position: absolute;
+    right: 0;
+    top: 0;
+    float: right;
+  }
+</style>

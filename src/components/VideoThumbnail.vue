@@ -56,7 +56,11 @@ export default {
 
     imgSrc () {
       if (this.stream) {
-        return backend.getThumbnailUrl(this.stream, moment(this.date).subtract(this.retries, 'seconds'))
+        if (this.retries) {
+          return backend.getThumbnailUrl(this.stream, moment(this.date).subtract(this.retries, 'seconds'))
+        } else {
+          return backend.getThumbnailUrl(this.stream, this.date)
+        }
       }
     }
   },

@@ -1,9 +1,10 @@
 <template>
   <div>
-    <v-menu v-if="streams.length"
+    <v-menu
+      v-if="streams.length"
+      :nudge-bottom="10"
       bottom
       offset-y
-      :nudge-bottom="10"
     >
       <v-toolbar-title slot="activator">
         <v-icon dark small>videocam</v-icon>
@@ -15,11 +16,11 @@
         <v-list-tile
           v-for="item in streams"
           :key="item.id"
-          @click="stream = item.id"
           :inactive="item.id == stream.id"
+          @click="stream = item.id"
         >
           <v-list-tile-title>
-            <v-icon small v-if="item.id == stream.id">videocam</v-icon>
+            <v-icon v-if="item.id == stream.id" small>videocam</v-icon>
             {{ item.name }}
           </v-list-tile-title>
           <v-divider />
@@ -49,6 +50,8 @@ export default {
         return this.selectedStream
       },
       set (value) {
+        this.$store.commit('RESET_PLAYERMODE')
+        this.$router.push({ name: 'Recorder' })
         this.selectStream(this.streams.find(stream => stream.id === value))
       }
     }

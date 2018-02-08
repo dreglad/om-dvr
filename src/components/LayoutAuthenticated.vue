@@ -9,10 +9,10 @@
     >
       <v-list>
         <v-list-tile 
-          router
-          :to="item.to"
-          :key="i"
           v-for="(item, i) in items"
+          :key="i"
+          :to="item.to"
+          router
           exact
         >
           <v-list-tile-action>
@@ -25,11 +25,11 @@
       </v-list>
     </v-navigation-drawer>
     <v-toolbar
-      color="primary"
-      clipped-left
-      :transition="false"
-      fixed
       app
+      color="primary"
+      :transition="false"
+      clipped-left
+      fixed
       dense
     >
       <v-toolbar-side-icon @click="drawer = !drawer"></v-toolbar-side-icon>
@@ -45,26 +45,27 @@
       <v-spacer />
 
       <!-- Select time widget -->
-      <v-menu offset-y full-width right
+      <v-menu lazy
+        v-model="timePickerOpened"
         v-if="$route.name == 'Recorder'"
         :close-on-click="false"
         :close-on-content-click="false"
-        transition="slide-y-transition"
-        :nudge-top="-10"
-        v-model="timePickerOpened"
         :z-index="1"
-        lazy
+        :nudge-top="-10"
+        transition="slide-y-transition"
+        offset-y right full-width
       >
-        <v-btn slot="activator" icon
+        <v-btn icon
+          slot="activator"
           :outline="timePickerOpened"
           @click="activateTimePicker"
         >
-          <v-tooltip bottom>
-            <v-icon slot="activator">query_builder</v-icon>
-            <span>Elegir hora</span>
-          </v-tooltip>
+          <v-icon>query_builder</v-icon>
         </v-btn>
-        <DvrTimePicker v-if="timePickerOpened" type="time" />
+        <DvrTimePicker
+          v-if="timePickerOpened"
+          type="time"
+        />
       </v-menu>
 
       <!-- Select date widget -->
@@ -77,14 +78,12 @@
         v-model="datePickerOpened"
         z-index="1"
       >
-        <v-btn slot="activator" icon
-          :outline="datePickerOpened"
+        <v-btn icon
+          slot="activator"
           @click="activateDatePicker"
+          :outline="datePickerOpened"
         >
-          <v-tooltip bottom>
-            <v-icon slot="activator">event</v-icon>
-            <span>Elegir fecha</span>
-          </v-tooltip>
+          <v-icon>event</v-icon>
         </v-btn>
         <DvrTimePicker type="date" />
       </v-menu>
@@ -106,26 +105,29 @@
 
       <StreamPicker />
 
-      <router-view class="toolbar" name="toolbarItems"></router-view>
-
-      <v-btn 
+      <v-btn small fab
         @click.stop="rightDrawer = !rightDrawer"
         class="elevation-3 mr-2"
-        small fab
       >
         <v-avatar size="32"><img :src="user.picture"></v-avatar>
       </v-btn>
     </v-toolbar>
 
     <v-content>
+      <v-alert
+        :value="!latestVersion"
+        v-text="No tienes la versión más reciente, por favor refresca para actualizar"
+        type="error"
+        class="ma-4"
+      />
       <keep-alive>
         <router-view />
       </keep-alive>
     </v-content>
 
     <v-navigation-drawer
-      temporary
       v-model="rightDrawer"
+      temporary
       right
       fixed
       :width="448"
@@ -158,7 +160,6 @@ export default {
   data () {
     return {
       items: [
-        // { icon: 'apps', title: 'links.dashboard', to: '/' },
         { icon: 'av_timer', title: 'links.recorder', to: { name: 'Recorder' } },
         { icon: 'fiber_smart_record', title: 'links.videos', to: { name: 'Videos' } },
         { icon: 'lightbulb_outline', title: 'links.about', to: { name: 'About' } }
@@ -174,14 +175,38 @@ export default {
   },
 
   created () {
-    this.$store.dispatch('requestStreams').then(() => {
-      this.$store.dispatch('requestVideos', { poll: 6000 })
+    // var OneSignal = window.OneSignal || []
+    // OneSignal.push(function () {
+    //   OneSignal.init({
+    //     appId: 'dfaef7c9-c0a8-4260-9708-1b83ef3261dd',
+    //     autoRegister: true,
+    //     notifyButton: {
+    //       enable: false
+    //     },
+    //     welcomeNotification: {
+    //       title: 'Open Multimedia',
+    //       message: 'Notificaciones activadas'
+    //     },
+    //     promptOptions: {
+    //       actionMessage: 'Se solicita tu permiso para enviarte notificaciones.',
+    //       acceptButtonText: 'PERMITIR',
+    //       cancelButtonText: 'NO, GRACIAS'
+    //     }
+    //   })
+    // })
+    // OneSignal.push(() => {
+    //   setTimeout(() => {
+    //     OneSignal.showHttpPrompt()
+    //   }, 10000)
+    // })
+    this.$store.dispatch('requestStreams', { poll: 45000 }).then(() => {
+      this.$store.dispatch('requestVideos', { poll: 2000 })
 
       this.$store.dispatch('requestSceneChanges')
 
       this.multimediaItemsInterval = setInterval(() => {
         this.$store.dispatch('requestMultimediaItems')
-      }, 60000)
+      }, 30000)
 
       this.streamDetailsInterval = setInterval(() => {
         this.$store.dispatch('requestStreamDetails', this.$store.getters.selectedStream)
@@ -196,12 +221,19 @@ export default {
 
   computed: {
     ...mapGetters([
-      'locale'
+      'locale',
+      'selectedStream'
     ]),
 
     ...mapState([
-      'user'
+      'user',
+      'playerMode'
     ]),
+
+    latestVersion () {
+      if (!this.selectedStream) return true
+      else return this.$store.state.version === this.selectedStream.metadata.frontendVersion
+    },
 
     isLive: {
       get () {
@@ -244,6 +276,15 @@ export default {
     activateTimePicker () {
       this.datePickerOpened = false
       this.timePickerOpened = !this.timePickerOpened
+    }
+  },
+
+  watch: {
+    playerMode (value, oldValue) {
+      if (value !== 'fragment') {
+        this.timePickerOpened = false
+        this.datePickerOpened = false
+      }
     }
   },
 

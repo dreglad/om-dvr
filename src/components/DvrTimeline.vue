@@ -1,8 +1,8 @@
 <template>
   <div>
     <!-- timeline -->
-    <timeline
-      v-if="videoSource"
+    <VisTimeline
+      v-if="selectedStream && videos.length"
       ref="timeline"
       :items="allItems"
       :options="options"
@@ -18,7 +18,7 @@
 <script>
 // import _ from 'lodash'
 import { mapGetters, mapState } from 'vuex'
-import { Timeline } from 'vue2vis'
+import VisTimeline from './VisTimeline'
 import backend from '@/api/backend'
 import Moment from 'moment'
 import { extendMoment } from 'moment-range'
@@ -40,7 +40,9 @@ export default {
 
   activated () {
     this.$nextTick(() => {
-      this.$refs.timeline.redraw()
+      if (this.$refs.timeline) {
+        this.$refs.timeline.redraw()
+      }
     })
   },
 
@@ -53,7 +55,9 @@ export default {
       'videoSource',
       'dvrRange',
       'selectedStream',
-      'activeItem'
+      'selectedVideo',
+      'activeItem',
+      'videos'
     ]),
     ...mapState([
       'videoTime',
@@ -62,7 +66,9 @@ export default {
       'userSettings',
       'fragments',
       'dvrStoreDetails',
-      'videos'
+      'videos',
+      'videoId',
+      'playerMode'
     ]),
 
     groups () {
@@ -86,9 +92,10 @@ export default {
     sceneChangesGroup () {
       if (!this.userSettings.showSceneChanges) return []
       return [{
-        id: 'sceneChanges',
+        id: 'scene-changes',
         content: '',
-        className: 'sceneChanges'
+        subgroupStack: false,
+        className: 'scene-changes'
       }]
     },
 
@@ -96,7 +103,7 @@ export default {
       if (!this.userSettings.showMultimediaClips) return []
       return [{
         id: 'multimedia-clips',
-        content: 'Multimedia Clips',
+        content: 'Multimedia<br>Clips',
         className: 'multimedia-clips'
       }]
     },
@@ -105,21 +112,18 @@ export default {
       if (!this.userSettings.showMultimediaProgramas) return []
       return [{
         id: 'multimedia-programas',
-        content: 'Multimedia Programas',
+        content: 'Multimedia<br>Programas',
         className: 'multimedia-programas'
       }]
-    },
-
-    dvrStore () {
-      return this.$store.getters.selectedStoreDetails
     },
 
     options () {
       return {
         editable: {
-          add: true,
+          add: false,
           updateTime: true
         },
+        // align: 'center',
         selectable: true,
         multiselect: false,
         multiselectPerGroup: false,
@@ -127,19 +131,20 @@ export default {
         stack: true,
         configure: false,
         groupEditable: true,
-        max: moment(this.dvrAvailableMax).add(15, 'minutes'),
-        min: moment(this.dvrAvailableMin).subtract(1, 'hours'),
-        start: moment(this.dvrAvailableMax).subtract(6, 'hours'),
+        max: moment(this.dvrAvailableMax).add(5, 'minutes'),
+        min: moment(this.dvrAvailableMin).subtract(1, 'days'),
         itemsAlwaysDraggable: true,
-        zoomMin: 10000,
-        zoomMax: 172800000,
+        // zoomMin: 100000,
+        zoomMax: 86400000,
         showCurrentTime: false,
         orientation: {
           axis: 'both'
         },
         snap: null,
         margin: {
-          item: 0
+          item: {
+            horizontal: 0
+          }
         },
         moment: moment,
         onInitialDrawComplete: () => {
@@ -149,30 +154,34 @@ export default {
           this.endBar = null
           this.startBar = null
 
-          this.$watch('videoSource', this.watchVideoSource)
+          this.focusItem()
+
+          this.setTimeBars()
+
           this.$watch('videoTime', this.watchVideoTime)
 
-          if (this.fragmentItems) {
-            this.timeline.focus(this.fragmentItems.map(i => i.id))
-          }
-          this.setTimeBars()
+          // if (this.fragmentItems) {
+          //   this.timeline.focus(this.fragmentItems.map(i => i.id), { animation: false })
+          // }
         },
-        onUpdate: (item, callback) => {
-          if (this.timeline.getSelection() !== [item.id]) {
-            this.timeline.setSelection(item.id, {
-              focus: true
-            })
-          }
-          callback(item)
-        },
-        onAdd: (item, callback) => {
-          item.className = 'fragment'
-          item.group = 'fragments'
-          item.end = moment(item.start).add(15, 'minutes')
-          const duration = moment(item.end).diff(item.start, 'seconds', true)
-          this.$store.commit('ADD_FRAGMENT', { start: item.start, duration })
-          callback(null)
-        },
+        // onUpdate: (item, callback) => {
+        //   if (this.timeline.getSelection() !== [item.id]) {
+        //     this.timeline.setSelection(item.id, {
+        //       focus: true
+        //     })
+        //   }
+        //   callback(item)
+        // },
+        // onAdd: (item, callback) => {
+        //   console.log(item)
+        //   if (item.group === 'fragments') {
+        //     item.className = 'fragment'
+        //     item.end = moment(item.start).add(15, 'minutes')
+        //     const duration = moment(item.end).diff(item.start, 'seconds', true)
+        //     this.$store.commit('ADD_FRAGMENT', { start: item.start, duration })
+        //   }
+        //   callback(null)
+        // },
         onRemove: (item, callback) => {
           this.$store.commit('DELETE_FRAGMENT', item.fragment)
           callback(null)
@@ -227,15 +236,17 @@ export default {
     videoItems () {
       return this.videos.map(video => {
         return {
-          id: `video-${video.id}`,
+          id: `video_${video.id}`,
           start: moment(video.start),
           end: moment(video.end),
+          type: 'range',
           group: 'videos',
-          className: `video ${video.status}`,
+          className: `video ${video.status} ${this.playerMode === 'video' && video.id === this.videoId ? 'vis-selected' : ''}`,
           selectable: true,
+          editable: false,
           content: video.status === 'STARTED'
             ? Math.round(video.progress * 100) + '%'
-            : moment.duration(video.duration, 'seconds').format('HH:mm:ss', { trim: false })
+            : `<div><img style="float: left; opacity: 0.3; display: block; position:absolute; padding-top:2px;" height="21" src="${backend.getThumbnailUrl(this.selectedStream, moment(video.start))}"><img style="float: right; opacity: 0.3; display: block; padding-top:2px;" height="21" src="${backend.getThumbnailUrl(this.selectedStream, moment(video.end))}"><div style="margin: 0 auto; text-align: center">${video.metadata.title || video.id}</div></div>`
         }
         // {
         //     id: 'conv_' + conv.id,
@@ -260,14 +271,15 @@ export default {
         })
         .map(clip => {
           return {
-            id: `multimedia-clip-${clip.id}`,
+            id: `multimedia-clip_${clip.id}`,
             type: 'point',
             start: moment(clip.fecha),
-            content: `<a target="_blank" href="http://captura-telesur.openmultimedia.biz/admin/clips/clip/${clip.id}"><img style="vertical-align: middle;" src="${clip.thumbnail_pequeno}" height="20" width="35"></a>`,
+            content: `<a target="_blank" href="http://captura-telesur.openmultimedia.biz/admin/clips/clip/${clip.id}/"><img style="vertical-align: middle;" src="${clip.thumbnail_pequeno}" height="20" width="35"></a>`,
             title: clip.titulo || 'Agregado por: ' + clip.usuario_creacion,
             selectable: false,
             group: 'multimedia-clips',
             limitSize: true,
+            editable: false,
             className: 'multimedia-clip ' + (clip.publicado ? 'published' : 'unpublished')
           }
         })
@@ -280,16 +292,17 @@ export default {
           return clip.tipo.slug === 'programa' && moment(clip.fecha).isAfter(moment(this.dvrAvailableMin).subtract(1, 'hours'))
         })
         .map(clip => {
-          const img = clip.programa ? clip.programa.imagen_url : clip.thumbnail_pequeno
+          const img = clip.programa ? clip.programa.imagen_url.replace('300x300', '40x40') : clip.thumbnail_pequeno.replace('160x120', '40x40')
           return {
-            id: `multimedia-programa-${clip.id}`,
+            id: `multimedia-programa_${clip.id}`,
             type: 'point',
             start: moment(clip.fecha),
-            content: `<a target="_blank" href="http://captura-telesur.openmultimedia.biz/admin/clips/clip/${clip.id}"><img style="vertical-align: middle;" src="${img}" height="20" width="35"></a>`,
+            content: `<a target="_blank" href="http://captura-telesur.openmultimedia.biz/admin/clips/clip/${clip.id}/"><img style="vertical-align: middle;" src="${img}" height="20" width="35"></a>`,
             title: clip.titulo || (clip.programa && clip.programa.nombre) || clip.id,
             selectable: false,
             group: 'multimedia-programas',
             limitSize: true,
+            editable: false,
             className: 'multimedia-programa ' + (clip.publicado ? 'published' : 'unpublished')
           }
         })
@@ -307,12 +320,14 @@ export default {
           return range.contains(moment(change.time)) && change.value >= this.userSettings.sceneChangeMinValue
         }).map(change => {
           return {
-            id: 'change_' + change.id,
+            id: 'scene-change_' + change.id,
             start: change.time,
+            end: change.time + 1,
             content: '',
-            group: 'sceneChanges',
+            group: 'scene-changes',
+            subgroup: 'scene-changes',
             className: 'scene-change',
-            type: 'point',
+            type: 'background',
             editable: false
           }
         })
@@ -331,7 +346,7 @@ export default {
           type: 'background',
           group: 'fragments',
           className: 'store',
-          content: 'Bloque ' + store.dvrStoreName.split('.').pop()
+          content: ''
         }
       })
     },
@@ -341,34 +356,63 @@ export default {
         const index = this.fragments.indexOf(frag)
         return {
           fragment: frag,
-          id: index,
+          id: `fragment_${index}`,
           start: moment(frag.start),
           end: moment(frag.start).add(moment.duration(frag.duration, 'seconds')),
-          editable: { updateTime: true, remove: this.fragments.length > 1, add: true },
-          className: 'fragment' + (frag === this.activeItem ? ' active' : ''),
-          content: `Fragmento ${index + 1}`,
+          editable: { updateTime: true, remove: this.fragments.length > 1 },
+          className: 'fragment' + (this.playerMode === 'fragment' && frag === this.activeItem ? ' vis-selected' : ''),
+          content: `${index + 1}`,
           group: 'fragments'
-          // title: 'nueva'
         }
       })
     }
   },
 
   methods: {
+    focusRange ({ start, end }) {
+      this.$nextTick(() => {
+        this.timeline.setWindow(moment(start).subtract(5, 'minutes'), moment(end).add(5, 'minutes'))
+      })
+    },
+
+    bestNewDuration (start) {
+      if (this.activeItem) {
+        return this.activeItem.duration
+      } else {
+        return 15 * 1000
+      }
+    },
+
     doubleClick (e) {
-      if (e.what === 'axis') {
+      console.log('double: ', e)
+      if (e.what === 'axis' || e.group === 'scene-changes') {
         if (this.dvrRange.contains(moment(e.time))) { // inside currently playing video
-          // console.log('no')
-          this.$store.commit('SET_SEEK_TO', moment(e.time).diff(moment(this.dvrStart), 'seconds'))
+          this.$store.commit('SET_SEEKTO', moment(e.time).diff(moment(this.dvrStart), 'seconds'))
         } else { // outside of playing video
-          const seekOffset = 60
-          this.$store.commit('SET_DVRSTART', moment(e.time).subtract(seekOffset, 'seconds'))
-          this.$nextTick().then(() => {
-            this.$store.commit('SET_SEEK_TO', seekOffset)
+          this.$store.dispatch('setDvr', {
+            start: e.time,
+            duration: this.activeItem.duration
           })
         }
-      } else if (e.item === 'fragment-dvr') {
-        this.timeline.focus(e.item)
+      } else if (e.group === 'fragments' && e.what === 'background') {
+        this.$store.commit('ADD_FRAGMENT', { start: e.time, duration: this.bestNewDuration(e.time) })
+      } else if (e.item) {
+        let match, start, end
+        match = e.item.match(/fragment_(.+)/)
+        if (match) {
+          const frag = this.fragments[parseInt(match[1])]
+          start = moment(frag.start)
+          end = moment(frag.start).add(frag.duration, 'seconds')
+        }
+        match = e.item.match(/video_(.+)/)
+        if (match) {
+          const video = this.videos.find(video => video.id === parseInt(match[1]))
+          start = video.start
+          end = video.end
+        }
+        if (start && end) {
+          this.focusRange({ start, end })
+        }
       }
     },
 
@@ -382,40 +426,32 @@ export default {
     },
 
     setTimeBars () {
-      const duration = moment.duration(this.dvrDuration, 'seconds')
-      const dvrEnd = moment(this.dvrStart).add(duration)
-      if (this.endBar) {
-        this.timeline.setCustomTime(dvrEnd, 'end')
-      } else {
-        this.timeline.addCustomTime(dvrEnd, 'end')
-      }
-      this.endBar = dvrEnd
-
-      if (this.startBar) {
-        this.timeline.setCustomTime(this.dvrStart, 'start')
-      } else {
-        this.timeline.addCustomTime(this.dvrStart, 'start')
-      }
-      this.startBar = this.dvrStart
-    },
-
-    watchVideoSource () {
       this.$nextTick(() => {
-        if (this.videoSource && this.timeline) {
-          // timeline.setCurrentTime(this.dvrStart)
-          const { start, end } = this.timeline.getWindow()
-          if (!moment.range(start, end).contains(this.dvrStart)) {
-            this.timeline.moveTo(this.dvrStart)
-            this.timeline.focus(this.fragmentItems.map(i => i.id))
-          }
-          this.setTimeBars()
+        const duration = moment.duration(this.dvrDuration, 'seconds')
+        const dvrEnd = moment(this.dvrStart).add(duration)
+        if (this.endBar) {
+          this.timeline.setCustomTime(dvrEnd, 'end')
+        } else {
+          this.timeline.addCustomTime(dvrEnd, 'end')
+        }
+        this.endBar = dvrEnd
+
+        if (this.startBar) {
+          this.timeline.setCustomTime(this.dvrStart, 'start')
+        } else {
+          this.timeline.addCustomTime(this.dvrStart, 'start')
+        }
+        this.startBar = this.dvrStart
+
+        if (!this.timeline.getSelection().length) {
+          this.timeline.setSelection(this.fragments.indexOf(this.activeItem))
         }
       })
     },
 
     watchVideoTime () {
       this.$nextTick(() => {
-        if (this.timeline) {
+        if (this.timeline && this.playerMode === 'fragment') {
           const time = moment(this.dvrStart).add(moment.duration(this.videoTime, 'seconds'))
           if (!this.currentBar) {
             this.currentBar = time
@@ -423,29 +459,34 @@ export default {
           } else {
             this.timeline.setCustomTime(time, 'current')
           }
-          // this.timeline.setCurrentTime(time)
           this.currentBar = time
-          // timeline.setCurrentTime()
         }
       })
     },
 
     selected ({ items }) {
-      console.log(items, 'selected')
-      if (items.length === 1) {
-        const item = items[0]
-        if (item.group === 'fragments') {
-          this.$store.commit('SET_DVRITEM', this.$store.state.fragments[item])
-        } else if (item.group === 'videos') {
-          console.log('VIDEOSSSSSS!!!!')
+      if (items.length) {
+        const m = items[0].match(/(.+)_(\d+)/)
+        if (m) {
+          const [mode, id] = [m[1], parseInt(m[2])]
+          switch (mode) {
+            case 'fragment':
+              this.$store.commit('SET_DVRITEM', this.fragments[id])
+              this.$store.commit('SET_PLAYERMODE', mode)
+              break
+            case 'video':
+              this.$router.push({ name: 'RecorderVideo', params: { videoId: id } })
+              break
+          }
         }
+      } else {
+        console.log('deselected')
       }
     },
 
     endSelected ({ id, time }) {
       if (id === 'end') {
         this.$store.dispatch('setDvrDuration', moment(time).diff(this.dvrStart, 'seconds', true))
-        // this.$store.commit('SET_DVRDURATION', )
       } else if (id === 'start') {
         this.$store.dispatch('setDvr', {
           start: moment(time),
@@ -453,46 +494,82 @@ export default {
         })
       }
     },
-    // focusItem (what) {
-    //   if (item && this.timeline) {
-    //     this.timeline.focus(this.fragmentItems)
-    //   }
-    // },
 
-    setDvrItem (itemId) {
-      // const conv = this.currentConversions.find(conv => conv.id === itemId)
-      // if (conv && this.timeline) {
-      //   this.$store.dispatch('setDvr', conv)
-      // timeline.setCurrentTime(conv.start)
-      // }
+    focusItem () {
+      this.$nextTick(() => {
+        if (this.playerMode === 'fragment' && this.activeItem) {
+          const { start, duration } = this.activeItem
+          const end = moment(start).add(duration, 'seconds')
+          this.timeline.setWindow(moment(start).subtract(5, 'minutes'), moment(end).add(5, 'minutes'))
+        } else if (this.playerMode === 'video' && this.selectedVideo) {
+          this.timeline.setWindow(
+            moment(this.selectedVideo.start).subtract(5, 'minutes'),
+            moment(this.selectedVideo.end).add(5, 'minutes')
+          )
+        }
+      })
+    }
+  },
+
+  watch: {
+    playerMode (val, oldVal) {
+      if (val && val !== oldVal) {
+        this.focusItem()
+      }
+    },
+
+    videoSource (val, oldVal) {
+      this.$nextTick(() => {
+        const playerMode = this.playerMode
+        if (val && (val !== oldVal) && this.timeline) {
+          if (playerMode === 'fragment') {
+            this.setTimeBars()
+            const { start, end } = this.timeline.getWindow()
+            if (!moment.range(start, end).contains(this.dvrRange)) {
+              this.focusItem()
+            }
+          } else if (playerMode === 'video') {
+            if (this.startBar) {
+              this.startBar = null
+              this.timeline.removeCustomTime('start')
+            }
+            if (this.endBar) {
+              this.endBar = null
+              this.timeline.removeCustomTime('end')
+            }
+            if (this.currentBar) {
+              this.currentBar = null
+              this.timeline.removeCustomTime('current')
+            }
+            this.focusItem()
+          }
+        }
+      })
     }
   },
 
   components: {
-    Timeline
+    VisTimeline
   }
 }
 </script>
 
 <style>
   .vis-timeline {
-    /*border: 2px solid purple;*/
     border: none;
-    /*font-family:  purisa, 'comic sans', cursive;*/
-    font-size: 12pt;
-    /*background: #ffecea;*/
+    font-size: 11pt;
   }
 
     .vis-item {
-      /*border-color: white;*/
-      /*border: 0px solid grey;*/
-      /*height: 28px;*/
-      /*margin-top: 2px;*/
-      /*margin-top: 1px;*/
-      /*background-color: pink;*/
-      /*font-size: 15pt;*/
-      /*color: 'black';*/
-      /*box-shadow: 5px 5px 12px rgba(128,128,128, 0.5);*/
+      border: none;
+      border: 0px solid grey;
+      color: white;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .vis-foreground .vis-group {
+      border-bottom: 1px solid #757575;
     }
 
     .vis-item img.tooltip {
@@ -509,7 +586,7 @@ export default {
     .vis-item.scene-change {
       background-color: white;
       width: 1px;
-      border:none;
+      border: none;
       stroke-width: 0;
       stroke: unset;
       height: 5px;
@@ -517,40 +594,36 @@ export default {
     }
 
     .vis-item.fragment {
-      background-color: #1565C0;
+      background-color: #01579B;
     }
 
     .vis-item.fragment.vis-selected {
-      background-color: #1E88E5;
-      border-color: #90CAF9;
+      background-color: #0288D1;
     }
-
-    .vis-item.fragment.active {
-      background-color: #039BE5;
-      border-color: black;
-    }
-
-
 
     .vis-item.store {
       opacity: 0.5;
-      color: #444;
+      border: none;
+      background-color: #616161;
     }
 
-    .vis-item.video {
-      background-color: yellow;
+    .vis-item.video.PENDING.vis-selected,
+    .vis-item.video.SUCCESS.vis-selected,
+    .vis-item.video.STARTED.vis-selected {
+      background-color: #558B2F;
     }
 
-    .vis-item.video.vis-selected {
-      border-color: #90CAF9;
+    .vis-item.video.vis-selected img {
+      opacity: 0.8 !important;
     }
 
-    .vis-item.video.SUCCESS {
-      background-color: green;
+    .vis-item.video.SUCCESS,
+    .vis-item.video.STARTED {
+      background-color: #33691E;
     }
 
-    .vis-item.video.SUCCESS.vis-selected {
-      background-color: darkgreen;
+    .vis-item.video.FAILURE {
+      background-color: red;
     }
 
     .vis-dot {
@@ -580,13 +653,8 @@ export default {
     }
 
     .vis-label {
-      color: #666 !important;
+      color: #757575 !important;
       /*font-size: 70%;*/
-    }
-
-    .vis-item.vis-selected {
-      border: 1px solid white;
-      /*background-color: lightgreen;*/
     }
 
     .vis-time-axis .vis-text {
@@ -601,17 +669,28 @@ export default {
 
     .vis-time-axis .vis-grid.vis-minor {
       border-width: 2px;
-      border-color: #555;
+      border-color: #424242;
     }
 
     .vis-time-axis .vis-grid.vis-major {
       border-width: 2px;
-      border-color: #888;
+      border-color: #757575;
     }
 
-    .vis-group.sceneChanges {
-      min-height: 6px;
+    .vis-group.scene-changes {
+      height: 6px;
       border: none;
+    }
+    .vis-labelset .vis-label.scene-changes {
+      min-height: 6px;
+    }
+
+    .vis-panel.vis-bottom, .vis-panel.vis-center, .vis-panel.vis-left, .vis-panel.vis-right, .vis-panel.vis-top {
+      border-color: #757575;
+    }
+
+    .vis-labelset .vis-label {
+      border-bottom: 1px solid #757575;
     }
 
     /*.vis-group.videos {

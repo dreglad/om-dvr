@@ -28,10 +28,10 @@ export default {
     const fnc = this.$store.getters.isAuthenticated ? checkSession : parseSession
     fnc(this.webAuth)
       .then((userIdentity) => {
-        this.$store.commit('RECEIVE_USER_IDENTITY', userIdentity)
+        this.$store.commit('RECEIVE_USERIDENTITY', userIdentity)
         this.$router.replace(this.$route.query.next || { name: 'Recorder' })
       })
-      .clusteratch(() => {
+      .catch(() => {
         this.webAuth.authorize()
       })
   },

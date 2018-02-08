@@ -47,63 +47,6 @@
     </v-list-tile>
 
     <v-divider />
-    <v-subheader>{{ $t('video_player') }}</v-subheader>
-
-    <v-list-tile>
-      <v-list-tile-action class="mr-2">
-        <v-switch v-model="nativeVideoControls"></v-switch>
-      </v-list-tile-action>
-      <v-list-tile-content>
-        <v-list-tile-title>{{ $t('native_controls') }}</v-list-tile-title>
-        <v-list-tile-sub-title>{{ $t('native_controls_text') }}</v-list-tile-sub-title>
-      </v-list-tile-content>
-    </v-list-tile>
-
-    <v-list-tile :disabled="nativeVideoControls">
-      <v-list-tile-action class="mr-2">
-        <v-switch v-model="videoHoverShadow"></v-switch>
-      </v-list-tile-action>
-      <v-list-tile-content>
-        <v-list-tile-title>{{ $t('hover_shadow') }}</v-list-tile-title>
-        <v-list-tile-sub-title>{{ $t('hover_shadow_text') }}</v-list-tile-sub-title>
-      </v-list-tile-content>
-    </v-list-tile>
-
-    <v-divider />
-    <v-subheader>{{ $t('labels.timeline') }}</v-subheader>
-
-    <v-list-tile>
-      <v-list-tile-action class="mr-2">
-        <v-switch v-model="onlyLeadingStore"></v-switch>
-      </v-list-tile-action>
-      <v-list-tile-content>
-        <v-list-tile-title>{{ $t('only_recent') }}</v-list-tile-title>
-              <v-list-tile-sub-title>{{ $t('only_recent_text') }}</v-list-tile-sub-title>
-      </v-list-tile-content>
-    </v-list-tile>
-
-    <v-list-tile>
-      <v-list-tile-action class="mr-2">
-        <v-switch v-model="showMultimediaClips"></v-switch>
-      </v-list-tile-action>
-      <v-list-tile-content>
-        <v-list-tile-title>{{ $t('show_multimedia_clips') }}</v-list-tile-title>
-              <v-list-tile-sub-title>{{ $t('show_multimedia_clips_text') }}</v-list-tile-sub-title>
-      </v-list-tile-content>
-    </v-list-tile>
-
-    <v-list-tile>
-      <v-list-tile-action class="mr-2">
-        <v-switch v-model="showMultimediaProgramas"></v-switch>
-      </v-list-tile-action>
-      <v-list-tile-content>
-        <v-list-tile-title>{{ $t('show_multimedia_programas') }}</v-list-tile-title>
-              <v-list-tile-sub-title>{{ $t('show_multimedia_programas_text') }}</v-list-tile-sub-title>
-      </v-list-tile-content>
-    </v-list-tile>
-
-
-    <v-divider />
     <v-subheader>{{ $t('scene_change_detection') }}</v-subheader>
 
     <v-list-tile>
@@ -145,6 +88,62 @@
         <v-list-tile-sub-title>{{ $t('scene_change_offset_text') }}s</v-list-tile-sub-title>
       </v-list-tile-content>
     </v-list-tile>
+
+    <v-divider />
+    <v-subheader>{{ $t('labels.timeline') }}</v-subheader>
+
+    <!-- <v-list-tile>
+      <v-list-tile-action class="mr-2">
+        <v-switch v-model="onlyLeadingStore"></v-switch>
+      </v-list-tile-action>
+      <v-list-tile-content>
+        <v-list-tile-title>{{ $t('only_recent') }}</v-list-tile-title>
+              <v-list-tile-sub-title>{{ $t('only_recent_text') }}</v-list-tile-sub-title>
+      </v-list-tile-content>
+    </v-list-tile> -->
+
+    <v-list-tile>
+      <v-list-tile-action class="mr-2">
+        <v-switch v-model="showMultimediaClips"></v-switch>
+      </v-list-tile-action>
+      <v-list-tile-content>
+        <v-list-tile-title>{{ $t('show_multimedia_clips') }}</v-list-tile-title>
+              <v-list-tile-sub-title>{{ $t('show_multimedia_clips_text') }}</v-list-tile-sub-title>
+      </v-list-tile-content>
+    </v-list-tile>
+
+    <v-list-tile>
+      <v-list-tile-action class="mr-2">
+        <v-switch v-model="showMultimediaProgramas"></v-switch>
+      </v-list-tile-action>
+      <v-list-tile-content>
+        <v-list-tile-title>{{ $t('show_multimedia_programas') }}</v-list-tile-title>
+              <v-list-tile-sub-title>{{ $t('show_multimedia_programas_text') }}</v-list-tile-sub-title>
+      </v-list-tile-content>
+    </v-list-tile>
+
+    <v-divider />
+    <v-subheader>{{ $t('video_player') }}</v-subheader>
+
+    <v-list-tile>
+      <v-list-tile-action class="mr-2">
+        <v-switch v-model="nativeVideoControls"></v-switch>
+      </v-list-tile-action>
+      <v-list-tile-content>
+        <v-list-tile-title>{{ $t('native_controls') }}</v-list-tile-title>
+        <v-list-tile-sub-title>{{ $t('native_controls_text') }}</v-list-tile-sub-title>
+      </v-list-tile-content>
+    </v-list-tile>
+
+    <!-- <v-list-tile :disabled="nativeVideoControls">
+      <v-list-tile-action class="mr-2">
+        <v-switch v-model="videoHoverShadow"></v-switch>
+      </v-list-tile-action>
+      <v-list-tile-content>
+        <v-list-tile-title>{{ $t('hover_shadow') }}</v-list-tile-title>
+        <v-list-tile-sub-title>{{ $t('hover_shadow_text') }}</v-list-tile-sub-title>
+      </v-list-tile-content>
+    </v-list-tile> -->
 
   </v-list>
 </template>

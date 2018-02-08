@@ -44,6 +44,12 @@ export default new Router({
           path: 'recorder',
           name: 'Recorder',
           alias: '',
+          children: [
+            {
+              path: 'video/:videoId',
+              name: 'RecorderVideo'
+            }
+          ],
           component: PageRecorder
         },
         {

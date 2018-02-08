@@ -29,45 +29,28 @@ import { mapActions } from 'vuex'
 export default {
   name: 'PageRecorder',
 
-  data () {
-    return {
-      conversionsIntervalId: null,
-      sceneChangesIntervalId: null
+  // mounted () {
+  //   // const ESC_KEY = 27
+  //   // document.addEventListener('keyup', (e) => {
+  //   //   if (this.dialog && e.keyCode === ESC_KEY) {
+  //   //     this.dialog = false
+  //   //   }
+  //   // })
+  // },
+
+  watch: {
+    '$route': {
+      handler (to, from) {
+        const videoId = to.params.videoId
+        if (videoId) {
+          this.$store.commit('SET_VIDEOID', parseInt(to.params.videoId))
+          this.$store.commit('SET_PLAYERMODE', 'video')
+        } else {
+          this.$store.commit('SET_PLAYERMODE', 'fragment')
+        }
+      },
+      immediate: true
     }
-  },
-
-  methods: {
-    ...mapActions([
-      'requestDvrStores',
-      'requestStores',
-      'requestSceneChanges'
-    ])
-  },
-
-  mounted () {
-    // this.$store.dispatch('requestConversions')
-    // this.conversionsIntervalId = setInterval(() => {
-    //   this.$store.dispatch('requestConversions')
-    // }, 5000)
-
-    // this.$store.dispatch('requestSceneChanges')
-    // this.sceneChangesIntervalId = setInterval(() => {
-    //   this.$store.dispatch('requestSceneChanges')
-    // }, 20000)
-    // this.requestDvrStores(this.$route.params.stream)
-    // this.requestStreams()
-
-    // const ESC_KEY = 27
-    // document.addEventListener('keyup', (e) => {
-    //   if (this.dialog && e.keyCode === ESC_KEY) {
-    //     this.dialog = false
-    //   }
-    // })
-  },
-
-  beforeDestroy () {
-    // clearInterval(this.conversionsIntervalId)
-    // clearInterval(this.sceneChangesIntervalId)
   },
 
   components: {
