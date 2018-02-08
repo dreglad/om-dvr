@@ -2,6 +2,7 @@
 import WowzaApi from '@/api/wowza'
 import _ from 'lodash'
 import urljoin from 'url-join'
+import backend from '@/api/backend'
 import Moment from 'moment'
 import { extendMoment } from 'moment-range'
 const moment = extendMoment(Moment)
@@ -10,12 +11,13 @@ require('moment-duration-format')
 export default {
 
   activeItem (state, getters) {
-    if (state.dvrItem) {
+    const [dvrItem, fragments] = [state.dvrItem, state.fragments]
+    if (dvrItem) {
       // Active item explicitly selected
-      return state.dvrItem
-    } else if (state.fragments.length) {
+      return dvrItem
+    } else if (fragments.length) {
       // First found fragment
-      return state.fragments[state.fragments.length - 1]
+      return fragments.slice(-1)[0]
     }
   },
 
@@ -119,20 +121,51 @@ export default {
   //   }
   // },
 
+  videoPoster (state, getters) {
+    if (getters.videoSource) {
+      switch (state.playerMode) {
+        case 'fragment':
+          return backend.getThumbnailUrl(getters.selectedStream, getters.activeItem.start)
+        case 'video':
+          if (getters.selectedVideo) {
+            return backend.getThumbnailUrl(getters.selectedStream, getters.selectedVideo.start)
+          }
+      }
+    }
+  },
+
   videoSource (state, getters) {
-    switch (state.selectedSource) {
+    const video = getters.selectedVideo
+    const storeDetails = getters.selectedStoreDetails
+    switch (state.playerMode) {
       case 'video':
-        return getters.selectedVideo.file.url
+        if (!video) return null
+        if (video.file && video.status === 'SUCCESS') {
+          return `${video.file}/index.m3u8`
+        } else if (video.sources.length) {
+          return video.sources[0]
+        } else {
+          return null
+        }
       case 'live':
         return getters.liveUrl
-      case 'dvr':
+      case 'fragment':
       default:
-        return getters.selectedStoreDetails && WowzaApi
-          .getPlaylistUrl({
-            stream: getters.selectedStream,
-            fragment: getters.activeItem
-          })
+        // console.log('aa', getters.selectedStoreDetails)
+        if (storeDetails) {
+          return WowzaApi
+            .getPlaylistUrl({
+              stream: getters.selectedStream,
+              fragment: getters.activeItem
+            })
+        }
     }
+  },
+
+  selectedVideo (state, getters) {
+    const videoId = state.videoId
+    const videos = state.videos
+    return videos.find(video => video.id === videoId)
   },
 
   currentConversions (state, getters) {

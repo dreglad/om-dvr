@@ -9,7 +9,7 @@ Vue.use(Vuex)
 
 const debug = process.env.NODE_ENV !== 'production'
 
-const version = '0.3.3'
+const version = '0.3.7'
 
 const state = {
   // i18n
@@ -47,8 +47,9 @@ const state = {
   seekTo: null,
   playing: false,
   ended: false,
-  selectedSource: null,
+  playerMode: 'fragment',
   playerDuration: null,
+  videoId: null,
 
   hoverTime: null,
 
@@ -88,7 +89,7 @@ export default new Vuex.Store({
   mutations,
   plugins: [
     createPersistedState({
-      key: 'om',
+      key: 'storage',
       paths: [
         'userSettings',
         'seenConversions',

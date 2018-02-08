@@ -37,14 +37,14 @@ export default {
     state.dvrItem = item
   },
 
-  RECEIVE_USER_IDENTITY (state, { authResult, user }) {
+  RECEIVE_USERIDENTITY (state, { authResult, user }) {
     state.accessToken = authResult.accessToken
     state.idToken = authResult.idToken
     state.user = user
     state.authExpirationDate = Date.now() + (authResult.expiresIn * 1000)
   },
 
-  FORGET_USER_IDENTITY (state) {
+  RESET_USERIDENTITY (state) {
     state.accessToken = null
     state.idToken = null
     state.user = null
@@ -72,7 +72,12 @@ export default {
   },
 
   RECEIVE_VIDEOS (state, videos) {
-    state.videos = videos
+    state.videos = videos.map(video => {
+      return {
+        ...video,
+        file: video.file
+      }
+    })
   },
 
   RECEIVE_MULTIMEDIA_ITEMS (state, items) {
@@ -83,7 +88,7 @@ export default {
     state.multimediaItems = []
   },
 
-  RECEIVE_SCENE_CHANGES (state, sceneChanges) {
+  RECEIVE_SCENECHANGES (state, sceneChanges) {
     state.sceneChanges = sceneChanges
   },
 
@@ -150,23 +155,27 @@ export default {
     Vue.set(state.seenConversions, state.streamId, state.conversions.map(conv => conv.id))
   },
 
-  RESET_CONVERSIONS (state) {
-    state.conversions = []
+  RESET_VIDEOS (state) {
+    state.videos = []
   },
 
   SET_USERSETTINGS_DRAWER (state, value) {
     state.userSettings.drawer = !!value
   },
 
-  SET_VIDEO_SOURCE (state, source) {
-    state.videoSource = source
+  SET_VIDEOID (state, id) {
+    state.videoId = id
   },
 
-  SET_VIDEO_TIME (state, videoTime) {
+  SET_VIDEOTIME (state, videoTime) {
     state.videoTime = videoTime
   },
 
-  SET_SEEK_TO (state, seekTo) {
+  RESET_VIDEOTIME (state) {
+    state.videoTime = 0
+  },
+
+  SET_SEEKTO (state, seekTo) {
     state.seekTo = seekTo
   },
 
@@ -178,8 +187,20 @@ export default {
     state.isLive = !!isLive
   },
 
+  SET_PLAYERMODE (state, mode) {
+    state.playerMode = mode
+  },
+
+  RESET_PLAYERMODE (state) {
+    state.playerMode = 'fragment'
+  },
+
   SET_PLAYERDURATION (state, duration) {
     state.playerDuration = duration
+  },
+
+  RESET_PLAYERDURATION (state) {
+    state.playerDuration = null
   },
 
   SET_PLAYING (state, playing) {

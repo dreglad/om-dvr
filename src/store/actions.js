@@ -55,16 +55,6 @@ export default {
     return promise
   },
 
-  // requestDvrStores ({ commit, state, getters, dispatch }, defaultStream) {
-  //   wowzaApi.getStores(({ stores, conversions }) => {
-  //     commit('RECEIVE_DVRSTORES', stores)
-  //     commit('RECEIVE_CONVERSIONS', conversions)
-  //     // select first stream if none selected
-  //     if (state.stream == null && getters.streams.length) {
-  //       dispatch('selectStream', defaultStream || getters.streams[0])
-  //     }
-  //   })
-  // },
   addFragment ({ state, getters, commit }, { start = null, duration = null } = {}) {
     if (!start) {
       if (getters.activeItem) {
@@ -73,7 +63,7 @@ export default {
         start = moment(getters.dvrAvailableMax).subtract(state.userSettings.defaultDvrDuration + 60, 'seconds')
       }
     }
-    if (start.isBefore(getters.dvrAvailableMin)) {
+    if (getters.dvrAvailableMin.isAfter(start)) {
       start = getters.dvrAvailableMin
     }
     if (!duration) {
@@ -105,31 +95,32 @@ export default {
 
   selectStream ({ commit, state, dispatch }, stream) {
     commit('RESET_DVRSORE_DETAILS')
-    commit('RESET_CONVERSIONS')
+    commit('RESET_VIDEOS')
     commit('RESET_MULTIMEDIAITEMS')
-    commit('SET_VIDEO_TIME', 0)
+    commit('RESET_VIDEOTIME')
+    commit('RESET_PLAYERDURATION')
     commit('SET_STREAMID', stream.id)
     commit('SET_PREVIOUS_STREAMID', stream.id)
-    // commit('RESET_FRAGMENTS', [])
+    commit('RESET_FRAGMENTS', [])
+    // commit('RESET_PLAYERMODE')
     dispatch('requestStreamDetails', stream).then(() => {
-      dispatch('requestMultimediaItems')
       if (!state.fragments.length) {
         dispatch('addFragment')
       }
+      // dispatch('requestMultimediaItems')
     })
   },
 
   getDvrStoreDetails ({ commit }, dvrStore) {
     return wowzaApi.getStoreDetails(dvrStore.name, details => {
       commit('RECEIVE_DVRSTORE_DETAILS', details)
-      // if (moment(start).add(getters.dvrDuration, 'seconds').isAfter(getters.dvrAvailableMax)) {
-      //   commit('SET_DVRDURATION', moment(getters.dvrAvailableMax).diff(start, 'seconds'))
-      // }
     })
   },
 
-  setDvrDuration ({ commit, getters }, duration) {
-    commit('UPDATE_FRAGMENT', { fragment: getters.activeItem, duration })
+  setDvrDuration ({ getters, dispatch }, duration) {
+    if (getters.activeItem) {
+      dispatch('setDvr', { start: getters.activeItem.start, duration })
+    }
     // if (getters.dvrAvailableMax.isAfter(moment(getters.dvrStart).add(duration, 'seconds'))) {
     //   commit('SET_DVRDURATION', duration)
     // } else {
@@ -137,19 +128,22 @@ export default {
     // }
   },
 
-  setDvrStart ({ commit, getters }, start) {
+  setDvrStart ({ commit, getters, dispatch }, start) {
     if (getters.activeItem) {
-      commit('UPDATE_FRAGMENT', { fragment: getters.activeItem, start })
-    } else {
-      console.log('ERROR: tried to set dvr start with no active item')
+      dispatch('setDvr', { start, duration: getters.activeItem.duration })
     }
-    // console.log(getters.activeItem.start.format())
-    // if (getters.dvrAvailableMax.isBefore(moment(getters.dvrStart).add(getters.dvrDuration, 'seconds'))) {
-    //   commit('SET_DVRDURATION', Math.abs(moment(getters.dvrAvailableMax).diff(getters.dvrStart, 'seconds')))
-    // }
   },
 
-  setDvr ({ commit, getters }, { start, duration }) {
+  setDvr ({ commit, dispatch, getters }, { start, duration }) {
+    if (getters.dvrAvailableMin.isAfter(moment(start))) {
+      duration -= getters.dvrAvailableMin.diff(moment(start), 'seconds')
+      start = getters.dvrAvailableMin
+    }
+    if (getters.dvrAvailableMax.isBefore(moment(start).add(duration, 'seconds'))) {
+      duration = getters.dvrAvailableMax.diff(getters.dvrStart, 'seconds') - 1
+    }
+    commit('RESET_VIDEOTIME')
+    commit('RESET_PLAYERDURATION')
     commit('UPDATE_FRAGMENT', { fragment: getters.activeItem, start, duration })
   },
 
@@ -178,7 +172,7 @@ export default {
   },
 
   requestVideos ({ commit, getters, dispatch }, { poll = 0 } = {}) {
-    console.log('req vid')
+    // console.log('req vid')
     if (!getters.selectedStream) return
     const promise = backend.requestVideos(getters.selectedStream, videos => {
       commit('RECEIVE_VIDEOS', videos)
@@ -192,21 +186,24 @@ export default {
   },
 
   createVideo ({ dispatch, state, getters }, fragments) {
-    return backend.createVideo({
-      stream: getters.selectedStream,
-      fragments: fragments
-    }, video => {
-      dispatch('requestVideos')
-    })
+    return backend.createVideo(getters.selectedStream, fragments).catch((e) => { console.log(e) })
   },
 
   requestSceneChanges ({ commit, getters }) {
     if (getters.selectedStream) {
       return backend.requestSceneChanges(getters.selectedStream, sceneChanges => {
-        commit('RECEIVE_SCENE_CHANGES', sceneChanges)
+        commit('RECEIVE_SCENECHANGES', sceneChanges)
       })
     }
   },
+
+  removeVideo ({ dispatch }, video) {
+    return backend.removeVideo(video, () => dispatch('requestVideos'))
+  },
+
+  retryVideo ({ dispatch }, video) {
+    return backend.retryVideo(video, () => dispatch('requestVideos'))
+  }
 
   // requestVideo ({ getters }, fragment) {
   //   return backend.requestConversion({
@@ -218,13 +215,15 @@ export default {
   //     console.log(result)
   //   })
   // },
-
-  removeVideo ({ dispatch }, video) {
-    return backend.removeVideo(video, () => dispatch('requestVideos'))
-  },
-
-  retryVideo ({ dispatch }, video) {
-    return backend.retryVideo(video, () => dispatch('requestVideos'))
-  }
+  // requestDvrStores ({ commit, state, getters, dispatch }, defaultStream) {
+  //   wowzaApi.getStores(({ stores, conversions }) => {
+  //     commit('RECEIVE_DVRSTORES', stores)
+  //     commit('RECEIVE_CONVERSIONS', conversions)
+  //     // select first stream if none selected
+  //     if (state.stream == null && getters.streams.length) {
+  //       dispatch('selectStream', defaultStream || getters.streams[0])
+  //     }
+  //   })
+  // },
 
 }
