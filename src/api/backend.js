@@ -39,7 +39,7 @@ export default {
     }
   },
 
-  createVideo ({ stream, fragments }, cb) {
+  createVideo (stream, fragments) {
     const [first, last] = [fragments[0], fragments.slice(-1)[0]]
     return axios
       .post(urljoin(apiBase, 'videos/'), {
@@ -50,8 +50,6 @@ export default {
           return WowzaApi.getPlaylistUrl({ fragment, stream, adaptive: false })
         })
       })
-      .then(({ data }) => { cb(data) })
-      .catch(e => error(e))
   },
 
   requestSceneChanges (stream, cb) {
@@ -68,7 +66,8 @@ export default {
   },
 
   getThumbnailUrl (stream, time) {
-    const fileName = `${stream.metadata.wseStream}_${Math.ceil(moment(time).format('X'))}.jpg`
+    const queryTime = moment(time).subtract(9, 'seconds')
+    const fileName = `${stream.metadata.wseStream}_${Math.ceil(queryTime.format('X'))}.jpg`
     // console.log(stream.metadata.wseVodUrl)
     // console.log(urljoin(stream.metadata.wseVodUrl, 'thumbnails/' + fileName))
     return urljoin(stream.metadata.wseVodUrl, 'thumbnails', fileName)
@@ -88,6 +87,10 @@ export default {
   //     .catch(e => error(e))
   // },
 
+  patchVideo (id, data) {
+    return axios.patch(urljoin(apiBase, `videos/${id}/`), data)
+  },
+
   removeVideo ({ id }, cb) {
     return axios
       .delete(urljoin(apiBase, 'videos', id, '/'))
@@ -102,26 +105,26 @@ export default {
       .catch(e => error(e))
   },
 
-  distributeCaptura ({ profileId, url }) {
+  distributeCaptura ({ stream, url }) {
     return axios
-      .post('http://captura-telesur.openmultimedia.biz/cargar_captura/', querystring.stringify({
+      .post('/captura-api/cargar_captura/', querystring.stringify({
         archivo: url,
-        idioma: profileId === 3 ? 'es' : 'en'
+        idioma: stream.name === 'teleSUR HD' ? 'es' : 'en'
       }))
   },
 
-  distributeMultimedia ({ profileId, url, metadata }) {
+  distributeMultimedia ({ stream, url, metadata }) {
     return axios
-      .post('http://captura-telesur.openmultimedia.biz/crear_nuevo/', querystring.stringify({
+      .post('/captura-api/crear_nuevo/', querystring.stringify({
         archivo_url: url,
-        idioma: profileId === 1 ? 'es' : 'en',
+        idioma: stream.name === 'teleSUR HD' ? 'es' : 'en',
         publicado: 0,
         ...metadata
       }))
   },
 
   getMetadataOptions (resource, lang = 'es') {
-    return axios.get(`https://multimedia.telesurtv.net/${lang}/api/${resource}/?ultimo=300&auth=yik24`)
+    return axios.get(`https://multimedia.telesurtv.net/${lang === 'es' ? '' : `${lang}/`}api/${resource}/?ultimo=300&auth=yij2341`)
   },
 
   requestMultimediaClips (stream, params = { ultimo: 300 }) {

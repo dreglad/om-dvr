@@ -5,9 +5,10 @@
 // const moment = extendMoment(Moment)
 
 const conf = {
-  multimediaBase: 'http://multimedia.telesurtv.net',
-  capturaBase: 'http://captura-telesur.openmultimedia.biz',
-  storageBase: 'http://captura-saro.openmultimedia.biz:8020'
+  multimediaBase: 'https://multimedia.telesurtv.net',
+  // capturaBase: 'https://captura-telesur.openmultimedia.biz',
+  capturaBase: '/captura-api',
+  storageBase: 'https://captura-saro.openmultimedia.biz:8020'
 }
 
 // function error (e) {
