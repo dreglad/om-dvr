@@ -40,7 +40,10 @@
     "cancel": "Cancel",
     "ok": "Ok",
     "status": "Status",
-    "convert": "Convert"
+    "convert": "Convert",
+    "generate_video": "Generate video",
+    "title": "Title",
+    "description": "Description"
   },
   "data_table": {
     "items_per_page": "Items per page",

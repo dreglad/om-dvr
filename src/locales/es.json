@@ -40,7 +40,10 @@
     "cancel": "Cancelar",
     "ok": "Aceptar",
     "status": "Estado",
-    "convert": "Convertir"
+    "convert": "Convertir",
+    "generate_video": "Generar video",
+    "title": "Título",
+    "description": "Descripción"
   },
   "data_table": {
     "items_per_page": "Elementos por página",
