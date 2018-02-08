@@ -1,0 +1,201 @@
+<template>
+  <div ref="visualization"></div>
+</template>
+
+<script>
+import vis from 'vis'
+import _ from 'lodash'
+
+const events = [
+  'click',
+  'contextmenu',
+  'doubleClick',
+  'drop',
+  'mouseOver',
+  'mouseDown',
+  'mouseUp',
+  'mouseMove',
+  'groupDragged',
+  'changed',
+  'rangechange',
+  'rangechanged',
+  'select',
+  'itemover',
+  'itemout',
+  'timechange',
+  'timechanged'
+]
+
+export default {
+  name: 'VisTimeline',
+  props: {
+    groups: {
+      type: Array,
+      default: () => ([])
+    },
+    items: {
+      type: Array,
+      default: () => ([])
+    },
+    selection: {
+      type: [Array, String],
+      default: () => ([])
+    },
+    options: {
+      type: Object
+    },
+    withTimeTick: {
+      type: Boolean,
+      default: false
+    }
+  },
+  data: () => ({
+    timeline: null,
+    dataSet: new vis.DataSet()
+  }),
+  watch: {
+    items: {
+      deep: true,
+      handler (n, p) {
+        // console.log('starthandler')
+        if (!n || !p || n.length !== p.length || !_.isEqual(n, p)) {
+          //  // console.log('differed items', n, p)
+          //  // this.timeline.setItems(new vis.DataSet(n))
+          this.dataSet.update(n)
+          const remove = _.differenceWith(p, n, (val, otherVal) => val.id === otherVal.id)
+          // console.log(remove, 'to remove')
+          if (remove.length) {
+            this.dataSet.remove(remove)
+          }
+        }
+        // console.log('stophandler')
+      }
+    },
+    groups: {
+      deep: true,
+      handler (v) {
+        // console.log('papa con', v)
+        this.timeline.setGroups(new vis.DataSet(v))
+      }
+    },
+    options: {
+      deep: true,
+      handler (v) {
+        this.timeline.setOptions(v)
+      }
+    },
+    selection: {
+      deep: false,
+      handler (v) {
+        this.timeline.setSelection(v)
+      }
+    }
+  },
+  methods: {
+    addCustomTime (time, id) {
+      return this.timeline.addCustomTime(time, id)
+    },
+    destroy () {
+      this.timeline.destroy()
+    },
+    fit () {
+      this.timeline.fit()
+    },
+    focus (id, options) {
+      this.timeline.focus(id, options)
+    },
+    getCurrentTime () {
+      return this.timeline.getCurrentTime()
+    },
+    getCustomTime (id) {
+      return this.timeline.getCustomTime(id)
+    },
+    getEventProperties (event) {
+      return this.timeline.getEventProperties(event)
+    },
+    getItemRange () {
+      return this.timeline.getItemRange()
+    },
+    getSelection () {
+      return this.timeline.getSelection()
+    },
+    getVisibleItems () {
+      return this.timeline.getVisibleItems()
+    },
+    getWindow () {
+      return this.timeline.getWindow()
+    },
+    moveTo (time, options) {
+      this.timeline.moveTo(time, options)
+    },
+    on (event, callback) {
+      this.timeline.moveTo(event, callback)
+    },
+    off (event, callback) {
+      this.timeline.moveTo(event, callback)
+    },
+    redraw () {
+      this.timeline.redraw()
+    },
+    removeCustomTime (id) {
+      this.timeline.removeCustomTime(id)
+    },
+    setCurrentTime (time) {
+      this.timeline.setCurrentTime(time)
+    },
+    setCustomTime (time, id) {
+      this.timeline.setCustomTime(time, id)
+    },
+    setCustomTimeTitle (title, id) {
+      this.timeline.setCustomTimeTitle(title, id)
+    },
+    setData (object) {
+      this.timeline.setData(object)
+    },
+    setGroups (groups) {
+      this.timeline.setGroups(groups)
+    },
+    setItems (items) {
+      this.timeline.setItems(items)
+    },
+    setOptions (options) {
+      this.timeline.setOptions(options)
+    },
+    setSelection (ids, options) {
+      this.timeline.setSelection(ids, options)
+    },
+    setWindow (start, end, options, callback) {
+      this.timeline.setWindow(start, end, options, callback)
+    },
+    toggleRollingMode () {
+      this.timeline.toggleRollingMode()
+    },
+    zoomIn (percentage, options, callback) {
+      this.timeline.zoomIn(percentage, options, callback)
+    },
+    zoomOut (percentage, options, callback) {
+      this.timeline.zoomOut(percentage, options, callback)
+    }
+  },
+  mounted () {
+    console.log('mounted timeline')
+    const container = this.$refs.visualization
+    // const items = new vis.DataSet(this.items)
+    this.dataSet.update(this.items)
+    const groups = new vis.DataSet(this.groups)
+    this.timeline = new vis.Timeline(container, this.dataSet, groups, this.options)
+    events.forEach(eventName => this.timeline.on(
+      eventName, props => this.$emit(eventName, props)))
+    if (this.withTimeTick) {
+      this.timeline.on('currentTimeTick', props => this.$emit('currentTimeTick', props))
+    }
+  },
+  beforeDestroy () {
+    events.forEach(eventName => this.timeline.off(
+      eventName, props => this.$emit(eventName, props)))
+    if (this.withTimeTick) {
+      this.timeline.off('currentTimeTick', props => this.$emit('currentTimeTick', props))
+    }
+  }
+}
+</script>
