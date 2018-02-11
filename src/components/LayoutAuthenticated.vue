@@ -44,26 +44,6 @@
 
       <v-spacer />
 
-      <!-- Select date widget -->
-      <v-menu offset-y full-width right
-        v-if="$route.name == 'Recorder'"
-        :close-on-click="false"
-        :close-on-content-click="false"
-        transition="slide-y-transition"
-        :nudge-top="-10"
-        v-model="datePickerOpened"
-        z-index="1"
-      >
-        <v-btn icon
-          slot="activator"
-          @click="activateDatePicker"
-          :outline="datePickerOpened"
-        >
-          <v-icon>event</v-icon>
-        </v-btn>
-        <DvrTimePicker type="date" />
-      </v-menu>
-
       <v-tooltip bottom>
         <v-btn icon
           slot="activator"
@@ -144,8 +124,6 @@ export default {
       ],
       rightDrawer: false,
       title: 'Open Multimedia',
-      timePickerOpened: false,
-      datePickerOpened: false,
       liveTime: null,
       multimediaItemsInterval: null,
       streamDetailsInterval: null

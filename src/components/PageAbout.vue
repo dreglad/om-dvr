@@ -75,7 +75,7 @@ export default {
           date: moment('2018-02-10 22:18:09'),
           changes: [
             'Se actualiza petición de playlists de grabadora por cambios incompatibles en Wowza Streaming Engine 4.7.4',
-            'Se re estiliza y se mueve el reloj dentro del panel de fragmentos, lugar más adecuado que en el Toolbar principal',
+            'Se re-estilizaraon y se reubicaron los selectores de fecha y hora hacia el panel de fragmentos, lugar más adecuado que en el Toolbar principal',
             'Ahora al hacer doble click sobre las etiquetas de grupo sobre la línea de tiempo (lado izquierdo), se cambia cambia hacia el modo seleccionado (fragmentos o videos)',
             'Los fragmentos de grabación se reproducen en calidad constante 360p en lugar de calidad adaptativa (ABR) para favorecer la agilidad de reproducción sobre la calidad de imagen'
           ]

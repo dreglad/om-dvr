@@ -4,6 +4,11 @@ import _ from 'lodash'
 
 export default {
   name: 'TimePicker',
+  data () {
+    return {
+      selectingHour: false
+    }
+  },
   extends: VTimePicker,
   methods: {
     onChange () {
@@ -15,6 +20,7 @@ export default {
     onInput (value) {
       if (this.selectingHour) {
         this.inputHour = this.isAmPm ? this.convert12to24(value, this.period) : value
+        this.debounceEmitValue()
       } else {
         this.inputMinute = value
         this.debounceEmitValue()

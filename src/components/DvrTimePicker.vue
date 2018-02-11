@@ -5,7 +5,6 @@
     :allowed-dates="allowedDates"
     :landscape="$vuetify.breakpoint.smAndUp"
     :locale="$store.getters.locale"
-    :scrollable="true"
     class="elevation-11"
   />
   <TimePicker
@@ -16,30 +15,9 @@
     :format="$store.state.userSettings.clockFormat"
     :width="230"
     :landscape="false"
-    class="elevation-0"
+    class="elevation-0 t-picker"
+    autosave
   />
-  <!-- <div v-else style="position:relative;"> -->
-    <!-- <div style="position:absolute;z-index:1" class="pl-1 pt-3">
-      <v-btn-toggle v-model="timeMode" mandatory>
-        <v-tooltip bottom>
-          <v-btn slot="activator" flat><v-icon>first_page</v-icon></v-btn>
-          <span>Elegir tiempo inicial</span>
-        </v-tooltip>
-        <v-tooltip bottom>
-          <v-btn slot="activator" flat><v-icon>last_page</v-icon></v-btn>
-          <span>Elegir tiempo final</span>
-        </v-tooltip>
-         <v-tooltip bottom>
-          <v-btn slot="activator" flat><v-icon>skip_previous</v-icon></v-btn>
-          <span>Elegir tiempo inicial, fijando tiempo final</span>
-        </v-tooltip>
-        <v-tooltip bottom>
-          <v-btn slot="activator" flat><v-icon>skip_next</v-icon></v-btn>
-          <span>Elegir tiempo final, fijando tiempo incial</span>
-        </v-tooltip>
-      </v-btn-toggle>
-    </div> -->
-  <!-- </div> -->
 </template>
 
 <script>
@@ -183,33 +161,34 @@ export default {
 </script>
 
 <style>
-.picker__title {
+.t-picker .picker__title {
   padding: 0;
   margin: 0 auto;
 }
-.picker__body {
+.t-picker .picker__body {
   margin: 0 auto;
 }
-.time-picker-title {
+.t-picker .time-picker-title {
   justify-content: center;
 }
-.time-picker-title__ampm {
+.t-picker .time-picker-title__ampm {
   margin: 0;
   margin-left: 6px;
   margin-bottom: 3px;
 }
-.time-picker-title__time .picker__title__btn, .time-picker-title__time span {
+.t-picker .time-picker-title__time .picker__title__btn,
+.t-picker .time-picker-title__time span {
   height: 40px;
   font-size: 30px;
   text-align: center;
 }
-.picker__title__btn {
+.t-picker .picker__title__btn {
   color: #ccc;
 }
-.picker__title__btn.active {
+.t-picker .picker__title__btn.active {
   color: white;
 }
-.accent {
+.picker .accent {
   background-color: #1976d2 !important;
   border-color: #1976d2 !important;
 }

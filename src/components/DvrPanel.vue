@@ -34,6 +34,28 @@
           <v-icon>add</v-icon>
         </v-btn>
       </v-tab>
+
+      <v-spacer />
+
+      <!-- Select date widget -->
+      <v-menu offset-y full-width right
+        :close-on-click="true"
+        :close-on-content-click="true"
+        transition="slide-y-transition"
+        :nudge-top="-10"
+        v-model="datePickerOpened"
+        z-index="1"
+      >
+        <v-btn icon
+          right
+          slot="activator"
+          :outline="datePickerOpened"
+        >
+          <v-icon>event</v-icon>
+        </v-btn>
+        <DvrTimePicker type="date" />
+      </v-menu>
+
     </v-tabs>
 
     <v-tabs
@@ -204,7 +226,8 @@ export default {
       allSelected: false,
       snackbar: false,
       snackbarText: '',
-      snackbarColor: 'success'
+      snackbarColor: 'success',
+      datePickerOpened: false
     }
   },
 
