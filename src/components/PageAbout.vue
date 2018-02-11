@@ -52,7 +52,7 @@ export default {
 
   data () {
     return {
-      expanded: [ true, true, true ],
+      expanded: [ false, true, true ],
       versions: [
         {
           version: '0.4.0',
@@ -63,14 +63,35 @@ export default {
           ]
         },
         {
-          version: '0.3.8',
+          version: '0.3.10',
           date: null,
           changes: [
-            'Poder controlar con más agilidad los límites¸ novel de zoom y grados de libertad de la línea de tiempo en correspondencia con el reloj de pared para ayudar a transicionar a los usuarios habituados a trabajar en bloques discretos de 30 minutos'
+            'Poder controlar con más agilidad los límites¸ novel de zoom y grados de libertad de la línea de tiempo en correspondencia con el reloj de pared para ayudar a transicionar a los usuarios habituados a trabajar en bloques discretos de 30 minutos',
+            'Poder definir Series (programas), sus horarios esperados y sus secuencias de inicio/final y comerciales para conversión automática'
           ]
         },
         {
-          version: '0.3.7 [PRODUCCIÓN]',
+          version: '0.3.9 [PRODUCCIÓN]',
+          date: moment('2018-02-10 22:18:09'),
+          changes: [
+            'Se actualiza petición de playlists de grabadora por cambios incompatibles en Wowza Streaming Engine 4.7.4',
+            'Se re estiliza y se mueve el reloj dentro del panel de fragmentos, lugar más adecuado que en el Toolbar principal',
+            'Ahora al hacer doble click sobre las etiquetas de grupo sobre la línea de tiempo (lado izquierdo), se cambia cambia hacia el modo seleccionado (fragmentos o videos)',
+            'Los fragmentos de grabación se reproducen en calidad constante 360p en lugar de calidad adaptativa (ABR) para favorecer la agilidad de reproducción sobre la calidad de imagen'
+          ]
+        },
+        {
+          version: '0.3.8',
+          date: moment('2018-02-08 00:57:41'),
+          changes: [
+            'El botón de distribuir video se habilita sólo cundo es posible distribuir',
+            'Al iniciar la generación de un video, éste se selecciona automáticamente en la grabadora',
+            'Se agrega opción en los ajustes de usuario para elegir entre formato de reloj de 24hrs o AM/PM',
+            'Se ajustan -breakpoints- de tamaño de pantalla para dispositivos móviles'
+          ]
+        },
+        {
+          version: '0.3.7',
           date: moment('2018-02-07 01:03:29'),
           changes: [
             'Los campos de metadatos de videos ahora se sincronizan automáticamente con la BD',

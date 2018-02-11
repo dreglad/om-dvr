@@ -92,10 +92,11 @@
     <v-content>
       <v-alert
         :value="!latestVersion"
-        v-text="No tienes la versión más reciente, por favor refresca para actualizar"
         type="error"
         class="ma-4"
-      />
+      >
+        No tienes la versión más reciente, por favor refresca para actualizar
+      </v-alert>
       <keep-alive>
         <router-view />
       </keep-alive>
