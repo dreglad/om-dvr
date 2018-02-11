@@ -7,7 +7,7 @@ import WowzaApi from '@/api/wowza'
 const moment = extendMoment(Moment)
 require('moment-duration-format')
 
-// const apiBase = 'http://127.0.0.1:8000/api'
+// const apiBase = 'http://127.0.0.1/api'
 const apiBase = 'https://live2vod.openmultimedia.biz/api'
 
 function error (e) {
