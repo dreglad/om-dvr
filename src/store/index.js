@@ -57,7 +57,7 @@ const state = {
   pickerSide: 0,
 
   userSettings: {
-    clockFormar: 'ampm',
+    clockFormat: 'ampm',
     preferredLanguage: null,
     nativeVideoControls: false,
     videoHoverShadow: true,

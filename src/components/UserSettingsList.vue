@@ -22,12 +22,27 @@
           v-model="preferredLanguage"
           :items="languageOptions"
           append-icon=""
-          auto dense 
+          auto dense
         />
       </v-list-tile-action>
       <v-list-tile-content>
         <v-list-tile-title>{{ $t('language') }}</v-list-tile-title>
         <v-list-tile-sub-title>{{ $t('language_text') }}</v-list-tile-sub-title>
+      </v-list-tile-content>
+    </v-list-tile>
+
+    <v-list-tile>
+      <v-list-tile-action class="mr-2">
+        <v-select
+          v-model="clockFormat"
+          :items="clockFormatOptions"
+          append-icon=""
+          auto dense
+        />
+      </v-list-tile-action>
+      <v-list-tile-content>
+        <v-list-tile-title>{{ $t('clock_format') }}</v-list-tile-title>
+        <v-list-tile-sub-title>{{ $t('clock_format_text') }}</v-list-tile-sub-title>
       </v-list-tile-content>
     </v-list-tile>
 
@@ -156,6 +171,10 @@ export default {
 
   data () {
     return {
+      clockFormatOptions: [
+        { text: 'AM/PM', value: 'ampm' },
+        { text: '24 hrs', value: '24hr' }
+      ],
       durationOptions: [
         { text: '00:05', value: 60 * 5 },
         { text: '00:15', value: 60 * 15 },
@@ -281,6 +300,15 @@ export default {
       }
     },
 
+    clockFormat: {
+      get () {
+        return this.userSettings.clockFormat
+      },
+      set (value) {
+        this.$store.commit('SET_USERSETTINGNS_CLOCKFORMAT', value)
+      }
+    },
+
     languageOptions () {
       const locales = this.$store.state.locales
       return Object.keys(locales).map(locale => {
@@ -313,7 +341,9 @@ export default {
         hover_shadow: 'Shadow on mouse over',
         hover_shadow_text: 'Increases visibility of floating elements',
         show_multimedia_clips: 'Show Multimedia Clips',
-        show_multimedia_programas: 'Show Multimedia Shows'
+        show_multimedia_programas: 'Show Multimedia Shows',
+        clock_format: 'Clock format',
+        clock_format_text: 'AM/PM o formato 24 horas'
       },
       es: {
         general: 'General',
@@ -338,7 +368,9 @@ export default {
         hover_shadow: 'Oscurecer al pasar el cursor',
         hover_shadow_text: 'Aumenta la visibilidad de los elementos floatantes',
         show_multimedia_clips: 'Mostrar Clips de Multimedia',
-        show_multimedia_programas: 'Mostrar Programas de Multimedia'
+        show_multimedia_programas: 'Mostrar Programas de Multimedia',
+        clock_format: 'Formato del reloj',
+        clock_format_text: 'AM/PM or 24 hours clock format'
       }
     }
   }

@@ -24,7 +24,6 @@
 import DvrPlayer from '@/components/DvrPlayer'
 import DvrPanel from '@/components/DvrPanel'
 import DvrTimeline from '@/components/DvrTimeline'
-import { mapActions } from 'vuex'
 
 export default {
   name: 'PageRecorder',

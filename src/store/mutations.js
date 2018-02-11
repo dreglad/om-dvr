@@ -111,6 +111,10 @@ export default {
     state.userSettings.preferredLanguage = locale
   },
 
+  SET_USERSETTINGNS_CLOCKFORMAT (state, format) {
+    state.userSettings.clockFormat = format
+  },
+
   SET_USERSETTINGS_SCENECHANGEMINVALUE (state, value) {
     state.userSettings.sceneChangeMinValue = value
   },
