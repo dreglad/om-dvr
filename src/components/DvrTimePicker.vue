@@ -65,11 +65,18 @@ export default {
         }
       },
       set (value) {
-        this.$store.commit('SET_PLAYERMODE', 'fragment')
         const selectedMoment = moment(`${this.selectedDate} ${value}:0`, 'YYYY-MM-DD HH:mm:s')
         switch (this.timeMode) {
           case 0: // left
-            this.setDvrStart(selectedMoment)
+            const inRange = Object.values(this.dvrStoreDetails).some(store => {
+              return selectedMoment.range('hour').overlaps(store.utcRange)
+            })
+            if (inRange) {
+              this.setDvrStart(selectedMoment)
+            } else {
+              console.log('noooo')
+              this.setDvrStart(selectedMoment.minute(0))
+            }
             break
           case 1: // right
             this.setDvrStart(selectedMoment.subtract(moment.duration(this.dvrDuration, 'seconds')))
@@ -133,10 +140,12 @@ export default {
     },
 
     allowedMinutes (minute) {
-      if (this.selectedDate && this.selectedTime) {
-        const [ hour, , ] = this.selectedTime.split(':')
-        const selectedMoment = moment(`${this.selectedDate} ${hour}:${minute}`, 'YYYY-MM-DD HH:m')
-        const inRange = Object.values(this.dvrStoreDetails).some(store => {
+      const [selectedDate, selectedTime] = [this.selectedDate, this.selectedTime]
+      const storedetailValues = Object.values(this.dvrStoreDetails)
+      if (selectedDate && selectedTime) {
+        const [ hour, , ] = selectedTime.split(':')
+        const selectedMoment = moment(`${selectedDate} ${hour}:${minute}`, 'YYYY-MM-DD HH:m')
+        const inRange = storedetailValues.some(store => {
           return store.utcRange.contains(selectedMoment)
         })
         switch (this.timeMode) {

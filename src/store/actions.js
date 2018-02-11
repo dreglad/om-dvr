@@ -60,7 +60,13 @@ export default {
       if (getters.activeItem) {
         start = moment(getters.activeItem.start).add(2, 'minutes')
       } else {
-        start = moment(getters.dvrAvailableMax).subtract(state.userSettings.defaultDvrDuration + 60, 'seconds')
+        // start = moment(getters.dvrAvailableMax).subtract(state.userSettings.defaultDvrDuration + 60, 'seconds')
+        const max = moment(getters.dvrAvailableMax)
+        if (max.minute() > 30) {
+          start = moment(getters.dvrAvailableMax).minute(30).second(0)
+        } else {
+          start = moment(getters.dvrAvailableMax).minute(0).second(0)
+        }
       }
     }
     if (getters.dvrAvailableMin.isAfter(start)) {
@@ -139,6 +145,9 @@ export default {
     if (getters.dvrAvailableMin.isAfter(moment(start))) {
       duration -= getters.dvrAvailableMin.diff(moment(start), 'seconds')
       start = getters.dvrAvailableMin
+    }
+    if (getters.dvrAvailableMax.isBefore(start)) {
+      start.minute(0).second(0)
     }
     if (getters.dvrAvailableMax.isBefore(moment(start).add(duration, 'seconds'))) {
       duration = getters.dvrAvailableMax.diff(getters.dvrStart, 'seconds') - 1
