@@ -16,7 +16,6 @@
 </template>
 
 <script>
-// import _ from 'lodash'
 import { mapGetters, mapState } from 'vuex'
 import VisTimeline from './VisTimeline'
 import backend from '@/api/backend'
@@ -385,6 +384,15 @@ export default {
 
     doubleClick (e) {
       console.log('double: ', e)
+      if (e.what === 'group-label') {
+        switch (e.group) {
+          case 'fragments':
+            this.$store.commit('SET_PLAYERMODE', 'fragment')
+            break
+          case 'videos':
+            this.$store.commit('SET_PLAYERMODE', 'video')
+        }
+      }
       if (e.what === 'axis' || e.group === 'scene-changes') {
         if (this.dvrRange.contains(moment(e.time))) { // inside currently playing video
           this.$store.commit('SET_SEEKTO', moment(e.time).diff(moment(this.dvrStart), 'seconds'))
