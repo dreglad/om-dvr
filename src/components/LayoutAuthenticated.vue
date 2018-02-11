@@ -160,8 +160,9 @@ export default {
   data () {
     return {
       items: [
-        { icon: 'av_timer', title: 'links.recorder', to: { name: 'Recorder' } },
-        { icon: 'fiber_smart_record', title: 'links.videos', to: { name: 'Videos' } },
+        { icon: 'slow_motion_video', title: 'links.recorder', to: { name: 'Recorder' } },
+        { icon: 'video_library', title: 'links.videos', to: { name: 'Videos' } },
+        { icon: 'dvr', title: 'links.series', to: { name: 'Series' } },
         { icon: 'lightbulb_outline', title: 'links.about', to: { name: 'About' } }
       ],
       rightDrawer: false,
@@ -202,6 +203,7 @@ export default {
     this.$store.dispatch('requestStreams', { poll: 45000 }).then(() => {
       this.$store.dispatch('requestVideos', { poll: 2000 })
 
+      this.$store.dispatch('requestSeries', { poll: 320000 })
       this.$store.dispatch('requestSceneChanges')
 
       this.multimediaItemsInterval = setInterval(() => {

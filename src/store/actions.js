@@ -96,6 +96,7 @@ export default {
   selectStream ({ commit, state, dispatch }, stream) {
     commit('RESET_DVRSORE_DETAILS')
     commit('RESET_VIDEOS')
+    commit('RESET_SERIES')
     commit('RESET_MULTIMEDIAITEMS')
     commit('RESET_VIDEOTIME')
     commit('RESET_PLAYERDURATION')
@@ -181,6 +182,19 @@ export default {
       promise
         .then(() => { setTimeout(() => dispatch('requestVideos', { poll }), poll) })
         .catch(() => { setTimeout(() => dispatch('requestVideos', { poll }), poll) })
+    }
+    return promise
+  },
+
+  requestSeries ({ commit, getters, dispatch }, { poll = 0 } = {}) {
+    if (!getters.selectedStream) return
+    const promise = backend.requestSeries(getters.selectedStream).then(({ data }) => {
+      commit('RECEIVE_SERIES', data)
+    })
+    if (poll) {
+      promise
+        .then(() => { setTimeout(() => dispatch('requestSeries', { poll }), poll) })
+        .catch(() => { setTimeout(() => dispatch('requestSeries', { poll }), poll) })
     }
     return promise
   },

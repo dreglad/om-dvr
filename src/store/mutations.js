@@ -80,6 +80,10 @@ export default {
     })
   },
 
+  RECEIVE_SERIES (state, series) {
+    state.series = series
+  },
+
   RECEIVE_MULTIMEDIA_ITEMS (state, items) {
     state.multimediaItems = items
   },
@@ -157,6 +161,10 @@ export default {
 
   RESET_VIDEOS (state) {
     state.videos = []
+  },
+
+  RESET_SERIES (state) {
+    state.series = []
   },
 
   SET_USERSETTINGS_DRAWER (state, value) {

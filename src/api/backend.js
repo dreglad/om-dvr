@@ -39,6 +39,12 @@ export default {
     }
   },
 
+  requestSeries (stream) {
+    return axios.get(urljoin(apiBase, 'series/'), {
+      params: { stream: stream.id }
+    })
+  },
+
   createVideo (stream, fragments) {
     const [first, last] = [fragments[0], fragments.slice(-1)[0]]
     return axios
@@ -49,6 +55,14 @@ export default {
         sources: fragments.map(fragment => {
           return WowzaApi.getPlaylistUrl({ fragment, stream, adaptive: false })
         })
+      })
+  },
+
+  createSeries (stream, series) {
+    return axios
+      .post(urljoin(apiBase, 'series/'), {
+        stream: stream.id,
+        ...series
       })
   },
 

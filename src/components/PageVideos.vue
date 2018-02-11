@@ -28,7 +28,6 @@
             </td>
             <td v-else-if="props.item.status == 'FAILED'">
                 <span><v-icon small :color="progressColor(props.item)">{{ progressIcon(props.item) }}</v-icon></span>
-              </v-progress-circular>
             </td>
             <td v-else>{{ $t(`video_status.${props.item.status}`) }}</td>
             <!-- <td>{{ props.item.created_at.format('lll') }}</td> -->
@@ -91,7 +90,7 @@
                   :to="{ name: 'RecorderVideo', params: { videoId: props.item.id } }"
                   class="mx-0"
                 >
-                  <v-icon>av_timer</v-icon>
+                  <v-icon>slow_motion_video</v-icon>
                 </v-btn>
                 <span>Ver en la grabadora</span>
               </v-tooltip>
@@ -118,7 +117,7 @@
 </template>
 
 <script>
-import { mapActions, mapState, mapGetters } from 'vuex'
+import { mapActions, mapState } from 'vuex'
 import DistributeList from '@/components/DistributeList'
 import VideoThumbnail from '@/components/VideoThumbnail'
 import moment from 'moment'

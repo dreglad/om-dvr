@@ -33,35 +33,32 @@ const state = {
   streams: [],
   dvrStores: {},
   dvrStoreDetails: {},
-  conversions: [],
-  videos: [],
   sceneChanges: [],
   currentStoreName: null,
   multimediaItems: [],
+  videos: [],
+  series: [],
 
   // Selected
+  playerMode: 'fragment',
   streamId: null,
+  dvrItem: null,
+  videoId: null,
+  fragments: [],
 
   // Ephemeral video state
   videoTime: 0,
   seekTo: null,
   playing: false,
   ended: false,
-  playerMode: 'fragment',
   playerDuration: null,
-  videoId: null,
-
   hoverTime: null,
-
-  fragments: [],
-  dvrItem: null,
 
   pickerSide: 0,
 
   userSettings: {
+    clockFormar: 'ampm',
     preferredLanguage: null,
-    username: 'admin',
-    password: 'passpass',
     nativeVideoControls: false,
     videoHoverShadow: true,
     onlyLeadingStore: true,
@@ -77,7 +74,6 @@ const state = {
     showMultimediaClips: true,
     showMultimediaProgramas: true
   },
-  seenConversions: {},
   previousStreamId: null,
   version: version
 }

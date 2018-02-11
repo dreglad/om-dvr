@@ -10,6 +10,7 @@ import LayoutAuthenticated from '@/components/LayoutAuthenticated'
 import PageAuthSignIn from '@/components/PageAuthSignIn'
 import PageAuthSignOut from '@/components/PageAuthSignOut'
 import PageVideos from '@/components/PageVideos'
+import PageSeries from '@/components/PageSeries'
 import PageAbout from '@/components/PageAbout'
 import PageRecorder from '@/components/PageRecorder'
 
@@ -56,6 +57,11 @@ export default new Router({
           path: 'videos',
           name: 'Videos',
           component: PageVideos
+        },
+        {
+          path: 'series',
+          name: 'Series',
+          component: PageSeries
         },
         {
           path: 'about',

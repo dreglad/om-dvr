@@ -13,7 +13,8 @@
     "recorder": "Recorder",
     "videos": "Videos",
     "dashboard": "Dashboard",
-    "about": "About"
+    "about": "About",
+    "series": "Series"
   },
   "userSettings": {
     "logout": "Log out",
