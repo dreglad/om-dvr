@@ -598,7 +598,7 @@ export default {
     }
 
     .vis-item.fragment.vis-selected {
-      background-color: #0288D1;
+      background-color: #1976d2;
     }
 
     .vis-item.store {

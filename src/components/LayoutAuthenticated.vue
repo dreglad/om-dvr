@@ -44,30 +44,6 @@
 
       <v-spacer />
 
-      <!-- Select time widget -->
-      <v-menu lazy
-        v-model="timePickerOpened"
-        v-if="$route.name == 'Recorder'"
-        :close-on-click="false"
-        :close-on-content-click="false"
-        :z-index="1"
-        :nudge-top="-10"
-        transition="slide-y-transition"
-        offset-y right full-width
-      >
-        <v-btn icon
-          slot="activator"
-          :outline="timePickerOpened"
-          @click="activateTimePicker"
-        >
-          <v-icon>query_builder</v-icon>
-        </v-btn>
-        <DvrTimePicker
-          v-if="timePickerOpened"
-          type="time"
-        />
-      </v-menu>
-
       <!-- Select date widget -->
       <v-menu offset-y full-width right
         v-if="$route.name == 'Recorder'"

@@ -1,5 +1,5 @@
 <template>
-  <v-card v-if="selectedStream && videoSource" class="elevation-6">
+  <v-card v-if="selectedStream" class="elevation-6">
 
     <v-tabs
       v-if="playerMode === 'fragment'"
@@ -45,10 +45,48 @@
       <v-tab href="#video-general">Video #{{ selectedVideo.id }}</v-tab>
     </v-tabs>
 
-    <v-card-text v-if="playerMode === 'fragment'">
-      <div class="subheading">{{ selectedFragmentStart.format('LL') }}</div>
-      <div class="display-2">{{ selectedDuration.format('hh:mm:ss', { trim: false }) }}</div>
-      <div class="headline"><v-icon>query_builder</v-icon> {{ selectedFragmentStart.format('HH:mm:ss') }} a {{ selectedFragmentEnd.format('HH:mm:ss') }}</div>
+    <v-card-text v-if="playerMode === 'fragment'" class="pa-1">
+
+      <v-container fluid grid-list-md>
+        <v-layout row wrap>
+          <v-flex xs12 sm4 class="text-xs-center pr-3">
+            <div class="subheading">{{ selectedFragmentStart.format('LL') }}</div>
+            <div class="display-1">{{ selectedDuration.format('hh:mm:ss', { trim: false }) }}</div>
+            <div class="subheading"><v-icon small>query_builder</v-icon> {{ selectedFragmentStart.format('HH:mm:ss') }} a {{ selectedFragmentEnd.format('HH:mm:ss') }}</div>
+
+            <v-btn small
+              v-if="allSelected && fragments.length > 1"
+              @click="createVideo(false)"
+              color="light-blue darken-4"
+            >
+              Generar {{ fragments.length }} videos <v-icon right>fiber_smart_record</v-icon>
+            </v-btn>
+            <v-btn small
+              v-if="allSelected"
+              @click="createVideo(true)"
+              color="light-blue darken-4"
+            >
+              Generar un video con {{ fragments.length }} fragmentos <v-icon right>fiber_manual_record</v-icon>
+            </v-btn>
+            <v-btn small
+              v-else
+              @click="createVideo(false)"
+              color="light-blue darken-4"
+            >
+              {{ $t('labels.generate_video') }}
+              <v-icon right>fiber_smart_record</v-icon>
+            </v-btn>
+          </v-flex>
+          <v-flex xs12 sm8 class="text-xs-center pr-3">
+            <DvrTimePicker
+              v-if="!this.allSelected"
+              type="time" />
+            <div v-else class="display-2">
+              {{ fragments.length }}
+            </div>
+          </v-flex>
+        </v-layout>
+      </v-container>
     </v-card-text>
 
     <v-card-text
@@ -58,7 +96,7 @@
       <!-- <div class="display-2">{{ moment.duration(selectedVideo.duration).format('hh:mm:ss', { trim: false }) }}</div> -->
       <v-container fluid grid-list-md>
         <v-layout row wrap>
-          <v-flex xs12 sm3 class="text-xs-center pr-3">
+          <v-flex xs12 sm4 class="text-xs-center pr-3">
             <VideoThumbnail
               v-if="selectedVideo.status === 'SUCCESS'"
               :date="moment(selectedVideo.start).valueOf()"
@@ -81,10 +119,10 @@
               :nudge-top="-10"
               :style="{ width: '100%' }"
             >
-              <v-btn
+              <v-btn small block
                 slot="activator"
+                :disabled="selectedVideo.status !== 'SUCCESS'"
                 color="light-green darken-4"
-                small block
               >
                 <span>Distribuir <v-icon small>public</v-icon></span>
               </v-btn>
@@ -113,7 +151,7 @@
             </v-btn>
             <!-- </v-card-actions> -->
           </v-flex>
-          <v-flex xs12 sm9>
+          <v-flex xs12 sm8>
             <!-- <div class="body-2">{{ moment(selectedVideo.created_at).format('LLLL') }} <v-icon small>query_builder</v-icon> {{ moment(selectedVideo.start).format('HH:mm:ss') }} a {{ moment(selectedVideo.end).format('HH:mm:ss') }}</div> -->
             <v-text-field
               v-model="videoMetadataTitle"
@@ -136,31 +174,6 @@
       </v-container>
     </v-card-text>
 
-    <v-card-actions v-if="playerMode === 'fragment'">
-      <v-btn small
-        v-if="allSelected && fragments.length > 1"
-        @click="createVideo(false)"
-        color="light-blue darken-4"
-      >
-        Generar {{ fragments.length }} videos <v-icon right>fiber_smart_record</v-icon>
-      </v-btn>
-      <v-btn small
-        v-if="allSelected"
-        @click="createVideo(true)"
-        color="light-blue darken-4"
-      >
-        Generar un video con {{ fragments.length }} fragmentos <v-icon right>fiber_manual_record</v-icon>
-      </v-btn>
-      <v-btn small
-        v-else
-        @click="createVideo(false)"
-        color="light-blue darken-4"
-      >
-        {{ $t('labels.generate_video') }}
-        <v-icon right>fiber_smart_record</v-icon>
-      </v-btn>
-    </v-card-actions>
-
     <v-snackbar
       v-model="snackbar"
       :timeout="6000"
@@ -174,9 +187,11 @@
 </template>
 
 <script>
+import DvrTimePicker from '@/components/DvrTimePicker'
 import DistributeList from './DistributeList'
 import VideoThumbnail from './VideoThumbnail'
 import { mapActions, mapGetters, mapState } from 'vuex'
+import _ from 'lodash'
 import backend from '@/api/backend'
 import moment from 'moment'
 require('moment-duration-format')
@@ -244,11 +259,9 @@ export default {
       },
       set (val, oldVal) {
         if (val !== oldVal) {
-          backend.patchVideo(this.selectedVideo.id, {
-            metadata: {
-              ...this.selectedVideo.metadata,
-              title: val
-            }
+          this.patchVideoMetadata(this.selectedVideo.id, {
+            ...this.selectedVideo.metadata,
+            title: val
           })
         }
       }
@@ -261,11 +274,9 @@ export default {
       },
       set (val, oldVal) {
         if (val !== oldVal) {
-          backend.patchVideo(this.selectedVideo.id, {
-            metadata: {
-              ...this.selectedVideo.metadata,
-              description: val
-            }
+          this.patchVideoMetadata(this.selectedVideo.id, {
+            ...this.selectedVideo.metadata,
+            description: val
           })
         }
       }
@@ -306,6 +317,10 @@ export default {
       'removeVideo'
     ]),
 
+    patchVideoMetadata: _.debounce(function (id, metadata) {
+      backend.patchVideo(id, metadata)
+    }, 500),
+
     createVideo (join) {
       this.$store
         .dispatch('createVideo', join ? this.fragments : [this.activeItem])
@@ -339,7 +354,13 @@ export default {
 
   components: {
     VideoThumbnail,
-    DistributeList
+    DistributeList,
+    DvrTimePicker
   }
 }
 </script>
+
+<style>
+
+
+</style>
