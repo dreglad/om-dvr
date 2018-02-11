@@ -80,7 +80,7 @@ export default {
   },
 
   getThumbnailUrl (stream, time) {
-    const queryTime = moment(time).subtract(9, 'seconds')
+    const queryTime = moment(time).subtract(11, 'seconds')
     const fileName = `${stream.metadata.wseStream}_${Math.ceil(queryTime.format('X'))}.jpg`
     // console.log(stream.metadata.wseVodUrl)
     // console.log(urljoin(stream.metadata.wseVodUrl, 'thumbnails/' + fileName))

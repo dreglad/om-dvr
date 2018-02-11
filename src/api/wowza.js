@@ -95,7 +95,7 @@ export default {
   // },
   getPlaylistUrl ({ stream, fragment, adaptive = true }) {
     const origin = adaptive ? stream.metadata.wseStreamingUrl : stream.metadata.wseStreamingUrlSecondary
-    const store = adaptive ? `smil:${stream.metadata.wseStream}.smil` : `${stream.metadata.wseStream}_1080p`
+    const store = adaptive ? `${stream.metadata.wseStream}_360p` : `${stream.metadata.wseStream}_1080p`
     const url = urljoin(origin, stream.metadata.wseApplication, store, 'playlist.m3u8')
     const qs = querystring.stringify({
       wowzadvrplayliststart: moment.utc(fragment.start).format('YYYYMMDDHHmmss'),
