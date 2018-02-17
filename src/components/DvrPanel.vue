@@ -6,8 +6,8 @@
       v-model="selectedTab"
       show-arrows
       color="light-blue darken-4"
+      slider-color="white"
     >
-      <v-tabs-slider color="white"></v-tabs-slider>
       <v-tab
         v-if="fragments.length > 1"
         href="#dvr-all"

@@ -63,15 +63,21 @@ export default {
           ]
         },
         {
-          version: '0.3.10',
+          version: '0.3.11',
           date: null,
           changes: [
-            'Poder controlar con más agilidad los límites¸ novel de zoom y grados de libertad de la línea de tiempo en correspondencia con el reloj de pared para ayudar a transicionar a los usuarios habituados a trabajar en bloques discretos de 30 minutos',
             'Poder definir Series (programas), sus horarios esperados y sus secuencias de inicio/final y comerciales para conversión automática'
           ]
         },
         {
-          version: '0.3.9 [PRODUCCIÓN]',
+          version: '0.3.10 [PRODUCCIÓN]',
+          date: moment('2018-02-16 23:09:24'),
+          changes: [
+            'Al elegir la posición final de un fragmento, ahora se utiliza la duración real en vez de la duración solicitada durante el cálculo de la nueva duración para procurar mayor presición con respecto al final seleccionado.'
+          ]
+        },
+        {
+          version: '0.3.9',
           date: moment('2018-02-10 22:18:09'),
           changes: [
             'Se actualiza petición de playlists de grabadora por cambios incompatibles en Wowza Streaming Engine 4.7.4',

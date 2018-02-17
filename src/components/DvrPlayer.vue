@@ -86,14 +86,12 @@ export default {
     ...mapState([
       'videoTime',
       'userSettings',
-      'playerDuration',
       'playerMode',
       'seekTo'
     ]),
 
     ...mapGetters([
       'dvrStart',
-      'dvrDuration',
       'videoSource',
       'videoPoster'
     ]),
@@ -105,7 +103,7 @@ export default {
     },
 
     duration () {
-      const [playerDuration, dvrDuration] = [this.playerDuration, this.dvrDuration]
+      const [playerDuration, dvrDuration] = [this.$store.state.playerDuration, this.$store.getters.dvrDuration]
       return playerDuration || dvrDuration
     },
 
@@ -189,7 +187,7 @@ export default {
         this.playerStartPosition = 0
         this.setDvr({
           start: moment(this.dvrStart).add(time, 'seconds'),
-          duration: this.dvrDuration - time
+          duration: this.duration - time
         })
       } else { // truncate to end
         this.playerStartPosition = time - 4.0
