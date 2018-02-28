@@ -10,6 +10,14 @@ require('moment-duration-format')
 
 export default {
 
+  canUndoFragment (state) {
+    return state.fragmentDone.length > 1
+  },
+
+  canRedoFragment (state) {
+    return state.fragmentUndone.length
+  },
+
   activeItem (state, getters) {
     const [dvrItem, fragments] = [state.dvrItem, state.fragments]
     if (dvrItem) {

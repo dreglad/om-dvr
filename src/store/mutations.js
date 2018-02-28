@@ -2,12 +2,26 @@
 import Vue from 'vue'
 import Moment from 'moment'
 import { extendMoment } from 'moment-range'
+import _ from 'lodash'
 const moment = extendMoment(Moment)
 
 export default {
 
+  UNDO_FRAGMENT (state) {
+    state.fragmentUndone.push(state.fragmentDone.pop())
+    state.fragments = [...state.fragmentDone].pop()
+  },
+
+  REDO_FRAGMENT (state) {
+    const fragments = state.fragmentUndone.pop()
+    state.fragmentDone.push(fragments)
+    state.fragments = fragments
+  },
+
   ADD_FRAGMENT (state, { start, duration, selected = false }) {
     state.fragments.push({ start: moment(start).toISOString(), duration, selected })
+    state.fragmentDone.push(_.cloneDeep(state.fragments))
+    state.fragmentUndone = []
   },
 
   UPDATE_FRAGMENT (state, { fragment, start = null, duration = null, selected = null }) {
@@ -19,6 +33,8 @@ export default {
     // if (state.dvrItem === fragment) {
     //   state.dvrItem = updatedFrag
     // }
+    state.fragmentDone.push(_.cloneDeep(state.fragments))
+    state.fragmentUndone = []
   },
 
   DELETE_FRAGMENT (state, fragment) {
@@ -26,11 +42,15 @@ export default {
       state.dvrItem = null
     }
     state.fragments.splice(state.fragments.indexOf(fragment), 1)
+    state.fragmentDone.push(_.cloneDepp(state.fragments))
+    state.fragmentUndone = []
   },
 
   RESET_FRAGMENTS (state) {
     state.fragments = []
     state.dvrItem = null
+    state.fragmentDone = []
+    state.fragmentUndone = []
   },
 
   SET_DVRITEM (state, item) {

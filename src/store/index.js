@@ -9,7 +9,7 @@ Vue.use(Vuex)
 
 const debug = process.env.NODE_ENV !== 'production'
 
-const version = '0.3.10'
+const version = '0.3.11'
 
 const state = {
   // i18n
@@ -55,6 +55,9 @@ const state = {
   hoverTime: null,
 
   pickerSide: 0,
+
+  fragmentDone: [],
+  fragmentUndone: [],
 
   userSettings: {
     clockFormat: 'ampm',

@@ -52,7 +52,7 @@ export default {
 
   data () {
     return {
-      expanded: [ false, true, true ],
+      expanded: [ false, true ],
       versions: [
         {
           version: '0.4.0',
@@ -64,13 +64,14 @@ export default {
         },
         {
           version: '0.3.11',
-          date: null,
+          date: moment('2018-02-28 15:30:12'),
           changes: [
-            'Poder definir Series (programas), sus horarios esperados y sus secuencias de inicio/final y comerciales para conversión automática'
+            'Se agrega la capacidad de deshacer/rehacer cambios en los segmentos',
+            'EL segmento seleccionado al inicio ya no es el más reciente sino el bloque de media hora anterior, para que la duración inicial sea siempre la esperada (30 min)'
           ]
         },
         {
-          version: '0.3.10 [PRODUCCIÓN]',
+          version: '0.3.10',
           date: moment('2018-02-16 23:09:24'),
           changes: [
             'Al elegir la posición final de un fragmento, ahora se utiliza la duración real en vez de la duración solicitada durante el cálculo de la nueva duración para procurar mayor presición con respecto al final seleccionado.'

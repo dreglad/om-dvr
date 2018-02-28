@@ -63,9 +63,9 @@ export default {
         // start = moment(getters.dvrAvailableMax).subtract(state.userSettings.defaultDvrDuration + 60, 'seconds')
         const max = moment(getters.dvrAvailableMax)
         if (max.minute() > 30) {
-          start = moment(getters.dvrAvailableMax).minute(30).second(0)
-        } else {
           start = moment(getters.dvrAvailableMax).minute(0).second(0)
+        } else {
+          start = moment(getters.dvrAvailableMax).minute(0).second(0).subtract(30, 'minutes')
         }
       }
     }

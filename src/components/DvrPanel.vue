@@ -76,14 +76,29 @@
             <div class="display-1">{{ selectedDuration.format('hh:mm:ss', { trim: false }) }}</div>
             <div class="subheading"><v-icon small>query_builder</v-icon> {{ selectedFragmentStart.format('HH:mm:ss') }} a {{ selectedFragmentEnd.format('HH:mm:ss') }}</div>
 
-            <v-btn small
+            <v-btn small small
+              @click="$store.commit('UNDO_FRAGMENT')"
+              :disabled="!$store.getters.canUndoFragment"
+              color="light-blue darken-4"
+            >
+              <v-icon>undo</v-icon>
+            </v-btn>
+            <v-btn small small
+              @click="$store.commit('REDO_FRAGMENT')"
+              :disabled="!$store.getters.canRedoFragment"
+              color="light-blue darken-4"
+            >
+              <v-icon>redo</v-icon>
+            </v-btn>
+
+            <v-btn small block
               v-if="allSelected && fragments.length > 1"
               @click="createVideo(false)"
               color="light-blue darken-4"
             >
               Generar {{ fragments.length }} videos <v-icon right>fiber_smart_record</v-icon>
             </v-btn>
-            <v-btn small
+            <v-btn small block
               v-if="allSelected"
               @click="createVideo(true)"
               color="light-blue darken-4"
