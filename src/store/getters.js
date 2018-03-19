@@ -88,7 +88,8 @@ export default {
   liveUrl (state, getters) {
     if (getters.selectedStream) {
       const meta = getters.selectedStream.metadata
-      const streamName = `smil:${meta.wseStream}.smil`
+      // const streamName = `smil:${meta.wseStream}.smil`
+      const streamName = `${meta.wseStream}_360p`
       return urljoin(meta.wseStreamingUrl, meta.wseApplication, streamName, 'playlist.m3u8')
     }
   },

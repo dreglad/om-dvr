@@ -7,7 +7,7 @@ import { extendMoment } from 'moment-range'
 const moment = extendMoment(Moment)
 
 const _conf = {
-  baseUrl: 'https://wse-saro-api.openmultimedia.biz',
+  baseUrl: 'https://wsedvr.openmultimedia.biz',
   server: '_defaultServer_',
   vhost: '_defaultVHost_',
   application: 'live',

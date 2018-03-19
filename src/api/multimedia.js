@@ -8,7 +8,7 @@ const conf = {
   multimediaBase: 'https://multimedia.telesurtv.net',
   // capturaBase: 'https://captura-telesur.openmultimedia.biz',
   capturaBase: '/captura-api',
-  storageBase: 'https://captura-saro.openmultimedia.biz:8020'
+  storageBase: 'https://wsedvr.openmultimedia.biz:8020'
 }
 
 // function error (e) {
