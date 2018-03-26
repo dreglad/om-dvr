@@ -9,7 +9,7 @@ Vue.use(Vuex)
 
 const debug = process.env.NODE_ENV !== 'production'
 
-const version = '0.3.11'
+const version = '0.3.13'
 
 const state = {
   // i18n

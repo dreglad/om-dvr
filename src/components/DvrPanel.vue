@@ -1,5 +1,5 @@
 <template>
-  <v-card v-if="selectedStream" class="elevation-6">
+  <v-card v-if="selectedStream && $store.getters.activeItem" class="elevation-6">
 
     <v-tabs
       v-if="playerMode === 'fragment'"

@@ -156,7 +156,11 @@ export default {
     //   }, 10000)
     // })
     this.$store.dispatch('requestStreams', { poll: 45000 }).then(() => {
-      this.$store.dispatch('requestVideos', { poll: 2000 })
+      this.streamDetailsInterval = setInterval(() => {
+        this.$store.dispatch('requestStreamDetails', this.$store.getters.selectedStream)
+      }, 13000)
+
+      this.$store.dispatch('requestVideos', { poll: 6000 })
 
       this.$store.dispatch('requestSeries', { poll: 320000 })
       this.$store.dispatch('requestSceneChanges')
@@ -164,10 +168,6 @@ export default {
       this.multimediaItemsInterval = setInterval(() => {
         this.$store.dispatch('requestMultimediaItems')
       }, 30000)
-
-      this.streamDetailsInterval = setInterval(() => {
-        this.$store.dispatch('requestStreamDetails', this.$store.getters.selectedStream)
-      }, 13000)
     })
   },
 

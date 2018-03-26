@@ -35,7 +35,7 @@ export default {
     height: [Number, String],
     maxRetries: {
       type: Number,
-      default: 3,
+      default: 1,
       validator (value) {
         return value > 0
       }

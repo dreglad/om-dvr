@@ -92,7 +92,9 @@ export default {
   },
 
   RECEIVE_VIDEOS (state, videos) {
-    state.videos = videos.map(video => {
+    state.videos = videos.filter(video => {
+      return video.start && video.end
+    }).map(video => {
       return {
         ...video,
         file: video.file

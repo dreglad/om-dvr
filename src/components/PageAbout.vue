@@ -63,6 +63,20 @@ export default {
           ]
         },
         {
+          version: '0.3.13',
+          date: moment('2018-03-26 11:45:19'),
+          changes: [
+            'Se cirrige error donde el fragmento seleccionado no siempre se marcaba correctamente en la barra de tabs'
+          ]
+        },
+        {
+          version: '0.3.12',
+          date: moment('2018-03-21 18:39:01'),
+          changes: [
+            'Corrección de errores diversos en UI y flujo de consultas a la API que causaba situaciones de "race condition"'
+          ]
+        },
+        {
           version: '0.3.11',
           date: moment('2018-02-28 15:30:12'),
           changes: [

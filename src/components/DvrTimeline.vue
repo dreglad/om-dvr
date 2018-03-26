@@ -2,7 +2,7 @@
   <div>
     <!-- timeline -->
     <VisTimeline
-      v-if="selectedStream && videos.length"
+      v-if="selectedStream && videos.length && activeItem"
       ref="timeline"
       :items="allItems"
       :options="options"
