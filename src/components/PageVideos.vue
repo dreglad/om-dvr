@@ -11,7 +11,7 @@
         >
           <template slot="items" slot-scope="props">
             <td v-if="['STARTED', 'SUCCESS', 'FAILURE'].includes(props.item.status)">
-              <v-progress-circular :size="40" :width="2" class="ma-2"
+              <v-progress-circular :size="40" :width="1" class="ma-2"
                 :value="props.item.progress * 100"
                 :color="progressColor(props.item)"
               >

@@ -60,7 +60,7 @@ const state = {
   fragmentUndone: [],
 
   userSettings: {
-    clockFormat: 'ampm',
+    clockFormat: '24hr', // or "ampm"
     preferredLanguage: null,
     nativeVideoControls: false,
     videoHoverShadow: true,
