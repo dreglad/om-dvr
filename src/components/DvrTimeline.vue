@@ -383,7 +383,6 @@ export default {
     },
 
     doubleClick (e) {
-      console.log('double: ', e)
       if (e.what === 'group-label') {
         switch (e.group) {
           case 'fragments':

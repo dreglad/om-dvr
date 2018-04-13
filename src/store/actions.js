@@ -182,7 +182,6 @@ export default {
   },
 
   requestVideos ({ commit, getters, dispatch }, { poll = 0 } = {}) {
-    // console.log('req vid')
     if (!getters.selectedStream) return
     const promise = backend.requestVideos(getters.selectedStream, videos => {
       commit('RECEIVE_VIDEOS', videos)
