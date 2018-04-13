@@ -172,7 +172,6 @@ export default {
         //   callback(item)
         // },
         // onAdd: (item, callback) => {
-        //   console.log(item)
         //   if (item.group === 'fragments') {
         //     item.className = 'fragment'
         //     item.end = moment(item.start).add(15, 'minutes')

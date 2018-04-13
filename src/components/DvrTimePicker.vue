@@ -74,7 +74,6 @@ export default {
             if (inRange) {
               this.setDvrStart(selectedMoment)
             } else {
-              console.log('noooo')
               this.setDvrStart(selectedMoment.minute(0))
             }
             break

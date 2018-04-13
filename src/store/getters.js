@@ -160,7 +160,6 @@ export default {
         return getters.liveUrl
       case 'fragment':
       default:
-        // console.log('aa', getters.selectedStoreDetails)
         if (storeDetails) {
           return WowzaApi
             .getPlaylistUrl({

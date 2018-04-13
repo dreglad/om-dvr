@@ -45,9 +45,7 @@ export default {
   },
 
   getStoreDetails (store, cb) {
-    // console.log('aaap')
     return axios.get(`${dvrstoresBase}/${store}`).then(({ data }) => {
-      // console.log('ccc')
       const store = data.DvrConverterStore
       if ((store.utcEnd - store.utcStart) > 0) {
         cb(store)
@@ -58,7 +56,6 @@ export default {
   doConversionRequest ({ store, start, duration, filename }, cb, err) {
     axios.put(`${dvrstoresBase}/actions/expire`).then(() => {
       axios.put(`${dvrstoresBase}/actions/convert?${querystring.stringify({
-        // dvrConverterEndTime:
         dvrConverterStartTime: start,
         dvrConverterDuration: duration,
         dvrConverterOutputFilename: filename,

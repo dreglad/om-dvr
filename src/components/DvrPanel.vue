@@ -363,7 +363,6 @@ export default {
       this.$store
         .dispatch('createVideo', join ? this.fragments : [this.activeItem])
         .then(({ data }) => {
-          console.log('pppp', data)
           this.snackbarText = 'Video creado'
           this.snackbarColor = 'success'
           this.snackbar = true

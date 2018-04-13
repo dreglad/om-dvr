@@ -46,7 +46,6 @@ new Vue({
   watch: {
     locale: {
       handler (locale) {
-        console.log(locale)
         i18n.locale = locale
       },
       immediate: true

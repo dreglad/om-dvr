@@ -25,14 +25,9 @@ export default {
   },
 
   UPDATE_FRAGMENT (state, { fragment, start = null, duration = null, selected = null }) {
-    // console.log(fragment, 'aa')
-    // const old = { ...fragment }
     if (start) fragment.start = moment(start).toISOString()
     if (duration) fragment.duration = duration
     if (selected) fragment.selected = selected
-    // if (state.dvrItem === fragment) {
-    //   state.dvrItem = updatedFrag
-    // }
     state.fragmentDone.push(_.cloneDeep(state.fragments))
     state.fragmentUndone = []
   },

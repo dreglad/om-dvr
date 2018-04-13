@@ -57,24 +57,18 @@ export default {
     items: {
       deep: true,
       handler (n, p) {
-        // console.log('starthandler')
         if (!n || !p || n.length !== p.length || !_.isEqual(n, p)) {
-          //  // console.log('differed items', n, p)
-          //  // this.timeline.setItems(new vis.DataSet(n))
           this.dataSet.update(n)
           const remove = _.differenceWith(p, n, (val, otherVal) => val.id === otherVal.id)
-          // console.log(remove, 'to remove')
           if (remove.length) {
             this.dataSet.remove(remove)
           }
         }
-        // console.log('stophandler')
       }
     },
     groups: {
       deep: true,
       handler (v) {
-        // console.log('papa con', v)
         this.timeline.setGroups(new vis.DataSet(v))
       }
     },
@@ -178,7 +172,6 @@ export default {
     }
   },
   mounted () {
-    console.log('mounted timeline')
     const container = this.$refs.visualization
     // const items = new vis.DataSet(this.items)
     this.dataSet.update(this.items)

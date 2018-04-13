@@ -193,7 +193,6 @@ export default {
           this.snackbarColor = 'success'
           this.snackbar = true
           this.$store.dispatch('requestVideos').then(() => {
-            console.log('selecting', data.id)
             this.$store.commit('SET_VIDEOID', data.id)
             this.$store.commit('SET_PLAYERMODE', 'video')
           })
